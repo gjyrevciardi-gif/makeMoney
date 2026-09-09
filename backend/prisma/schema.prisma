@@ -1,0 +1,451 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum LedgerType {
+  ADMIN_GRANT
+  SPORTS_WIN
+  CASINO_WIN
+  BET_VOID_REFUND
+  CASINO_ROLLBACK_REFUND
+  SPORTS_BET
+  CASINO_BET
+  ADMIN_REMOVE
+}
+
+enum BetStatus {
+  OPEN
+  WON
+  LOST
+  VOID
+  CANCELLED
+}
+
+enum BetType {
+  SINGLE
+  ACCUMULATOR
+}
+
+enum BetLegStatus {
+  OPEN
+  WON
+  LOST
+  VOID
+}
+
+enum CasinoGameType {
+  DICE
+  MINES
+  ROULETTE
+  BLACKJACK
+  CRASH
+  PLINKO
+  SLOTS
+}
+
+enum CasinoRoundStatus {
+  OPEN
+  WON
+  LOST
+  CASHED_OUT
+  CANCELLED
+}
+
+enum CasinoTransactionType {
+  BET
+  WIN
+  REFUND
+}
+
+enum AuditAction {
+  REGISTER
+  LOGIN_SUCCESS
+  LOGIN_FAILED
+  LOGOUT
+  REFRESH_SUCCESS
+  REFRESH_REUSE_DETECTED
+  PERMISSION_DENIED
+  ADMIN_ROLE_GRANTED
+  ADMIN_COIN_GRANT
+  ADMIN_COIN_REMOVE
+  ADMIN_COIN_ADJUSTMENT
+  BET_PLACED
+  BET_SETTLED
+  BET_VOIDED
+  SPORTS_RESULT_RECEIVED
+  BET_LEG_SETTLED
+  SPORTS_RESULT_CONFLICT
+  SPORTS_SETTLEMENT_FAILED
+  ADMIN_EVENT_RECONCILIATION_REQUESTED
+  ADMIN_EVENT_RECONCILIATION_COMPLETED
+  ADMIN_CONFLICT_ACKNOWLEDGED
+  CASINO_ROUND_STARTED
+  CASINO_ROUND_WON
+  CASINO_ROUND_LOST
+  CASINO_CASHOUT
+  CASINO_ROUND_SETTLED
+  CASINO_ROUND_FAILED
+  CASINO_CONFIG_CREATED
+  CASINO_CONFIG_ACTIVATED
+  CASINO_GAME_ENABLED
+  CASINO_GAME_DISABLED
+  CASINO_MAINTENANCE_CHANGED
+  PLATFORM_MAINTENANCE_CHANGED
+}
+
+enum CasinoConfigStatus {
+  DRAFT
+  ACTIVE
+  SUPERSEDED
+}
+
+enum SportsResultStatus {
+  FINAL
+  CANCELLED
+  POSTPONED
+  UNKNOWN
+}
+
+enum SettlementAttemptType {
+  RESULT_FETCH
+  SETTLEMENT
+  ADMIN_RECONCILIATION
+}
+
+enum SettlementAttemptStatus {
+  SUCCESS
+  FAILED
+  NO_RESULT
+  UNSUPPORTED
+  CONFLICT
+  RATE_LIMITED
+}
+
+model User {
+  id                    String                    @id @default(uuid()) @db.Uuid
+  email                 String                    @unique
+  passwordHash          String
+  role                  Role                      @default(USER)
+  createdAt             DateTime                  @default(now())
+  wallet                Wallet?
+  refreshTokens         RefreshToken[]
+  actedEntries          LedgerEntry[]             @relation("LedgerActor")
+  auditEvents           AuditLog[]                @relation("AuditActor")
+  bets                  Bet[]
+  casinoRounds          CasinoRound[]             @relation("CasinoPlayer")
+  casinoGameFavorites   CasinoGameFavorite[]
+  authoredCasinoConfigs CasinoGameConfigVersion[] @relation("CasinoConfigAuthor")
+  acknowledgedConflicts SportsResultConflict[]
+}
+
+model Wallet {
+  id        String        @id @default(uuid()) @db.Uuid
+  userId    String        @unique @db.Uuid
+  balance   BigInt        @default(0)
+  createdAt DateTime      @default(now())
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entries   LedgerEntry[]
+}
+
+model LedgerEntry {
+  id                   String       @id @default(uuid()) @db.Uuid
+  walletId             String       @db.Uuid
+  type                 LedgerType
+  amount               BigInt
+  reason               String
+  actorId              String?      @db.Uuid
+  relatedBetId         String?      @db.Uuid
+  relatedCasinoRoundId String?      @db.Uuid
+  idempotencyKey       String       @unique
+  createdAt            DateTime     @default(now())
+  wallet               Wallet       @relation(fields: [walletId], references: [id])
+  actor                User?        @relation("LedgerActor", fields: [actorId], references: [id])
+  relatedBet           Bet?         @relation(fields: [relatedBetId], references: [id])
+  relatedCasinoRound   CasinoRound? @relation(fields: [relatedCasinoRoundId], references: [id])
+
+  @@index([walletId, createdAt])
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  tokenHash String    @unique
+  familyId  String    @db.Uuid
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([familyId])
+}
+
+model Bet {
+  id              String        @id @default(uuid()) @db.Uuid
+  userId          String        @db.Uuid
+  stake           BigInt
+  type            BetType       @default(SINGLE)
+  totalOdds       Decimal       @default(1) @db.Decimal(24, 8)
+  finalOdds       Decimal?      @db.Decimal(24, 8)
+  actualPayout    BigInt?
+  potentialPayout BigInt
+  status          BetStatus     @default(OPEN)
+  idempotencyKey  String        @unique
+  createdAt       DateTime      @default(now())
+  settledAt       DateTime?
+  user            User          @relation(fields: [userId], references: [id])
+  legs            BetLeg[]
+  ledgerEntries   LedgerEntry[]
+
+  @@index([userId, status, createdAt])
+  @@index([status, createdAt])
+  @@index([status, settledAt])
+}
+
+model BetLeg {
+  id              String       @id @default(uuid()) @db.Uuid
+  betId           String       @db.Uuid
+  provider        String
+  providerEventId String
+  sportKey        String       @default("unknown")
+  homeTeam        String       @default("unknown")
+  awayTeam        String       @default("unknown")
+  marketKey       String
+  marketName      String       @default("unknown")
+  selectionKey    String
+  selectionName   String       @default("unknown")
+  acceptedOdds    Decimal      @db.Decimal(12, 4)
+  marketPoint     Decimal?     @db.Decimal(12, 4)
+  status          BetLegStatus @default(OPEN)
+  resultMetadata  Json?
+  finalHomeScore  Int?
+  finalAwayScore  Int?
+  createdAt       DateTime     @default(now())
+  eventStartTime  DateTime
+  bet             Bet          @relation(fields: [betId], references: [id], onDelete: Cascade)
+
+  @@index([providerEventId])
+  @@index([status, provider, providerEventId])
+  @@index([status, eventStartTime])
+}
+
+model SportsEventResult {
+  id              String             @id @default(uuid()) @db.Uuid
+  provider        String
+  providerEventId String
+  status          SportsResultStatus
+  homeScore       Int?
+  awayScore       Int?
+  completedAt     DateTime?
+  rawResultHash   String?
+  metadata        Json?
+  receivedAt      DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@unique([provider, providerEventId])
+  @@index([status, updatedAt])
+}
+
+model SportsSettlementAttempt {
+  id               String                  @id @default(uuid()) @db.Uuid
+  provider         String
+  providerEventId  String
+  betId            String?                 @db.Uuid
+  betLegId         String?                 @db.Uuid
+  attemptType      SettlementAttemptType
+  status           SettlementAttemptStatus
+  errorCode        String?
+  errorMessageSafe String?
+  startedAt        DateTime
+  finishedAt       DateTime?
+  retryCount       Int                     @default(0)
+  resolvedAt       DateTime?
+  metadata         Json?
+  createdAt        DateTime                @default(now())
+
+  @@index([status, createdAt])
+  @@index([provider, providerEventId, createdAt])
+  @@index([betId])
+  @@index([errorCode, resolvedAt, createdAt])
+}
+
+model SportsResultConflict {
+  id                  String    @id @default(uuid()) @db.Uuid
+  provider            String
+  providerEventId     String
+  storedResult        Json
+  conflictingResult   Json
+  detectedAt          DateTime  @default(now())
+  acknowledgedBy      String?   @db.Uuid
+  acknowledgedAt      DateTime?
+  acknowledgementNote String?
+  acknowledger        User?     @relation(fields: [acknowledgedBy], references: [id], onDelete: SetNull)
+
+  @@index([provider, providerEventId, detectedAt])
+  @@index([acknowledgedAt, detectedAt])
+}
+
+/// One authoritative casino round. `privateState` holds hidden game state
+/// (mine positions, undrawn cards, crash point) and is never projected to a
+/// client while the round is OPEN. `serverSeed` is written at creation but
+/// only revealed once the round reaches a terminal status.
+model CasinoRound {
+  id             String              @id @default(uuid()) @db.Uuid
+  userId         String              @db.Uuid
+  gameType       CasinoGameType
+  gameVersion    String
+  status         CasinoRoundStatus   @default(OPEN)
+  stake          BigInt
+  multiplier     Decimal?            @db.Decimal(28, 8)
+  payout         BigInt              @default(0)
+  serverSeed     String
+  serverSeedHash String
+  clientSeed     String
+  nonce          Int                 @default(0)
+  publicState    Json
+  privateState   Json
+  idempotencyKey String              @unique
+  createdAt      DateTime            @default(now())
+  settledAt      DateTime?
+  user           User                @relation("CasinoPlayer", fields: [userId], references: [id], onDelete: Cascade)
+  actions        CasinoRoundAction[]
+  transactions   CasinoTransaction[]
+  ledgerEntries  LedgerEntry[]
+
+  @@index([userId, createdAt])
+  @@index([userId, gameType, status, createdAt])
+  @@index([gameType, gameVersion, status])
+  @@index([status, createdAt])
+}
+
+/// Append-only record of every player action applied to a round. The unique
+/// idempotency key makes a retried reveal/cashout a replay rather than a
+/// second mutation.
+model CasinoRoundAction {
+  id             String      @id @default(uuid()) @db.Uuid
+  roundId        String      @db.Uuid
+  userId         String      @db.Uuid
+  action         String
+  payload        Json
+  idempotencyKey String      @unique
+  createdAt      DateTime    @default(now())
+  round          CasinoRound @relation(fields: [roundId], references: [id], onDelete: Cascade)
+
+  @@index([roundId, createdAt])
+}
+
+/// Game-domain view of casino value movement. The immutable LedgerEntry table
+/// remains the single authoritative source of wallet balance; this table never
+/// competes with it.
+model CasinoTransaction {
+  id             String                @id @default(uuid()) @db.Uuid
+  roundId        String                @db.Uuid
+  userId         String                @db.Uuid
+  type           CasinoTransactionType
+  amount         BigInt
+  idempotencyKey String                @unique
+  createdAt      DateTime              @default(now())
+  round          CasinoRound           @relation(fields: [roundId], references: [id], onDelete: Cascade)
+
+  @@index([roundId])
+  @@index([userId, createdAt])
+}
+
+/// Per-user casino discovery preference. `gameId` references the static,
+/// validated CasinoGameRegistry at the service boundary rather than a second
+/// database-owned game catalogue.
+model CasinoGameFavorite {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  gameId    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, gameId])
+  @@index([userId, createdAt])
+}
+
+/// Administrator-controlled operational state for one registry game.
+///
+/// The registry still owns the immutable catalogue (identity, route, category);
+/// this row owns only what an operator may legitimately change at runtime.
+model CasinoGameConfig {
+  id              String                    @id @default(uuid()) @db.Uuid
+  gameId          String                    @unique
+  enabled         Boolean                   @default(true)
+  maintenance     Boolean                   @default(false)
+  activeVersionId String?                   @unique @db.Uuid
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+  activeVersion   CasinoGameConfigVersion?  @relation("CasinoActiveVersion", fields: [activeVersionId], references: [id])
+  versions        CasinoGameConfigVersion[] @relation("CasinoConfigVersions")
+}
+
+/// One immutable mathematical configuration for a game.
+///
+/// A version's numbers never change after it is written. Activating different
+/// mathematics means creating a new version and superseding the old one, so a
+/// round settled under an earlier version stays reproducible forever.
+model CasinoGameConfigVersion {
+  id                 String             @id @default(uuid()) @db.Uuid
+  gameConfigId       String             @db.Uuid
+  version            Int
+  /// Deterministic label recorded on every round, e.g. `dice.v2.rtp9500`.
+  label              String
+  status             CasinoConfigStatus @default(DRAFT)
+  minStake           BigInt
+  maxStake           BigInt
+  /// Null for games whose return is fixed by canonical rules rather than a dial.
+  rtpBps             Int?
+  gameSpecificConfig Json
+  createdByAdminId   String?            @db.Uuid
+  reason             String?
+  createdAt          DateTime           @default(now())
+  activatedAt        DateTime?
+  supersededAt       DateTime?
+  config             CasinoGameConfig   @relation("CasinoConfigVersions", fields: [gameConfigId], references: [id], onDelete: Cascade)
+  activeFor          CasinoGameConfig?  @relation("CasinoActiveVersion")
+  createdBy          User?              @relation("CasinoConfigAuthor", fields: [createdByAdminId], references: [id], onDelete: SetNull)
+
+  @@unique([gameConfigId, version])
+  @@unique([gameConfigId, label])
+  @@index([gameConfigId, status])
+}
+
+/// Single-row platform switchboard for global maintenance states.
+model PlatformSettings {
+  id                    String   @id @default("singleton")
+  casinoMaintenance     Boolean  @default(false)
+  sportsbookMaintenance Boolean  @default(false)
+  updatedByAdminId      String?  @db.Uuid
+  updatedAt             DateTime @updatedAt
+  createdAt             DateTime @default(now())
+}
+
+model AuditLog {
+  id         String      @id @default(uuid()) @db.Uuid
+  actorId    String?     @db.Uuid
+  targetType String?
+  targetId   String?
+  action     AuditAction
+  result     String
+  ip         String?
+  userAgent  String?
+  metadata   Json?
+  createdAt  DateTime    @default(now())
+  actor      User?       @relation("AuditActor", fields: [actorId], references: [id])
+
+  @@index([actorId, createdAt])
+  @@index([action, createdAt])
+  @@index([targetId, createdAt])
+}

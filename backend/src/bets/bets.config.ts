@@ -1,0 +1,2 @@
+const positiveInt = (name: string, fallback: number) => { const value = Number(process.env[name] ?? fallback); return Number.isSafeInteger(value) && value > 0 ? value : fallback; };
+export const betsConfig = () => ({ maxStake: BigInt(positiveInt('MAX_VIRTUAL_BET_STAKE', 1_000_000)), maxAccumulatorLegs: positiveInt('MAX_ACCUMULATOR_LEGS', 10), maxOddsStalenessSeconds: positiveInt('MAX_ODDS_STALENESS_SECONDS', 30) });

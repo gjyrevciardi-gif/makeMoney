@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: fools_gold
+          POSTGRES_PASSWORD: fools_gold
+          POSTGRES_DB: fools_gold
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U fools_gold -d fools_gold"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://fools_gold:fools_gold@localhost:5432/fools_gold?schema=public
+      REDIS_URL: redis://localhost:6379
+      JWT_ACCESS_SECRET: ci-access-secret-that-is-at-least-32-characters
+      JWT_REFRESH_SECRET: ci-refresh-secret-that-is-at-least-32-characters
+      FRONTEND_URL: http://localhost:3000
+      CORS_ORIGINS: http://localhost:3000
+      REGISTRATION_ENABLED: true
+      SPORTS_PROVIDER: fixture
+      SPORTS_SETTLEMENT_ENABLED: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm audit --omit=dev
+      - run: npm run prisma:generate -w backend
+      - run: npx prisma migrate deploy --schema backend/prisma/schema.prisma
+      - run: npm run test -w backend
+      - run: npm run typecheck -w backend
+      - run: npm run typecheck -w frontend
+      - run: npm run build -w backend
+      - run: npm run build -w frontend
+      - run: docker build -f backend/Dockerfile .
+      - run: docker build -f frontend/Dockerfile --build-arg NEXT_PUBLIC_API_URL=https://api.example.com .
