@@ -16,7 +16,12 @@ export class SafeExceptionFilter implements ExceptionFilter {
     const request = http.getRequest<Request>();
     const status = exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
     const body = exception instanceof HttpException ? exception.getResponse() : undefined;
-    const safeBody = typeof body === 'object' && body !== null && 'code' in body && 'message' in body ? body as { code: string; message: string } : undefined;
+    const candidate = typeof body === 'object' && body !== null && !Array.isArray(body)
+      ? body as Record<string, unknown>
+      : undefined;
+    const safeBody = candidate && typeof candidate.code === 'string' && typeof candidate.message === 'string'
+      ? { code: candidate.code, message: candidate.message }
+      : undefined;
     const [fallbackCode, fallbackMessage] = descriptions[status] ?? ['INTERNAL_ERROR', 'An unexpected error occurred.'];
     const code = safeBody?.code ?? fallbackCode; const message = safeBody?.message ?? fallbackMessage;
     if (status >= 500) {
@@ -28,6 +33,6 @@ export class SafeExceptionFilter implements ExceptionFilter {
         errorType: exception instanceof Error ? exception.name : 'UnknownError',
       })}\n`);
     }
-    response.status(status).json(safeBody ? { ...safeBody, code, message } : { code, message });
+    response.status(status).json({ code, message });
   }
 }

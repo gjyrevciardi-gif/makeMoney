@@ -9,8 +9,12 @@ export class AccessGuard implements CanActivate {
   constructor(private readonly jwt: JwtService, private readonly prisma: PrismaService) {}
   async canActivate(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
-    const [scheme, token] = request.headers.authorization?.split(' ') ?? [];
-    if (scheme !== 'Bearer' || !token) throw new UnauthorizedException('AUTHENTICATION_REQUIRED');
+    const authorization = request.headers.authorization;
+    const parts = authorization?.trim().split(/\s+/) ?? [];
+    if (parts.length !== 2 || parts[0] !== 'Bearer' || !parts[1]) {
+      throw new UnauthorizedException('AUTHENTICATION_REQUIRED');
+    }
+    const token = parts[1];
     try {
       const payload = await this.jwt.verifyAsync<{ sub: string }>(token);
       const user = await this.prisma.user.findUnique({ where: { id: payload.sub }, select: { id: true, role: true } });
