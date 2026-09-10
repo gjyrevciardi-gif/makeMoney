@@ -44,5 +44,22 @@ BASE_URL=https://example.com API_URL=https://api.example.com scripts/smoke.sh
 
 For updates, backup first, build the new images, deploy, check health, then
 inspect logs. For disaster recovery, provision a new VPS, restore the
-environment and database backup into a clean database, run migrations and the
-integrity checker, then start the stack.
+environment and database backup into a fresh recovery database using the
+default safe restore mode, verify migrations and integrity, then start the
+stack. Do not assume Prisma provides automatic migration rollback.
+
+Use the real restore contract:
+
+```sh
+DATABASE_URL='postgresql://...' scripts/restore-postgres.sh backups/file.dump.gz
+npx prisma migrate status --schema backend/prisma/schema.prisma
+node scripts/integrity-check.js
+```
+
+Safe mode refuses populated databases. An intentional overwrite requires
+`RESTORE_MODE=destructive` and an exact confirmation matching the target
+database name, either interactively or with
+`RESTORE_CONFIRM='RESTORE <database_name>'`. Run
+`scripts/backup-restore-drill.sh` to exercise backup, archive validation,
+safe recovery, destructive confirmation, and integrity verification against
+throwaway PostgreSQL containers.

@@ -49,8 +49,12 @@ Treat a suspected backup exposure as a credential and data incident. Restrict
 access to the backup store, preserve evidence, rotate database/Redis/JWT and
 provider credentials as appropriate, revoke sessions, and assess whether
 personal or operational data was exposed. Do not overwrite evidence or upload
-the backup to a public issue. Restore only into an access-controlled,
-disposable environment while investigating.
+the backup to a public issue. Restore only into an access-controlled, fresh
+recovery database using the default safe mode while investigating. Safe mode
+refuses populated databases; any destructive overwrite requires
+`RESTORE_MODE=destructive` and exact confirmation of the target database name
+through the prompt or `RESTORE_CONFIRM`. Never treat Prisma migrations as an
+automatic rollback mechanism.
 
 ## Authentication, authorization, and outcomes
 

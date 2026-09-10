@@ -102,8 +102,9 @@ timestamped compressed custom-format dump with restrictive permissions and
 prunes artifacts older than `BACKUP_RETENTION_DAYS`. Copy verified backups
 off-host and encrypt them at rest.
 
-Restore only after an explicit operator decision, preferably into a disposable
-database first:
+Restore only after an explicit operator decision. The default is safe and
+non-destructive: restore into a new, empty recovery database first, then verify
+the migration history, restored data, and integrity before serving traffic:
 
 ```sh
 DATABASE_URL='postgresql://...' scripts/restore-postgres.sh backups/file.dump.gz
@@ -111,8 +112,27 @@ npx prisma migrate status --schema backend/prisma/schema.prisma
 node scripts/integrity-check.js
 ```
 
-The restore script requires the literal confirmation `RESTORE`. Restore does
-not replace migration review, integrity checks, or smoke checks.
+The restore script validates the archive before applying it. Safe mode refuses
+to restore into a populated database. To intentionally overwrite a populated
+database, set `RESTORE_MODE=destructive` and confirm the exact target database
+name. Interactive use prompts for `RESTORE <database_name>`; non-interactive
+use must provide the same value through `RESTORE_CONFIRM`:
+
+```sh
+DATABASE_URL='postgresql://...' \
+  RESTORE_MODE=destructive \
+  RESTORE_CONFIRM='RESTORE production_db' \
+  scripts/restore-postgres.sh backups/file.dump.gz
+```
+
+Never imply that Prisma migrations roll back automatically. Restore and
+migration review still require integrity checks and smoke checks. Periodically
+run the disposable backup/restore drill, which exercises safe refusal,
+destructive confirmation, archive validation, and integrity verification:
+
+```sh
+scripts/backup-restore-drill.sh
+```
 
 ## Updates, rollback, and disaster recovery
 
@@ -127,10 +147,12 @@ restore a verified database backup; do not pretend Prisma supports arbitrary
 automatic rollback.
 
 For disaster recovery, provision a new VPS, install Docker, restore the
-repository and a separately managed `.env.production`, restore PostgreSQL
-into a clean database, run `prisma migrate status`, start Redis/backend/frontend
-and Caddy, run `node scripts/integrity-check.js`, then verify live/ready health
-and the smoke checks before changing DNS.
+repository and a separately managed `.env.production`, create a clean recovery
+database, restore PostgreSQL with the default safe mode, run `prisma migrate
+status` and `node scripts/integrity-check.js`, then start
+Redis/backend/frontend and Caddy. Verify live/ready health and the smoke checks
+before changing DNS. Only use destructive mode after explicit operator review
+and exact target-name confirmation.
 
 ## Time and clock operations
 
