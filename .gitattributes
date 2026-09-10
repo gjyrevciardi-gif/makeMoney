@@ -1,0 +1,12 @@
+* text=auto
+
+# Shell scripts and container files run inside Linux images. A CRLF checkout on
+# Windows would produce an unusable shebang, so pin these to LF everywhere.
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.Dockerfile text eol=lf
+Caddyfile text eol=lf
+docker-compose*.yml text eol=lf
+.dockerignore text eol=lf
+.env.example text eol=lf
+.env.production.example text eol=lf

@@ -1,7 +1,16 @@
+# Production stack.
+#
+# Network topology is the security boundary here: PostgreSQL and Redis sit on an
+# `internal` bridge with no host port bindings and no route off the host, so they
+# are reachable only from the backend container. Caddy is the only service that
+# publishes anything, and it publishes only 80 and 443.
 services:
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
+    init: true
+    security_opt:
+      - no-new-privileges:true
     environment:
       POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
@@ -13,38 +22,74 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
+      start_period: 20s
+    networks:
+      - internal
+    logging: &logging
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
   redis:
     image: redis:7-alpine
     restart: unless-stopped
-    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:?REDIS_PASSWORD is required}"]
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+      - --requirepass
+      - ${REDIS_PASSWORD:?REDIS_PASSWORD is required}
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD-SHELL", "redis-cli -a \"$${REDIS_PASSWORD}\" ping | grep PONG"]
+      test: ["CMD-SHELL", "redis-cli -a \"$${REDIS_PASSWORD}\" ping | grep -q PONG"]
       interval: 5s
       timeout: 3s
       retries: 20
+      start_period: 10s
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD is required}
+    networks:
+      - internal
+    logging: *logging
+
   backend:
     build:
       context: .
       dockerfile: backend/Dockerfile
     restart: unless-stopped
-    env_file: ${ENV_FILE:-.env.production}
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    # Tuning knobs come from the deployment env file; everything security
+    # relevant is pinned explicitly below so a stale file cannot weaken it.
+    env_file:
+      - path: ${ENV_FILE:-.env.production}
+        required: false
     environment:
       NODE_ENV: production
+      PORT: "3001"
+      HOST: 0.0.0.0
       DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
       REDIS_URL: ${REDIS_URL:?REDIS_URL is required}
-      FRONTEND_URL: https://${DOMAIN}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?JWT_ACCESS_SECRET is required}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?JWT_REFRESH_SECRET is required}
+      FRONTEND_URL: https://${DOMAIN:?DOMAIN is required}
       CORS_ORIGINS: https://${DOMAIN}
       COOKIE_SECURE: "true"
-      TRUST_PROXY: "true"
+      TRUST_PROXY: "1"
+      BODY_LIMIT: ${BODY_LIMIT:-1mb}
       REGISTRATION_ENABLED: ${REGISTRATION_ENABLED:-false}
-    command: ["sh", "-c", "./node_modules/.bin/prisma migrate deploy --schema backend/prisma/schema.prisma && exec node backend/dist/src/main.js"]
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://localhost:3001/health/live').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001/health/live').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 10s
       timeout: 5s
       retries: 12
+      start_period: 60s
     depends_on:
       postgres:
         condition: service_healthy
@@ -52,6 +97,14 @@ services:
         condition: service_healthy
     expose:
       - "3001"
+    # `edge` carries proxy traffic and outbound calls to the odds provider;
+    # `internal` is the only path to PostgreSQL and Redis.
+    networks:
+      - edge
+      - internal
+    stop_grace_period: 30s
+    logging: *logging
+
   frontend:
     build:
       context: .
@@ -59,32 +112,74 @@ services:
       args:
         NEXT_PUBLIC_API_URL: https://api.${DOMAIN:?DOMAIN is required}
     restart: unless-stopped
+    init: true
+    security_opt:
+      - no-new-privileges:true
     environment:
       NODE_ENV: production
-      PORT: 3000
+      PORT: "3000"
+      HOSTNAME: 0.0.0.0
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
     depends_on:
       backend:
         condition: service_healthy
     expose:
       - "3000"
+    # No database or cache access: the frontend only ever talks to the API.
+    networks:
+      - edge
+    stop_grace_period: 20s
+    logging: *logging
+
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
+    init: true
+    security_opt:
+      - no-new-privileges:true
     environment:
       DOMAIN: ${DOMAIN:?DOMAIN is required}
       ADMIN_EMAIL: ${ADMIN_EMAIL:?ADMIN_EMAIL is required}
+    # The only ports published to the host in the whole stack.
     ports:
       - "80:80"
       - "443:443"
+      - "443:443/udp"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--spider", "http://127.0.0.1:2019/config/"]
+      interval: 15s
+      timeout: 5s
+      retries: 6
+      start_period: 15s
     depends_on:
-      - frontend
-      - backend
+      frontend:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    networks:
+      - edge
+    logging: *logging
+
 volumes:
   postgres_data:
   redis_data:
   caddy_data:
   caddy_config:
+
+networks:
+  edge:
+    driver: bridge
+  internal:
+    driver: bridge
+    # No route off the host: the data tier cannot be reached from outside and
+    # cannot itself reach the internet.
+    internal: true

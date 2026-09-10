@@ -37,6 +37,7 @@ export class SettlementWorker implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(SettlementWorker.name);
   private timer?: ReturnType<typeof setInterval>;
   private localRunning = false;
+  private inFlight?: Promise<SettlementWorkerCycle>;
   private readonly pollSeconds = boundedInteger(
     process.env.SPORTS_SETTLEMENT_POLL_SECONDS,
     300,
@@ -65,6 +66,16 @@ export class SettlementWorker implements OnModuleInit, OnModuleDestroy {
   }
 
   async runScheduledCycle(): Promise<SettlementWorkerCycle> {
+    const cycle = this.executeCycle();
+    this.inFlight = cycle;
+    try {
+      return await cycle;
+    } finally {
+      if (this.inFlight === cycle) this.inFlight = undefined;
+    }
+  }
+
+  private async executeCycle(): Promise<SettlementWorkerCycle> {
     const started = Date.now();
     if (this.localRunning) {
       this.logger.log({ event: 'SETTLEMENT_WORKER_SKIPPED_LOCKED', scope: 'process' });
@@ -138,7 +149,25 @@ export class SettlementWorker implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  onModuleDestroy() {
-    if (this.timer) clearInterval(this.timer);
+  /**
+   * Stops scheduling cycles and waits for the one already running.
+   *
+   * Settlement runs inside a transaction and is idempotent, so an aborted cycle
+   * would not corrupt the ledger — but finishing it releases the Redis lease
+   * cleanly instead of leaving it to expire, so the next instance can pick up
+   * immediately rather than waiting out the TTL.
+   */
+  async drain(): Promise<void> {
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = undefined;
+    }
+    if (!this.inFlight) return;
+    this.logger.log({ event: 'SETTLEMENT_WORKER_DRAINING' });
+    await this.inFlight.catch(() => undefined);
+  }
+
+  async onModuleDestroy() {
+    await this.drain();
   }
 }

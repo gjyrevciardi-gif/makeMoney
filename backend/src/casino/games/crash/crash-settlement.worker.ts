@@ -35,6 +35,7 @@ export class CrashSettlementWorker implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(CrashSettlementWorker.name);
   private timer?: ReturnType<typeof setInterval>;
   private running = false;
+  private inFlight?: Promise<unknown>;
   private readonly intervalMs = boundedInteger(
     process.env.CASINO_CRASH_SWEEP_MS,
     2_000,
@@ -62,6 +63,16 @@ export class CrashSettlementWorker implements OnModuleInit, OnModuleDestroy {
   }
 
   async runOnce() {
+    const sweep = this.executeSweep();
+    this.inFlight = sweep;
+    try {
+      return await sweep;
+    } finally {
+      if (this.inFlight === sweep) this.inFlight = undefined;
+    }
+  }
+
+  private async executeSweep() {
     if (this.running) return { status: 'SKIPPED_LOCAL' as const, scanned: 0, settled: 0 };
     this.running = true;
     const owner = randomUUID();
@@ -99,7 +110,24 @@ export class CrashSettlementWorker implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  onModuleDestroy() {
-    if (this.timer) clearInterval(this.timer);
+  /**
+   * Stops sweeping and waits for the sweep already running.
+   *
+   * A Crash settlement is a wallet write, so it finishes on the instance that
+   * started it rather than being abandoned for the lease to expire. The write
+   * itself is idempotent either way.
+   */
+  async drain(): Promise<void> {
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = undefined;
+    }
+    if (!this.inFlight) return;
+    this.logger.log({ event: 'CASINO_CRASH_SWEEP_DRAINING' });
+    await this.inFlight.catch(() => undefined);
+  }
+
+  async onModuleDestroy() {
+    await this.drain();
   }
 }
