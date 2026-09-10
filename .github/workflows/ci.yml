@@ -4,53 +4,119 @@ on:
   push:
   pull_request:
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
   verify:
     runs-on: ubuntu-latest
+
     services:
+      # Disposable and isolated. The database name ends in `_test` and shares no
+      # name, port, or credential with a development or production database,
+      # which is what backend/test/setup.ts requires before it will run: it
+      # refuses any database that is not an explicit *_test target, refuses the
+      # `fools_gold` name outright, and refuses the default 5432 port.
       postgres:
-        image: postgres:16
+        image: postgres:16-alpine
         env:
-          POSTGRES_USER: fools_gold
-          POSTGRES_PASSWORD: fools_gold
-          POSTGRES_DB: fools_gold
+          POSTGRES_USER: ci_runner
+          POSTGRES_PASSWORD: ci_runner_password
+          POSTGRES_DB: toto_ci_test
         ports:
-          - 5432:5432
+          - 55432:5432
         options: >-
-          --health-cmd "pg_isready -U fools_gold -d fools_gold"
+          --health-cmd "pg_isready -U ci_runner -d toto_ci_test"
           --health-interval 5s --health-timeout 3s --health-retries 20
       redis:
-        image: redis:7
+        image: redis:7-alpine
         ports:
-          - 6379:6379
+          - 56380:6379
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 5s --health-timeout 3s --health-retries 20
+
     env:
       NODE_ENV: test
-      DATABASE_URL: postgresql://fools_gold:fools_gold@localhost:5432/fools_gold?schema=public
-      REDIS_URL: redis://localhost:6379
-      JWT_ACCESS_SECRET: ci-access-secret-that-is-at-least-32-characters
-      JWT_REFRESH_SECRET: ci-refresh-secret-that-is-at-least-32-characters
+      # Points only at the service containers above. There is deliberately no
+      # fallback: every command that needs a database fails rather than reaching
+      # for a developer's local instance.
+      DATABASE_URL: postgresql://ci_runner:ci_runner_password@localhost:55432/toto_ci_test?schema=public
+      REDIS_URL: redis://localhost:56380
+      # Throwaway values that exist only to satisfy the length check. They are
+      # published in this file precisely because they must never be real.
+      JWT_ACCESS_SECRET: ci-only-access-value-not-a-real-credential
+      JWT_REFRESH_SECRET: ci-only-refresh-value-not-a-real-credential
       FRONTEND_URL: http://localhost:3000
       CORS_ORIGINS: http://localhost:3000
-      REGISTRATION_ENABLED: true
-      SPORTS_PROVIDER: fixture
-      SPORTS_SETTLEMENT_ENABLED: false
+      REGISTRATION_ENABLED: 'true'
+      # No odds API key in CI. The provider stays unconfigured so the suite can
+      # never reach the real upstream or spend quota; the sportsbook paths are
+      # expected to degrade gracefully and the tests assert that they do.
+      THE_ODDS_API_KEY: ''
+      SPORTS_SETTLEMENT_ENABLED: 'false'
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
-      - run: npm audit --omit=dev
-      - run: npm run prisma:generate -w backend
-      - run: npx prisma migrate deploy --schema backend/prisma/schema.prisma
-      - run: npm run test -w backend
-      - run: npm run typecheck -w backend
-      - run: npm run typecheck -w frontend
-      - run: npm run build -w backend
-      - run: npm run build -w frontend
-      - run: docker build -f backend/Dockerfile .
-      - run: docker build -f frontend/Dockerfile --build-arg NEXT_PUBLIC_API_URL=https://api.example.com .
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npm run prisma:generate -w backend
+
+      - name: Apply migrations
+        run: npx prisma migrate deploy --schema backend/prisma/schema.prisma
+
+      - name: Verify migration state
+        run: npx prisma migrate status --schema backend/prisma/schema.prisma
+
+      - name: Backend tests
+        run: npm run test -w backend
+
+      # Runs only when the frontend workspace actually defines a test script,
+      # so adding one later needs no change here.
+      - name: Frontend tests (if configured)
+        run: npm run test -w frontend --if-present
+
+      - name: Backend typecheck
+        run: npm run typecheck -w backend
+
+      - name: Frontend typecheck
+        run: npm run typecheck -w frontend
+
+      - name: Backend production build
+        run: npm run build -w backend
+
+      - name: Frontend production build
+        run: npm run build -w frontend
+
+      - name: Data integrity checker (read-only)
+        run: node scripts/integrity-check.js
+
+      # Each audit prints its full report. The exit code gates on `critical`
+      # only, so a known, unfixable transitive advisory cannot silently block
+      # every merge while still being visible in the log on every run.
+      - name: Dependency audit (root, production)
+        run: npm audit --omit=dev --audit-level=critical
+
+      - name: Dependency audit (backend, production)
+        run: npm audit --omit=dev --audit-level=critical -w backend
+
+      - name: Dependency audit (frontend, production)
+        run: npm audit --omit=dev --audit-level=critical -w frontend
+
+      - name: Backend production image
+        run: docker build -f backend/Dockerfile .
+
+      - name: Frontend production image
+        run: docker build -f frontend/Dockerfile --build-arg NEXT_PUBLIC_API_URL=https://api.example.com .
