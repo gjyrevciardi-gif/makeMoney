@@ -145,6 +145,9 @@ services:
     environment:
       DOMAIN: ${DOMAIN:?DOMAIN is required}
       ADMIN_EMAIL: ${ADMIN_EMAIL:?ADMIN_EMAIL is required}
+      # Unset in production, so Caddy uses public ACME as normal. A local
+      # rehearsal sets CADDY_GLOBAL_OPTIONS=local_certs to use the internal CA.
+      CADDY_GLOBAL_OPTIONS: ${CADDY_GLOBAL_OPTIONS:-}
     # The only ports published to the host in the whole stack.
     ports:
       - "80:80"

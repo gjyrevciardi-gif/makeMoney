@@ -8,6 +8,17 @@ import { z } from 'zod';
 export const APP_ENVIRONMENTS = ['development', 'test', 'production'] as const;
 export type AppEnvironment = (typeof APP_ENVIRONMENTS)[number];
 
+/**
+ * What production may set for TRUST_PROXY: the number of proxy hops to trust,
+ * or `true` as a synonym for a single hop.
+ *
+ * Deliberately bounded, and deliberately without any value meaning "trust every
+ * hop". Express's blanket `trust proxy = true` walks the whole X-Forwarded-For
+ * chain, so a client could prepend an address of its own and rate limiting
+ * would key off the forgery. Behind the bundled Caddy the correct value is 1.
+ */
+const TRUST_PROXY_PATTERN = /^(?:true|[1-9]|10)$/;
+
 const productionEnvironment = z.object({
   NODE_ENV: z.literal('production'),
   DATABASE_URL: z.string().url(),
@@ -17,7 +28,7 @@ const productionEnvironment = z.object({
   FRONTEND_URL: z.string().url(),
   CORS_ORIGINS: z.string().min(1),
   COOKIE_SECURE: z.literal('true'),
-  TRUST_PROXY: z.literal('true'),
+  TRUST_PROXY: z.string().regex(TRUST_PROXY_PATTERN),
   REGISTRATION_ENABLED: z.enum(['true', 'false']),
 }).passthrough();
 

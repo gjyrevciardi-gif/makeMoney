@@ -107,6 +107,26 @@ describe('production environment validation', () => {
     });
   });
 
+  it('accepts the numeric proxy hop count the production compose file sets', () => {
+    // docker-compose.prod.yml passes TRUST_PROXY="1". An earlier revision only
+    // accepted the literal "true", so the container failed validation and the
+    // backend could not start at all behind its own reverse proxy.
+    for (const hops of ['1', '2', '10', 'true']) {
+      withEnvironment(production({ TRUST_PROXY: hops }), () => {
+        expect(() => validateProductionEnvironment()).not.toThrow();
+      });
+    }
+  });
+
+  it.each(['0', '-1', '11', 'all', 'yes', ''])(
+    'rejects TRUST_PROXY=%p, which would disable or over-trust forwarding',
+    value => {
+      withEnvironment(production({ TRUST_PROXY: value }), () => {
+        expect(() => validateProductionEnvironment()).toThrow(/TRUST_PROXY/);
+      });
+    },
+  );
+
   it('requires HTTPS origins that match the frontend', () => {
     withEnvironment(production({ CORS_ORIGINS: 'http://app.foolsgold.club' }), () => {
       expect(() => validateProductionEnvironment()).toThrow(/HTTPS origins/);
