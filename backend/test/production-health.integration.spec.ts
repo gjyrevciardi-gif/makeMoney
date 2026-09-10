@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { RedisService } from '../src/common/redis.service';
-import { PrismaService } from '../src/prisma.service';
+import { ProductionHealthController } from '../src/operations/production-health.controller';
 import { SportsService } from '../src/sports/sports.service';
 
 describe('production health probes (PostgreSQL + Redis)', () => {
@@ -70,20 +70,24 @@ describe('production health probes (PostgreSQL + Redis)', () => {
     }
   });
 
-  it('reports unavailable when a dependency cannot answer', async () => {
-    const prisma = app.get(PrismaService);
-    const query = jest
-      .spyOn(prisma, '$queryRaw')
-      .mockRejectedValue(new Error('database unreachable'));
+  it('reports unavailable when a required dependency cannot answer', async () => {
+    // Several modules register their own RedisService, so the probe has to be
+    // broken on the exact instance the controller holds rather than on whichever
+    // one the container happens to hand back first.
+    const controller = app.get(ProductionHealthController);
+    const injected = (controller as unknown as { redis: RedisService }).redis;
+    const ping = jest
+      .spyOn(injected.client, 'ping')
+      .mockRejectedValue(new Error('cache unreachable') as never);
 
     try {
       const response = await request(app.getHttpServer()).get('/health/ready').expect(503);
       expect(response.body).toEqual({
         status: 'unavailable',
-        checks: { database: false, redis: true },
+        checks: { database: true, redis: false },
       });
     } finally {
-      query.mockRestore();
+      ping.mockRestore();
     }
   });
 });

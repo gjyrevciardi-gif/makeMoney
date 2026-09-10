@@ -36,12 +36,11 @@
 }
 
 (upstream_headers) {
-	# X-Forwarded-For / -Proto / -Host are set by Caddy on every proxied request;
-	# the backend runs with `trust proxy = 1` so it reads the real client IP from
-	# them for rate limiting. Any inbound value a client tried to set is replaced,
-	# not appended to.
+	# Caddy already sets X-Forwarded-For / -Proto / -Host on every proxied
+	# request, replacing whatever the client sent rather than appending to it.
+	# The backend runs with `trust proxy = 1` and reads the real client IP from
+	# them for rate limiting. Only X-Real-IP has to be added explicitly.
 	header_up X-Real-IP {remote_host}
-	header_up X-Forwarded-Host {host}
 }
 
 {$DOMAIN} {

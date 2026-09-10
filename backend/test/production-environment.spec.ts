@@ -48,7 +48,10 @@ describe('environment separation', () => {
     expect(resolveEnvironment('development')).toBe('development');
     expect(resolveEnvironment('test')).toBe('test');
     expect(resolveEnvironment('production')).toBe('production');
-    expect(resolveEnvironment(undefined)).toBe('development');
+  });
+
+  it('falls back to development when NODE_ENV is unset', () => {
+    withEnvironment({}, () => expect(resolveEnvironment()).toBe('development'));
   });
 
   it('rejects an unrecognised NODE_ENV rather than assuming development', () => {

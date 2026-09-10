@@ -32,18 +32,22 @@ export class ProductionHealthController {
     return { status: 'ok', uptimeSeconds: Math.floor(process.uptime()) };
   }
 
+  // `passthrough` matters here: returning the Express response object instead
+  // would hand it to the global serializing interceptor, which walks it and
+  // overflows the stack. Only the status is set directly; the body is returned.
   @Get('ready')
-  async ready(@Res() response: Response) {
+  async ready(@Res({ passthrough: true }) response: Response) {
     const [database, cache] = await Promise.all([
       this.withTimeout(this.checkDatabase()),
       this.withTimeout(this.checkRedis()),
     ]);
     const ready = database && cache;
     response.setHeader('cache-control', 'no-store');
-    return response.status(ready ? HttpStatus.OK : HttpStatus.SERVICE_UNAVAILABLE).json({
+    response.status(ready ? HttpStatus.OK : HttpStatus.SERVICE_UNAVAILABLE);
+    return {
       status: ready ? 'ok' : 'unavailable',
       checks: { database, redis: cache },
-    });
+    };
   }
 
   /**

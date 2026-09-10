@@ -27,8 +27,11 @@ logs
 tmp
 *.log
 *.dump
-*.sql
 *.sql.gz
+# Stray dumps at the context root only. Do NOT widen this to **/*.sql: the
+# Prisma migration files under backend/prisma/migrations are .sql, and the
+# backend image cannot run `migrate deploy` without them.
+/*.sql
 
 # Editor and OS noise.
 .idea
