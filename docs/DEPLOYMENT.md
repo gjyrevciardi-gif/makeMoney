@@ -13,20 +13,20 @@
 6. Build and validate:
 
    ```sh
-   docker compose -f docker-compose.prod.yml config
-   docker compose -f docker-compose.prod.yml build
+   docker compose --env-file .env.production -f docker-compose.prod.yml config
+   docker compose --env-file .env.production -f docker-compose.prod.yml build
    ```
 
 7. Start PostgreSQL and Redis and wait for health checks:
 
    ```sh
-   docker compose -f docker-compose.prod.yml up -d postgres redis
+   docker compose --env-file .env.production -f docker-compose.prod.yml up -d postgres redis
    ```
 
 8. Start the application. Backend migration deployment runs before Nest:
 
    ```sh
-   docker compose -f docker-compose.prod.yml up -d
+   docker compose --env-file .env.production -f docker-compose.prod.yml up -d
    ```
 
 9. Verify `https://DOMAIN`, `https://DOMAIN/health/live`, and

@@ -1,0 +1,88 @@
+# VPS deployment guide
+
+This guide targets one normal Linux VPS running Docker Compose. It does not
+require Kubernetes.
+
+## 1. Provision the host
+
+Use a supported 64-bit Linux distribution, attach persistent storage, and
+install Docker Engine and the Compose plugin from the vendor instructions.
+Enable NTP (`systemd-timesyncd` or `chrony`) and verify UTC time before
+starting the stack.
+
+Configure the host firewall. Permit SSH only from the operator network when
+possible, plus TCP 80 and TCP 443:
+
+```sh
+sudo ufw allow from OPERATOR_CIDR to any port 22 proto tcp
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw enable
+```
+
+Do not allow or publish TCP 5432 or TCP 6379. PostgreSQL and Redis are
+internal Compose services.
+
+## 2. DNS and configuration
+
+Point `DOMAIN` and `api.DOMAIN` DNS records at the VPS. Clone the reviewed
+release, copy `.env.production.example` to `.env.production`, and edit it
+only on the VPS:
+
+```sh
+cp .env.production.example .env.production
+chmod 600 .env.production
+```
+
+Set unique random PostgreSQL, Redis, JWT access, and JWT refresh secrets.
+Set `DOMAIN`, `ADMIN_EMAIL`, `COOKIE_SECURE=true`, `TRUST_PROXY=true`, and
+`REGISTRATION_ENABLED=false` after the controlled initial Admin bootstrap.
+URL-encode reserved characters in `DATABASE_URL` and `REDIS_URL`. Never put
+real credentials in Git or in this guide.
+
+## 3. Render, build, and start
+
+Validate the expanded configuration and build both application images:
+
+```sh
+docker compose --env-file .env.production -f docker-compose.prod.yml config
+docker compose --env-file .env.production -f docker-compose.prod.yml build
+docker compose --env-file .env.production -f docker-compose.prod.yml up -d postgres redis
+docker compose --env-file .env.production -f docker-compose.prod.yml up -d
+```
+
+The backend container runs `prisma migrate deploy` before starting Nest. A
+migration failure prevents the backend from becoming healthy. Never run
+`prisma migrate dev` in production.
+
+## 4. Verify the deployment
+
+Wait for all service health checks, then verify:
+
+```sh
+curl -fsS https://DOMAIN/health/live
+curl -fsS https://api.DOMAIN/health/ready
+BASE_URL=https://DOMAIN API_URL=https://api.DOMAIN scripts/smoke.sh
+node scripts/integrity-check.js
+```
+
+Confirm HTTPS certificate negotiation and redirects with
+`curl -I https://DOMAIN` and `curl -I https://api.DOMAIN`. Check Caddy and
+backend logs, and preserve request IDs for any failures.
+
+## 5. Backups and Admin verification
+
+Schedule `scripts/backup-postgres.sh` with a service account, a restrictive
+backup directory, retention, and encrypted off-host copies. Test each new
+backup by restoring into a disposable database before relying on it for
+disaster recovery.
+
+There are no default Admin credentials. For the first deployment only, either
+temporarily enable registration over HTTPS and create the operator account, or
+run the audited `scripts/bootstrap-admin.js` command documented in
+`docs/OPERATIONS.md`. Immediately disable registration, recreate the backend,
+verify Admin access and the `ADMIN_ROLE_GRANTED` audit event, and confirm that
+new ordinary users start at exactly zero points.
+
+Never place wagers, start casino rounds, grant points, or alter outcomes as
+part of smoke testing.

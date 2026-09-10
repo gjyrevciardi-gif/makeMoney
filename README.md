@@ -47,9 +47,26 @@ See [MILESTONE-1.md](MILESTONE-1.md) for the corrected milestone definition.
 
 Production uses `docker-compose.prod.yml`: Caddy terminates HTTPS, the
 frontend and backend run as non-root containers, and PostgreSQL/Redis remain
-internal-only. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) and
-[docs/OPERATIONS.md](docs/OPERATIONS.md) before deploying. Never copy `.env`
-or real credentials into Git.
+internal-only. A normal VPS deployment procedure is in
+[docs/VPS-DEPLOYMENT.md](docs/VPS-DEPLOYMENT.md). Read
+[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md),
+[docs/OPERATIONS.md](docs/OPERATIONS.md), and
+[docs/SECURITY.md](docs/SECURITY.md) before deploying. Never copy `.env`,
+`.env.production`, or real credentials into Git.
+
+Before launch, confirm:
+
+- DNS points `DOMAIN` and `api.DOMAIN` at the VPS.
+- The firewall allows SSH from an operator-controlled source, plus TCP 80 and
+  TCP 443; PostgreSQL 5432 and Redis 6379 are not public.
+- Production registration is disabled after the controlled Admin bootstrap.
+- `docker compose ... config`, migrations, readiness, the integrity checker,
+  backups, and the non-destructive smoke test all pass.
+- The operator has recorded the current release, backup artifact, and rollback
+  decision.
+
+Use `scripts/smoke.sh` only for non-destructive checks. It never places bets,
+starts casino rounds, grants points, or changes Admin state.
 
 ## Sports data and virtual bets
 
