@@ -32,7 +32,7 @@ describe('zero-start virtual point rules (PostgreSQL integration)', () => {
   });
 
   it('registering twice never creates points', async () => {
-    await expect(auth.register(uniqueTestEmail('user'), 'correct-horse-battery')).rejects.toBeDefined();
+    await expect(auth.register(userEmail, 'correct-horse-battery')).rejects.toBeDefined();
     expect(await prisma.ledgerEntry.count()).toBe(0);
     expect((await prisma.wallet.findUniqueOrThrow({ where: { userId } })).balance).toBe(0n);
   });
