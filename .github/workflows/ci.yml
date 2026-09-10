@@ -80,6 +80,15 @@ jobs:
       - name: Verify migration state
         run: npx prisma migrate status --schema backend/prisma/schema.prisma
 
+      # Runs against the freshly migrated database, before the suite fills it.
+      # The point here is to catch the checker drifting from the schema — a
+      # renamed column would otherwise break it silently, and it would be
+      # discovered during a real recovery. It deliberately does not run after
+      # the tests: the suite creates edge-case rows on purpose, and production
+      # invariants are not the right assertion to make about fixture data.
+      - name: Data integrity checker (read-only)
+        run: node scripts/integrity-check.js
+
       - name: Backend tests
         run: npm run test -w backend
 
@@ -99,9 +108,6 @@ jobs:
 
       - name: Frontend production build
         run: npm run build -w frontend
-
-      - name: Data integrity checker (read-only)
-        run: node scripts/integrity-check.js
 
       # Each audit prints its full report. The exit code gates on `critical`
       # only, so a known, unfixable transitive advisory cannot silently block
