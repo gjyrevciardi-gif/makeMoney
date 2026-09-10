@@ -24,6 +24,7 @@ import {
 } from '../src/casino/games/slots/slot.engine';
 import { PrismaService } from '../src/prisma.service';
 import { PointsService } from '../src/wallet/points.service';
+import { uniqueTestEmail } from './test-identity';
 
 /**
  * The administrator control centre.
@@ -44,6 +45,8 @@ describe('super admin casino configuration (PostgreSQL + Redis)', () => {
   let slots: SlotsService;
   let clock: CasinoClock;
   let redis: RedisService;
+  const userEmail = uniqueTestEmail('cfg-user');
+  const adminEmail = uniqueTestEmail('cfg-admin');
   let userId: string;
   let adminId: string;
 
@@ -85,11 +88,11 @@ describe('super admin casino configuration (PostgreSQL + Redis)', () => {
     const hash = await argon2.hash(password);
     const [user, admin] = await Promise.all([
       prisma.user.create({
-        data: { email: 'cfg-user@example.test', passwordHash: hash, wallet: { create: {} } },
+        data: { email: userEmail, passwordHash: hash, wallet: { create: {} } },
       }),
       prisma.user.create({
         data: {
-          email: 'cfg-admin@example.test',
+          email: adminEmail,
           passwordHash: hash,
           role: 'ADMIN',
           wallet: { create: {} },
@@ -103,7 +106,7 @@ describe('super admin casino configuration (PostgreSQL + Redis)', () => {
 
   const token = async (email: string) => (await auth.login(email, password)).pair.accessToken;
   const server = () => app.getHttpServer();
-  const admin = () => token('cfg-admin@example.test');
+  const admin = () => token(adminEmail);
   const balance = async (id = userId) =>
     (await prisma.wallet.findUniqueOrThrow({ where: { userId: id } })).balance;
 
@@ -183,7 +186,7 @@ describe('super admin casino configuration (PostgreSQL + Redis)', () => {
       expect(latest.version).toBe(2);
       expect(latest.status).toBe('ACTIVE');
       expect(latest.reason).toBe('Trim');
-      expect(latest.createdBy.email).toBe('cfg-admin@example.test');
+      expect(latest.createdBy.email).toBe(adminEmail);
       expect(latest.activatedAt).toBeTruthy();
       expect(first.status).toBe('SUPERSEDED');
       expect(first.supersededAt).toBeTruthy();
@@ -199,7 +202,7 @@ describe('super admin casino configuration (PostgreSQL + Redis)', () => {
     ];
 
     it('refuses every configuration mutation to a USER', async () => {
-      const bearer = await token('cfg-user@example.test');
+      const bearer = await token(userEmail);
       for (const [method, path, body] of mutations()) {
         await (request(server()) as never as Record<string, Function>)[method](path)
           .set('Authorization', `Bearer ${bearer}`)
@@ -511,7 +514,7 @@ describe('super admin casino configuration (PostgreSQL + Redis)', () => {
     });
 
     it('keeps a played round tied to the version that priced it', async () => {
-      const accessToken = await token('cfg-user@example.test');
+      const accessToken = await token(userEmail);
       const first = await request(server())
         .post('/casino/dice/play')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -551,7 +554,7 @@ describe('super admin casino configuration (PostgreSQL + Redis)', () => {
         expect(Number(expected.toFixed(6))).toBeCloseTo(0.5, 6);
       }
 
-      const accessToken = await token('cfg-user@example.test');
+      const accessToken = await token(userEmail);
       const played = await request(server())
         .post('/casino/dice/play')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -655,7 +658,7 @@ describe('super admin casino configuration (PostgreSQL + Redis)', () => {
     });
 
     it('keeps a historical slot spin verifiable after a profile change', async () => {
-      const accessToken = await token('cfg-user@example.test');
+      const accessToken = await token(userEmail);
       const spun = await request(server())
         .post('/casino/slots/fools-gold-rush/spin')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -706,7 +709,7 @@ describe('super admin casino configuration (PostgreSQL + Redis)', () => {
   describe('availability', () => {
     it('blocks a disabled game server-side and leaves no ledger effect', async () => {
       const bearer = await admin();
-      const accessToken = await token('cfg-user@example.test');
+      const accessToken = await token(userEmail);
       const before = await balance();
 
       await request(server())
@@ -777,7 +780,7 @@ describe('super admin casino configuration (PostgreSQL + Redis)', () => {
 
     it('blocks every new casino round under global maintenance', async () => {
       const bearer = await admin();
-      const accessToken = await token('cfg-user@example.test');
+      const accessToken = await token(userEmail);
       await request(server())
         .patch('/admin/platform/maintenance')
         .set('Authorization', `Bearer ${bearer}`)
@@ -872,7 +875,7 @@ describe('super admin casino configuration (PostgreSQL + Redis)', () => {
 
   describe('analytics', () => {
     it('reports wagered, returned, house result and observed return without double counting', async () => {
-      const accessToken = await token('cfg-user@example.test');
+      const accessToken = await token(userEmail);
       for (let spin = 0; spin < 5; spin += 1) {
         await request(server())
           .post('/casino/dice/play')
@@ -903,7 +906,7 @@ describe('super admin casino configuration (PostgreSQL + Redis)', () => {
     });
 
     it('bounds a window and separates theoretical from observed', async () => {
-      const accessToken = await token('cfg-user@example.test');
+      const accessToken = await token(userEmail);
       await request(server())
         .post('/casino/dice/play')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -986,7 +989,7 @@ describe('super admin casino configuration (PostgreSQL + Redis)', () => {
 
     it('exposes a player detail view without any secret material', async () => {
       const bearer = await admin();
-      const accessToken = await token('cfg-user@example.test');
+      const accessToken = await token(userEmail);
       await request(server())
         .post('/casino/dice/play')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -997,7 +1000,7 @@ describe('super admin casino configuration (PostgreSQL + Redis)', () => {
         .get(`/admin/users/${userId}/detail`)
         .set('Authorization', `Bearer ${bearer}`)
         .expect(200);
-      expect(detail.body.user.email).toBe('cfg-user@example.test');
+      expect(detail.body.user.email).toBe(userEmail);
       expect(detail.body.user.wallet.balance).toBeTruthy();
       expect(detail.body.ledger.length).toBeGreaterThan(0);
       expect(detail.body.casinoRounds).toHaveLength(1);
@@ -1013,7 +1016,7 @@ describe('super admin casino configuration (PostgreSQL + Redis)', () => {
         .set('Authorization', `Bearer ${bearer}`)
         .expect(200);
       expect(found.body).toHaveLength(1);
-      expect(found.body[0].email).toBe('cfg-user@example.test');
+      expect(found.body[0].email).toBe(userEmail);
       expect(JSON.stringify(found.body)).not.toContain('passwordHash');
     });
   });

@@ -11,6 +11,7 @@ import { RedisService } from '../src/common/redis.service';
 import { MinesService } from '../src/casino/games/mines/mines.service';
 import { PrismaService } from '../src/prisma.service';
 import { PointsService } from '../src/wallet/points.service';
+import { uniqueTestEmail } from './test-identity';
 
 describe('casino security boundaries (PostgreSQL + Redis)', () => {
   const prisma = new PrismaService();
@@ -24,6 +25,9 @@ describe('casino security boundaries (PostgreSQL + Redis)', () => {
   let adminId: string;
 
   const password = 'correct-horse-battery';
+  const userEmail = uniqueTestEmail('casino-user');
+  const otherEmail = uniqueTestEmail('casino-other');
+  const adminEmail = uniqueTestEmail('casino-admin');
 
   beforeAll(async () => {
     process.env.CASINO_DICE_RTP_BPS = '9700';
@@ -58,14 +62,14 @@ describe('casino security boundaries (PostgreSQL + Redis)', () => {
     await redis.client.flushdb();
     const hash = await argon2.hash(password);
     const user = await prisma.user.create({
-      data: { email: 'casino-user@example.test', passwordHash: hash, wallet: { create: {} } },
+      data: { email: userEmail, passwordHash: hash, wallet: { create: {} } },
     });
     const other = await prisma.user.create({
-      data: { email: 'casino-other@example.test', passwordHash: hash, wallet: { create: {} } },
+      data: { email: otherEmail, passwordHash: hash, wallet: { create: {} } },
     });
     const admin = await prisma.user.create({
       data: {
-        email: 'casino-admin@example.test',
+        email: adminEmail,
         passwordHash: hash,
         role: 'ADMIN',
         wallet: { create: {} },
@@ -95,7 +99,7 @@ describe('casino security boundaries (PostgreSQL + Redis)', () => {
       ['balance', { balance: 1_000_000 }],
       ['status', { status: 'WON' }],
     ])('rejects a dice request carrying %s', async (_label, forged) => {
-      const accessToken = await token('casino-user@example.test');
+      const accessToken = await token(userEmail);
       const response = await request(server())
         .post('/casino/dice/play')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -113,7 +117,7 @@ describe('casino security boundaries (PostgreSQL + Redis)', () => {
     });
 
     it('rejects a mines reveal that claims the cell is safe', async () => {
-      const accessToken = await token('casino-user@example.test');
+      const accessToken = await token(userEmail);
       const round = await mines.start(userId, {
         stake: 100,
         mines: 5,
@@ -130,7 +134,7 @@ describe('casino security boundaries (PostgreSQL + Redis)', () => {
     });
 
     it('rejects a mines start that supplies its own board', async () => {
-      const accessToken = await token('casino-user@example.test');
+      const accessToken = await token(userEmail);
       const response = await request(server())
         .post('/casino/mines/start')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -146,7 +150,7 @@ describe('casino security boundaries (PostgreSQL + Redis)', () => {
     });
 
     it('rejects malformed idempotency keys and out-of-range cells', async () => {
-      const accessToken = await token('casino-user@example.test');
+      const accessToken = await token(userEmail);
       const round = await mines.start(userId, {
         stake: 100,
         mines: 5,
@@ -173,8 +177,8 @@ describe('casino security boundaries (PostgreSQL + Redis)', () => {
 
   describe('hidden state', () => {
     it('never exposes the board or the raw seed of an open round on any read path', async () => {
-      const accessToken = await token('casino-user@example.test');
-      const adminToken = await token('casino-admin@example.test');
+      const accessToken = await token(userEmail);
+      const adminToken = await token(adminEmail);
       const round = await mines.start(userId, {
         stake: 100,
         mines: 5,
@@ -202,7 +206,7 @@ describe('casino security boundaries (PostgreSQL + Redis)', () => {
     });
 
     it('refuses to verify an open round and reveals the seed once it is terminal', async () => {
-      const accessToken = await token('casino-user@example.test');
+      const accessToken = await token(userEmail);
       const round = await mines.start(userId, {
         stake: 100,
         mines: 5,
@@ -233,7 +237,7 @@ describe('casino security boundaries (PostgreSQL + Redis)', () => {
 
   describe('ownership isolation', () => {
     it('hides another player round and refuses actions against it', async () => {
-      const intruder = await token('casino-other@example.test');
+      const intruder = await token(otherEmail);
       const round = await mines.start(userId, {
         stake: 100,
         mines: 5,
@@ -270,8 +274,8 @@ describe('casino security boundaries (PostgreSQL + Redis)', () => {
 
   describe('administrative boundary', () => {
     it('denies casino administration to a USER and allows it for an ADMIN', async () => {
-      const userToken = await token('casino-user@example.test');
-      const adminToken = await token('casino-admin@example.test');
+      const userToken = await token(userEmail);
+      const adminToken = await token(adminEmail);
 
       await request(server())
         .get('/admin/casino/rounds')
@@ -293,7 +297,7 @@ describe('casino security boundaries (PostgreSQL + Redis)', () => {
     });
 
     it('exposes no casino mutation route to an administrator', async () => {
-      const adminToken = await token('casino-admin@example.test');
+      const adminToken = await token(adminEmail);
       const round = await mines.start(userId, {
         stake: 100,
         mines: 5,
@@ -317,8 +321,8 @@ describe('casino security boundaries (PostgreSQL + Redis)', () => {
     });
 
     it('reports theoretical and observed return without altering any round', async () => {
-      const accessToken = await token('casino-user@example.test');
-      const adminToken = await token('casino-admin@example.test');
+      const accessToken = await token(userEmail);
+      const adminToken = await token(adminEmail);
       for (let round = 0; round < 5; round += 1) {
         await request(server())
           .post('/casino/dice/play')
@@ -346,7 +350,7 @@ describe('casino security boundaries (PostgreSQL + Redis)', () => {
 
   describe('cross-game wallet safety', () => {
     it('keeps concurrent spending across dice and mines within the balance', async () => {
-      const accessToken = await token('casino-user@example.test');
+      const accessToken = await token(userEmail);
       // Each attempt stakes the entire 10,000 balance. The dice target pays a
       // sub-1.0 multiplier, so even a winning dice round cannot leave enough
       // behind to fund the mines round, and mines credits nothing until a
@@ -375,7 +379,7 @@ describe('casino security boundaries (PostgreSQL + Redis)', () => {
     });
 
     it('never allows the wallet to go negative under sustained concurrency', async () => {
-      const accessToken = await token('casino-user@example.test');
+      const accessToken = await token(userEmail);
       // 30 concurrent attempts at 500 points against a 10,000 balance: more
       // than the wallet can fund, so some must be refused.
       await Promise.allSettled(

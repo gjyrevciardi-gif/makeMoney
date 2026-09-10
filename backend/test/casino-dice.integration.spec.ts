@@ -10,6 +10,7 @@ import { DiceService } from '../src/casino/games/dice/dice.service';
 import { PlayDiceDto } from '../src/casino/games/dice/dice.dto';
 import { PrismaService } from '../src/prisma.service';
 import { PointsService } from '../src/wallet/points.service';
+import { uniqueTestEmail } from './test-identity';
 
 describe('server-authoritative dice (PostgreSQL)', () => {
   const prisma = new PrismaService();
@@ -18,6 +19,8 @@ describe('server-authoritative dice (PostgreSQL)', () => {
   const configs = new CasinoConfigService(prisma, new CasinoGameRegistry());
   const dice = new DiceService(rounds, configs);
   const points = new PointsService(prisma);
+  const userEmail = uniqueTestEmail('dice-player');
+  const adminEmail = uniqueTestEmail('dice-admin');
   let userId: string;
   let adminId: string;
 
@@ -40,10 +43,10 @@ describe('server-authoritative dice (PostgreSQL)', () => {
       'TRUNCATE TABLE "CasinoGameConfigVersion", "CasinoGameConfig", "PlatformSettings", "CasinoTransaction", "CasinoRoundAction", "CasinoRound", "CasinoGameFavorite", "LedgerEntry", "BetLeg", "Bet", "AuditLog", "RefreshToken", "Wallet", "User" CASCADE',
     );
     const user = await prisma.user.create({
-      data: { email: 'dice-player@example.test', passwordHash: 'x', wallet: { create: {} } },
+      data: { email: userEmail, passwordHash: 'x', wallet: { create: {} } },
     });
     const admin = await prisma.user.create({
-      data: { email: 'dice-admin@example.test', passwordHash: 'x', role: 'ADMIN', wallet: { create: {} } },
+      data: { email: adminEmail, passwordHash: 'x', role: 'ADMIN', wallet: { create: {} } },
     });
     userId = user.id;
     adminId = admin.id;

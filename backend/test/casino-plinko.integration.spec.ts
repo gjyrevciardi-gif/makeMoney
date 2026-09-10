@@ -19,6 +19,7 @@ import {
 } from '../src/casino/games/plinko/plinko.engine';
 import { PrismaService } from '../src/prisma.service';
 import { PointsService } from '../src/wallet/points.service';
+import { uniqueTestEmail } from './test-identity';
 
 describe('server-authoritative plinko (PostgreSQL)', () => {
   const prisma = new PrismaService();
@@ -27,6 +28,8 @@ describe('server-authoritative plinko (PostgreSQL)', () => {
   const configs = new CasinoConfigService(prisma, new CasinoGameRegistry());
   const plinko = new PlinkoService(rounds, configs);
   const points = new PointsService(prisma);
+  const userEmail = uniqueTestEmail('plinko-player');
+  const adminEmail = uniqueTestEmail('plinko-admin');
   let userId: string;
   let adminId: string;
 
@@ -46,10 +49,10 @@ describe('server-authoritative plinko (PostgreSQL)', () => {
       'TRUNCATE TABLE "CasinoGameConfigVersion", "CasinoGameConfig", "PlatformSettings", "CasinoTransaction", "CasinoRoundAction", "CasinoRound", "CasinoGameFavorite", "LedgerEntry", "BetLeg", "Bet", "AuditLog", "RefreshToken", "Wallet", "User" CASCADE',
     );
     const user = await prisma.user.create({
-      data: { email: 'plinko-player@example.test', passwordHash: 'x', wallet: { create: {} } },
+      data: { email: userEmail, passwordHash: 'x', wallet: { create: {} } },
     });
     const admin = await prisma.user.create({
-      data: { email: 'plinko-admin@example.test', passwordHash: 'x', role: 'ADMIN', wallet: { create: {} } },
+      data: { email: adminEmail, passwordHash: 'x', role: 'ADMIN', wallet: { create: {} } },
     });
     userId = user.id;
     adminId = admin.id;

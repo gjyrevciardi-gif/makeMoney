@@ -3,11 +3,14 @@ import { AuthService } from '../src/auth/auth.service';
 import { PrismaService } from '../src/prisma.service';
 import { PointsService } from '../src/wallet/points.service';
 import { JwtService } from '@nestjs/jwt';
+import { uniqueTestEmail } from './test-identity';
 
 describe('zero-start virtual point rules (PostgreSQL integration)', () => {
   const prisma = new PrismaService();
   const auth = new AuthService(prisma, new JwtService({ secret: 'integration-test-secret-not-for-production' }));
   const points = new PointsService(prisma);
+  const userEmail = uniqueTestEmail('user');
+  const adminEmail = uniqueTestEmail('admin');
   let userId: string;
   let adminId: string;
 
@@ -16,9 +19,9 @@ describe('zero-start virtual point rules (PostgreSQL integration)', () => {
   beforeEach(async () => {
     // TRUNCATE is test-database teardown; production ledger rows reject UPDATE/DELETE.
     await prisma.$executeRawUnsafe('TRUNCATE TABLE "LedgerEntry", "BetLeg", "Bet", "AuditLog", "RefreshToken", "Wallet", "User" CASCADE');
-    const user = await auth.register('user@example.test', 'correct-horse-battery');
+    const user = await auth.register(userEmail, 'correct-horse-battery');
     userId = user.id;
-    const admin = await prisma.user.create({ data: { email: 'admin@example.test', passwordHash: 'operator-created', role: 'ADMIN', wallet: { create: {} } } });
+    const admin = await prisma.user.create({ data: { email: adminEmail, passwordHash: 'operator-created', role: 'ADMIN', wallet: { create: {} } } });
     adminId = admin.id;
   });
 
@@ -29,7 +32,7 @@ describe('zero-start virtual point rules (PostgreSQL integration)', () => {
   });
 
   it('registering twice never creates points', async () => {
-    await expect(auth.register('USER@example.test', 'correct-horse-battery')).rejects.toBeDefined();
+    await expect(auth.register(uniqueTestEmail('user'), 'correct-horse-battery')).rejects.toBeDefined();
     expect(await prisma.ledgerEntry.count()).toBe(0);
     expect((await prisma.wallet.findUniqueOrThrow({ where: { userId } })).balance).toBe(0n);
   });

@@ -12,6 +12,7 @@ import { StartCrashDto } from '../src/casino/games/crash/crash.dto';
 import { crashElapsedMsToReach } from '../src/casino/games/crash/crash.engine';
 import { PrismaService } from '../src/prisma.service';
 import { PointsService } from '../src/wallet/points.service';
+import { uniqueTestEmail } from './test-identity';
 
 /** A clock the test drives explicitly, so timing is exact and nothing sleeps. */
 class FrozenClock extends CasinoClock {
@@ -30,6 +31,9 @@ describe('server-authoritative crash (PostgreSQL)', () => {
   const configs = new CasinoConfigService(prisma, new CasinoGameRegistry());
   const crash = new CrashService(prisma, rounds, clock, configs);
   const points = new PointsService(prisma);
+  const userEmail = uniqueTestEmail('crash-player');
+  const otherEmail = uniqueTestEmail('crash-other');
+  const adminEmail = uniqueTestEmail('crash-admin');
   let userId: string;
   let otherId: string;
   let adminId: string;
@@ -53,13 +57,13 @@ describe('server-authoritative crash (PostgreSQL)', () => {
     );
     clock.set(new Date('2026-01-01T00:00:00.000Z').getTime());
     const user = await prisma.user.create({
-      data: { email: 'crash-player@example.test', passwordHash: 'x', wallet: { create: {} } },
+      data: { email: userEmail, passwordHash: 'x', wallet: { create: {} } },
     });
     const other = await prisma.user.create({
-      data: { email: 'crash-other@example.test', passwordHash: 'x', wallet: { create: {} } },
+      data: { email: otherEmail, passwordHash: 'x', wallet: { create: {} } },
     });
     const admin = await prisma.user.create({
-      data: { email: 'crash-admin@example.test', passwordHash: 'x', role: 'ADMIN', wallet: { create: {} } },
+      data: { email: adminEmail, passwordHash: 'x', role: 'ADMIN', wallet: { create: {} } },
     });
     userId = user.id;
     otherId = other.id;

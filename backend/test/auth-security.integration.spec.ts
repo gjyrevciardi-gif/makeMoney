@@ -7,12 +7,15 @@ import { AppModule } from '../src/app.module';
 import { AuthService } from '../src/auth/auth.service';
 import { PrismaService } from '../src/prisma.service';
 import { RATE_LIMITS, RateLimitService } from '../src/common/rate-limit.service';
+import { uniqueTestEmail } from './test-identity';
 
 describe('authentication and authorization security', () => {
   const prisma = new PrismaService();
   const jwt = new JwtService({ secret: process.env.JWT_ACCESS_SECRET });
   const auth = new AuthService(prisma, jwt);
   let app: INestApplication;
+  const userEmail = uniqueTestEmail('user-security');
+  const adminEmail = uniqueTestEmail('admin-security');
   let userId: string;
   let adminId: string;
 
@@ -33,12 +36,12 @@ describe('authentication and authorization security', () => {
   afterAll(async () => { if (app) await app.close(); await prisma.$disconnect(); });
   beforeEach(async () => {
     await prisma.$executeRawUnsafe('TRUNCATE TABLE "LedgerEntry", "BetLeg", "Bet", "AuditLog", "RefreshToken", "Wallet", "User" CASCADE');
-    const user = await auth.register('user-security@example.test', 'correct-horse-battery'); userId = user.id;
-    const admin = await prisma.user.create({ data: { email: 'admin-security@example.test', passwordHash: await import('argon2').then(a => a.hash('correct-horse-battery')), role: 'ADMIN', wallet: { create: {} } } }); adminId = admin.id;
+    const user = await auth.register(userEmail, 'correct-horse-battery'); userId = user.id;
+    const admin = await prisma.user.create({ data: { email: adminEmail, passwordHash: await import('argon2').then(a => a.hash('correct-horse-battery')), role: 'ADMIN', wallet: { create: {} } } }); adminId = admin.id;
   });
 
   it('runs login → refresh → reuse detection, hashes tokens, and revokes the family', async () => {
-    const login = await request(app.getHttpServer()).post('/auth/login').send({ email: 'user-security@example.test', password: 'correct-horse-battery' }).expect(201);
+    const login = await request(app.getHttpServer()).post('/auth/login').send({ email: userEmail, password: 'correct-horse-battery' }).expect(201);
     expect(login.body.accessToken).toBeTruthy();
     expect(login.body.refreshToken).toBeUndefined();
     expect(login.headers['set-cookie'][0]).toEqual(expect.stringContaining('Path=/auth'));
@@ -71,7 +74,7 @@ describe('authentication and authorization security', () => {
   });
 
   it('denies USER admin access and records permission denial', async () => {
-    const token = (await auth.login('user-security@example.test', 'correct-horse-battery')).pair.accessToken;
+    const token = (await auth.login(userEmail, 'correct-horse-battery')).pair.accessToken;
     await request(app.getHttpServer()).get('/admin/users').set('Authorization', `Bearer ${token}`).expect(403);
     await request(app.getHttpServer()).post(`/admin/users/${userId}/coins`).set('Authorization', `Bearer ${token}`).send({ amount: 10, reason: 'forbidden', idempotencyKey: '7545247e-6c63-4231-b9a0-5e35df184abb' }).expect(403);
     expect(await prisma.auditLog.count({ where: { actorId: userId, action: 'PERMISSION_DENIED' } })).toBe(2);
@@ -79,20 +82,20 @@ describe('authentication and authorization security', () => {
   });
 
   it('rejects a demoted ADMIN using an old access token', async () => {
-    const token = (await auth.login('admin-security@example.test', 'correct-horse-battery')).pair.accessToken;
+    const token = (await auth.login(adminEmail, 'correct-horse-battery')).pair.accessToken;
     await prisma.user.update({ where: { id: adminId }, data: { role: 'USER' } });
     await request(app.getHttpServer()).post(`/admin/users/${userId}/coins`).set('Authorization', `Bearer ${token}`).send({ amount: 1, reason: 'x', idempotencyKey: '8d16eabf-68eb-47e8-8beb-9b24ac31ff01' }).expect(403);
   });
 
   it('does not expose another user bet and bounds pagination', async () => {
-    const token = (await auth.login('user-security@example.test', 'correct-horse-battery')).pair.accessToken;
+    const token = (await auth.login(userEmail, 'correct-horse-battery')).pair.accessToken;
     const bet = await prisma.bet.create({ data: { userId: adminId, stake: 1, potentialPayout: 1, idempotencyKey: 'private-bet' } });
     await request(app.getHttpServer()).get(`/bets/${bet.id}`).set('Authorization', `Bearer ${token}`).expect(404);
     await request(app.getHttpServer()).get('/wallet/me/ledger?limit=1000000').set('Authorization', `Bearer ${token}`).expect(400);
   });
 
   it('allows ADMIN list access without leaking password or token hashes', async () => {
-    const token = (await auth.login('admin-security@example.test', 'correct-horse-battery')).pair.accessToken;
+    const token = (await auth.login(adminEmail, 'correct-horse-battery')).pair.accessToken;
     const response = await request(app.getHttpServer()).get('/admin/users').set('Authorization', `Bearer ${token}`).expect(200);
     expect(JSON.stringify(response.body)).not.toMatch(/passwordHash|tokenHash|refreshToken/);
   });
@@ -107,7 +110,7 @@ describe('authentication and authorization security', () => {
   });
 
   it('rejects client-supplied identity and payout fields', async () => {
-    const token = (await auth.login('user-security@example.test', 'correct-horse-battery')).pair.accessToken;
+    const token = (await auth.login(userEmail, 'correct-horse-battery')).pair.accessToken;
     await request(app.getHttpServer()).post('/bets').set('Authorization', `Bearer ${token}`).send({ stake: 1, idempotencyKey: '9ce265c4-9080-48be-bb5b-2f38c520f99c', userId: adminId, payout: 999999 }).expect(400);
   });
 });

@@ -15,6 +15,7 @@ import {
 } from '../src/settlement/result-provider';
 import { SettlementService } from '../src/settlement/settlement.service';
 import { SettlementWorker } from '../src/settlement/settlement.worker';
+import { uniqueTestEmail } from './test-identity';
 
 describe('sportsbook operational monitoring and reconciliation (PostgreSQL + Redis)', () => {
   const prisma = new PrismaService();
@@ -25,6 +26,8 @@ describe('sportsbook operational monitoring and reconciliation (PostgreSQL + Red
   let settlement: SettlementService;
   let worker: SettlementWorker;
   let redis: RedisService;
+  const userEmail = uniqueTestEmail('operations-user');
+  const adminEmail = uniqueTestEmail('operations-admin');
   let userId: string;
   let adminId: string;
 
@@ -124,14 +127,14 @@ describe('sportsbook operational monitoring and reconciliation (PostgreSQL + Red
     jest.clearAllMocks();
     const user = await prisma.user.create({
       data: {
-        email: 'operations-user@example.test',
+        email: userEmail,
         passwordHash: await argon2.hash('correct-horse-battery'),
         wallet: { create: { balance: 900 } },
       },
     });
     const admin = await prisma.user.create({
       data: {
-        email: 'operations-admin@example.test',
+        email: adminEmail,
         passwordHash: await argon2.hash('correct-horse-battery'),
         role: 'ADMIN',
         wallet: { create: {} },
@@ -147,7 +150,7 @@ describe('sportsbook operational monitoring and reconciliation (PostgreSQL + Red
       eventId: 'future-event',
       eventStartTime: new Date(Date.now() + 2 * 60 * 60_000),
     });
-    const token = await accessToken('operations-admin@example.test');
+    const token = await accessToken(adminEmail);
     const before = await prisma.wallet.findUniqueOrThrow({ where: { userId } });
 
     const response = await request(app.getHttpServer())
@@ -195,7 +198,7 @@ describe('sportsbook operational monitoring and reconciliation (PostgreSQL + Red
     );
     expect(await prisma.ledgerEntry.count()).toBe(0);
 
-    const token = await accessToken('operations-admin@example.test');
+    const token = await accessToken(adminEmail);
     const failures = await request(app.getHttpServer())
       .get('/admin/sports/settlement/failures?limit=25')
       .set('Authorization', `Bearer ${token}`)
@@ -206,7 +209,7 @@ describe('sportsbook operational monitoring and reconciliation (PostgreSQL + Red
   it('runs repeated authoritative event reconciliation through exactly-once settlement', async () => {
     const bet = await createOpenBet({ eventId: 'reconcile-win' });
     provider.getEventResult.mockResolvedValue(finalResult('reconcile-win'));
-    const token = await accessToken('operations-admin@example.test');
+    const token = await accessToken(adminEmail);
 
     const responses = await Promise.all(
       Array.from({ length: 10 }, () =>
@@ -245,7 +248,7 @@ describe('sportsbook operational monitoring and reconciliation (PostgreSQL + Red
       providerEventId: 'reconcile-void',
       status: 'CANCELLED',
     });
-    const token = await accessToken('operations-admin@example.test');
+    const token = await accessToken(adminEmail);
 
     const responses = await Promise.all(
       Array.from({ length: 10 }, () =>
@@ -272,7 +275,7 @@ describe('sportsbook operational monitoring and reconciliation (PostgreSQL + Red
   it('denies reconciliation to USER at both controller and service boundaries', async () => {
     await createOpenBet({ eventId: 'forbidden-reconcile' });
     provider.getEventResult.mockResolvedValue(finalResult('forbidden-reconcile'));
-    const token = await accessToken('operations-user@example.test');
+    const token = await accessToken(userEmail);
 
     await request(app.getHttpServer())
       .post('/admin/sports/events/fixture/forbidden-reconcile/reconcile')
@@ -290,7 +293,7 @@ describe('sportsbook operational monitoring and reconciliation (PostgreSQL + Red
   it('rejects a provider result whose identity does not match the requested event', async () => {
     const bet = await createOpenBet({ eventId: 'expected-event' });
     provider.getEventResult.mockResolvedValue(finalResult('different-event'));
-    const token = await accessToken('operations-admin@example.test');
+    const token = await accessToken(adminEmail);
 
     const response = await request(app.getHttpServer())
       .post('/admin/sports/events/fixture/expected-event/reconcile')
@@ -331,7 +334,7 @@ describe('sportsbook operational monitoring and reconciliation (PostgreSQL + Red
       }),
     ).toBe(1);
 
-    const token = await accessToken('operations-admin@example.test');
+    const token = await accessToken(adminEmail);
     const conflicts = await request(app.getHttpServer())
       .get('/admin/sports/conflicts?limit=25')
       .set('Authorization', `Bearer ${token}`)
@@ -374,13 +377,13 @@ describe('sportsbook operational monitoring and reconciliation (PostgreSQL + Red
   });
 
   it('protects and sanitizes provider/worker operational status', async () => {
-    const userToken = await accessToken('operations-user@example.test');
+    const userToken = await accessToken(userEmail);
     await request(app.getHttpServer())
       .get('/admin/sports/providers/status')
       .set('Authorization', `Bearer ${userToken}`)
       .expect(403);
 
-    const adminToken = await accessToken('operations-admin@example.test');
+    const adminToken = await accessToken(adminEmail);
     const response = await request(app.getHttpServer())
       .get('/admin/sports/providers/status')
       .set('Authorization', `Bearer ${adminToken}`)

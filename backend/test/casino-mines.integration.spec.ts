@@ -10,6 +10,7 @@ import { MinesService } from '../src/casino/games/mines/mines.service';
 import { StartMinesDto } from '../src/casino/games/mines/mines.dto';
 import { PrismaService } from '../src/prisma.service';
 import { PointsService } from '../src/wallet/points.service';
+import { uniqueTestEmail } from './test-identity';
 
 describe('server-authoritative mines (PostgreSQL)', () => {
   const prisma = new PrismaService();
@@ -18,6 +19,9 @@ describe('server-authoritative mines (PostgreSQL)', () => {
   const configs = new CasinoConfigService(prisma, new CasinoGameRegistry());
   const mines = new MinesService(prisma, rounds, configs);
   const points = new PointsService(prisma);
+  const userEmail = uniqueTestEmail('mines-player');
+  const otherEmail = uniqueTestEmail('mines-other');
+  const adminEmail = uniqueTestEmail('mines-admin');
   let userId: string;
   let otherUserId: string;
   let adminId: string;
@@ -40,13 +44,13 @@ describe('server-authoritative mines (PostgreSQL)', () => {
       'TRUNCATE TABLE "CasinoGameConfigVersion", "CasinoGameConfig", "PlatformSettings", "CasinoTransaction", "CasinoRoundAction", "CasinoRound", "CasinoGameFavorite", "LedgerEntry", "BetLeg", "Bet", "AuditLog", "RefreshToken", "Wallet", "User" CASCADE',
     );
     const user = await prisma.user.create({
-      data: { email: 'mines-player@example.test', passwordHash: 'x', wallet: { create: {} } },
+      data: { email: userEmail, passwordHash: 'x', wallet: { create: {} } },
     });
     const other = await prisma.user.create({
-      data: { email: 'mines-other@example.test', passwordHash: 'x', wallet: { create: {} } },
+      data: { email: otherEmail, passwordHash: 'x', wallet: { create: {} } },
     });
     const admin = await prisma.user.create({
-      data: { email: 'mines-admin@example.test', passwordHash: 'x', role: 'ADMIN', wallet: { create: {} } },
+      data: { email: adminEmail, passwordHash: 'x', role: 'ADMIN', wallet: { create: {} } },
     });
     userId = user.id;
     otherUserId = other.id;

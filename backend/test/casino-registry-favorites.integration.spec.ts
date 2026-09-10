@@ -16,6 +16,7 @@ import {
 import { DiceService } from '../src/casino/games/dice/dice.service';
 import { PrismaService } from '../src/prisma.service';
 import { PointsService } from '../src/wallet/points.service';
+import { uniqueTestEmail } from './test-identity';
 
 /**
  * Casino registry, search, favorites and recent games.
@@ -37,6 +38,9 @@ describe('casino registry, search, favorites and recent games (PostgreSQL + Redi
   let adminId: string;
 
   const password = 'correct-horse-battery';
+  const userEmail = uniqueTestEmail('lobby-user');
+  const otherEmail = uniqueTestEmail('lobby-other');
+  const adminEmail = uniqueTestEmail('lobby-admin');
 
   beforeAll(async () => {
     process.env.SPORTS_SETTLEMENT_ENABLED = 'false';
@@ -70,14 +74,14 @@ describe('casino registry, search, favorites and recent games (PostgreSQL + Redi
     const hash = await argon2.hash(password);
     const [user, other, admin] = await Promise.all([
       prisma.user.create({
-        data: { email: 'lobby-user@example.test', passwordHash: hash, wallet: { create: {} } },
+        data: { email: userEmail, passwordHash: hash, wallet: { create: {} } },
       }),
       prisma.user.create({
-        data: { email: 'lobby-other@example.test', passwordHash: hash, wallet: { create: {} } },
+        data: { email: otherEmail, passwordHash: hash, wallet: { create: {} } },
       }),
       prisma.user.create({
         data: {
-          email: 'lobby-admin@example.test',
+          email: adminEmail,
           passwordHash: hash,
           role: 'ADMIN',
           wallet: { create: {} },
@@ -157,7 +161,7 @@ describe('casino registry, search, favorites and recent games (PostgreSQL + Redi
     });
 
     it('applies filters through the API without leaking anything sensitive', async () => {
-      const accessToken = await token('lobby-user@example.test');
+      const accessToken = await token(userEmail);
       const response = await request(server())
         .get('/casino/games?category=ORIGINALS&search=crash')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -170,7 +174,7 @@ describe('casino registry, search, favorites and recent games (PostgreSQL + Redi
     });
 
     it('rejects an unknown category rather than silently ignoring it', async () => {
-      const accessToken = await token('lobby-user@example.test');
+      const accessToken = await token(userEmail);
       await request(server())
         .get('/casino/games?category=NOT_A_CATEGORY')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -180,7 +184,7 @@ describe('casino registry, search, favorites and recent games (PostgreSQL + Redi
 
   describe('favorites', () => {
     it('adds, lists and removes a favorite', async () => {
-      const accessToken = await token('lobby-user@example.test');
+      const accessToken = await token(userEmail);
 
       const added = await request(server())
         .post('/casino/games/dice/favorite')
@@ -207,7 +211,7 @@ describe('casino registry, search, favorites and recent games (PostgreSQL + Redi
     });
 
     it('is idempotent on repeat and a no-op when removing an absent favorite', async () => {
-      const accessToken = await token('lobby-user@example.test');
+      const accessToken = await token(userEmail);
       for (let attempt = 0; attempt < 3; attempt += 1) {
         await request(server())
           .post('/casino/games/mines/favorite')
@@ -225,7 +229,7 @@ describe('casino registry, search, favorites and recent games (PostgreSQL + Redi
     });
 
     it('refuses an unknown game', async () => {
-      const accessToken = await token('lobby-user@example.test');
+      const accessToken = await token(userEmail);
       await request(server())
         .post('/casino/games/not-a-game/favorite')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -235,8 +239,8 @@ describe('casino registry, search, favorites and recent games (PostgreSQL + Redi
     });
 
     it('keeps one player favorites private to that player', async () => {
-      const mine = await token('lobby-user@example.test');
-      const theirs = await token('lobby-other@example.test');
+      const mine = await token(userEmail);
+      const theirs = await token(otherEmail);
       await request(server())
         .post('/casino/games/plinko/favorite')
         .set('Authorization', `Bearer ${mine}`)
@@ -260,7 +264,7 @@ describe('casino registry, search, favorites and recent games (PostgreSQL + Redi
 
   describe('recent games', () => {
     it('lists only games the player actually played, most recent first', async () => {
-      const accessToken = await token('lobby-user@example.test');
+      const accessToken = await token(userEmail);
       const empty = await request(server())
         .get('/casino/recent')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -286,7 +290,7 @@ describe('casino registry, search, favorites and recent games (PostgreSQL + Redi
     });
 
     it('collapses repeated play of one game into a single entry', async () => {
-      const accessToken = await token('lobby-user@example.test');
+      const accessToken = await token(userEmail);
       for (let attempt = 0; attempt < 3; attempt += 1) {
         await dice.play(userId, {
           stake: 100, mode: 'ROLL_UNDER', target: 5_000, idempotencyKey: randomUUID(),
@@ -300,7 +304,7 @@ describe('casino registry, search, favorites and recent games (PostgreSQL + Redi
     });
 
     it('never shows one player rounds to another', async () => {
-      const theirs = await token('lobby-other@example.test');
+      const theirs = await token(otherEmail);
       await dice.play(userId, {
         stake: 100, mode: 'ROLL_UNDER', target: 5_000, idempotencyKey: randomUUID(),
       });
@@ -312,7 +316,7 @@ describe('casino registry, search, favorites and recent games (PostgreSQL + Redi
     });
 
     it('bounds the returned list', async () => {
-      const accessToken = await token('lobby-user@example.test');
+      const accessToken = await token(userEmail);
       await dice.play(userId, {
         stake: 100, mode: 'ROLL_UNDER', target: 5_000, idempotencyKey: randomUUID(),
       });

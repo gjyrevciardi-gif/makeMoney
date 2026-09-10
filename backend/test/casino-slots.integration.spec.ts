@@ -18,6 +18,7 @@ import {
 } from '../src/casino/games/slots/slot.engine';
 import { PrismaService } from '../src/prisma.service';
 import { PointsService } from '../src/wallet/points.service';
+import { uniqueTestEmail } from './test-identity';
 
 describe("server-authoritative slots: Fool's Gold Rush (PostgreSQL)", () => {
   const prisma = new PrismaService();
@@ -28,6 +29,8 @@ describe("server-authoritative slots: Fool's Gold Rush (PostgreSQL)", () => {
   const points = new PointsService(prisma);
   const game = FOOLS_GOLD_RUSH_V1;
   const version = slotVersion(game);
+  const userEmail = uniqueTestEmail('slots-player');
+  const adminEmail = uniqueTestEmail('slots-admin');
   let userId: string;
   let adminId: string;
 
@@ -45,10 +48,10 @@ describe("server-authoritative slots: Fool's Gold Rush (PostgreSQL)", () => {
       'TRUNCATE TABLE "CasinoGameConfigVersion", "CasinoGameConfig", "PlatformSettings", "CasinoTransaction", "CasinoRoundAction", "CasinoRound", "CasinoGameFavorite", "LedgerEntry", "BetLeg", "Bet", "AuditLog", "RefreshToken", "Wallet", "User" CASCADE',
     );
     const user = await prisma.user.create({
-      data: { email: 'slots-player@example.test', passwordHash: 'x', wallet: { create: {} } },
+      data: { email: userEmail, passwordHash: 'x', wallet: { create: {} } },
     });
     const admin = await prisma.user.create({
-      data: { email: 'slots-admin@example.test', passwordHash: 'x', role: 'ADMIN', wallet: { create: {} } },
+      data: { email: adminEmail, passwordHash: 'x', role: 'ADMIN', wallet: { create: {} } },
     });
     userId = user.id;
     adminId = admin.id;

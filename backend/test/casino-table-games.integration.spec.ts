@@ -11,6 +11,7 @@ import { PlayRouletteDto } from '../src/casino/games/roulette/roulette.dto';
 import { handValue, isNaturalBlackjack } from '../src/casino/games/blackjack/blackjack.engine';
 import { PrismaService } from '../src/prisma.service';
 import { PointsService } from '../src/wallet/points.service';
+import { uniqueTestEmail } from './test-identity';
 
 describe('roulette and blackjack (PostgreSQL)', () => {
   const prisma = new PrismaService();
@@ -20,6 +21,9 @@ describe('roulette and blackjack (PostgreSQL)', () => {
   const roulette = new RouletteService(rounds, configs);
   const blackjack = new BlackjackService(prisma, rounds, configs);
   const points = new PointsService(prisma);
+  const userEmail = uniqueTestEmail('table-player');
+  const otherEmail = uniqueTestEmail('table-other');
+  const adminEmail = uniqueTestEmail('table-admin');
   let userId: string;
   let otherId: string;
   let adminId: string;
@@ -38,13 +42,13 @@ describe('roulette and blackjack (PostgreSQL)', () => {
       'TRUNCATE TABLE "CasinoGameConfigVersion", "CasinoGameConfig", "PlatformSettings", "CasinoTransaction", "CasinoRoundAction", "CasinoRound", "CasinoGameFavorite", "LedgerEntry", "BetLeg", "Bet", "AuditLog", "RefreshToken", "Wallet", "User" CASCADE',
     );
     const user = await prisma.user.create({
-      data: { email: 'table-player@example.test', passwordHash: 'x', wallet: { create: {} } },
+      data: { email: userEmail, passwordHash: 'x', wallet: { create: {} } },
     });
     const other = await prisma.user.create({
-      data: { email: 'table-other@example.test', passwordHash: 'x', wallet: { create: {} } },
+      data: { email: otherEmail, passwordHash: 'x', wallet: { create: {} } },
     });
     const admin = await prisma.user.create({
-      data: { email: 'table-admin@example.test', passwordHash: 'x', role: 'ADMIN', wallet: { create: {} } },
+      data: { email: adminEmail, passwordHash: 'x', role: 'ADMIN', wallet: { create: {} } },
     });
     userId = user.id;
     otherId = other.id;

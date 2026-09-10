@@ -11,6 +11,7 @@ import { RedisService } from '../src/common/redis.service';
 import { CrashService } from '../src/casino/games/crash/crash.service';
 import { PrismaService } from '../src/prisma.service';
 import { PointsService } from '../src/wallet/points.service';
+import { uniqueTestEmail } from './test-identity';
 
 /**
  * HTTP-level security for the two Milestone 3 games: strict DTO rejection of
@@ -29,6 +30,9 @@ describe('crash and plinko security boundaries (PostgreSQL + Redis)', () => {
   let adminId: string;
 
   const password = 'correct-horse-battery';
+  const userEmail = uniqueTestEmail('m3-user');
+  const otherEmail = uniqueTestEmail('m3-other');
+  const adminEmail = uniqueTestEmail('m3-admin');
 
   beforeAll(async () => {
     process.env.CASINO_CRASH_RTP_BPS = '9700';
@@ -62,14 +66,14 @@ describe('crash and plinko security boundaries (PostgreSQL + Redis)', () => {
     await redis.client.flushdb();
     const hash = await argon2.hash(password);
     const user = await prisma.user.create({
-      data: { email: 'm3-user@example.test', passwordHash: hash, wallet: { create: {} } },
+      data: { email: userEmail, passwordHash: hash, wallet: { create: {} } },
     });
     const other = await prisma.user.create({
-      data: { email: 'm3-other@example.test', passwordHash: hash, wallet: { create: {} } },
+      data: { email: otherEmail, passwordHash: hash, wallet: { create: {} } },
     });
     const admin = await prisma.user.create({
       data: {
-        email: 'm3-admin@example.test',
+        email: adminEmail,
         passwordHash: hash,
         role: 'ADMIN',
         wallet: { create: {} },
@@ -110,7 +114,7 @@ describe('crash and plinko security boundaries (PostgreSQL + Redis)', () => {
       ['role', { role: 'ADMIN' }],
       ['balance', { balance: 1_000_000 }],
     ])('rejects a crash start carrying %s', async (_label, forged) => {
-      const accessToken = await token('m3-user@example.test');
+      const accessToken = await token(userEmail);
       const response = await request(server())
         .post('/casino/crash/start')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -128,7 +132,7 @@ describe('crash and plinko security boundaries (PostgreSQL + Redis)', () => {
       ['payout', { payout: 999_999 }],
       ['status', { status: 'CASHED_OUT' }],
     ])('rejects a crash cashout carrying %s', async (_label, forged) => {
-      const accessToken = await token('m3-user@example.test');
+      const accessToken = await token(userEmail);
       const round = await openRunningRound();
 
       const response = await request(server())
@@ -146,7 +150,7 @@ describe('crash and plinko security boundaries (PostgreSQL + Redis)', () => {
     });
 
     it('rejects an auto-cashout outside the allowed bounds', async () => {
-      const accessToken = await token('m3-user@example.test');
+      const accessToken = await token(userEmail);
       for (const autoCashoutCenti of [100, 0, -200, 1_000_001]) {
         await request(server())
           .post('/casino/crash/start')
@@ -169,7 +173,7 @@ describe('crash and plinko security boundaries (PostgreSQL + Redis)', () => {
       ['role', { role: 'ADMIN' }],
       ['balance', { balance: 1_000_000 }],
     ])('rejects a plinko drop carrying %s', async (_label, forged) => {
-      const accessToken = await token('m3-user@example.test');
+      const accessToken = await token(userEmail);
       const response = await request(server())
         .post('/casino/plinko/play')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -187,7 +191,7 @@ describe('crash and plinko security boundaries (PostgreSQL + Redis)', () => {
     });
 
     it('rejects an unsupported plinko board through the API', async () => {
-      const accessToken = await token('m3-user@example.test');
+      const accessToken = await token(userEmail);
       for (const body of [
         { stake: 100, rows: 10, risk: 'MEDIUM' },
         { stake: 100, rows: 0, risk: 'MEDIUM' },
@@ -204,7 +208,7 @@ describe('crash and plinko security boundaries (PostgreSQL + Redis)', () => {
     });
 
     it('rejects a malformed idempotency key on both games', async () => {
-      const accessToken = await token('m3-user@example.test');
+      const accessToken = await token(userEmail);
       await request(server())
         .post('/casino/crash/start')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -221,8 +225,8 @@ describe('crash and plinko security boundaries (PostgreSQL + Redis)', () => {
 
   describe('crash hidden state', () => {
     it('never exposes the crash point or the raw seed of a running round', async () => {
-      const accessToken = await token('m3-user@example.test');
-      const adminToken = await token('m3-admin@example.test');
+      const accessToken = await token(userEmail);
+      const adminToken = await token(adminEmail);
       const round = await openRunningRound();
       const stored = await prisma.casinoRound.findUniqueOrThrow({
         where: { id: round.roundId },
@@ -248,7 +252,7 @@ describe('crash and plinko security boundaries (PostgreSQL + Redis)', () => {
     });
 
     it('refuses to verify a running round and reveals it once terminal', async () => {
-      const accessToken = await token('m3-user@example.test');
+      const accessToken = await token(userEmail);
       const round = await openRunningRound();
 
       await request(server())
@@ -278,7 +282,7 @@ describe('crash and plinko security boundaries (PostgreSQL + Redis)', () => {
     });
 
     it('does not leak an open plinko or crash round to another player', async () => {
-      const intruder = await token('m3-other@example.test');
+      const intruder = await token(otherEmail);
       const round = await openRunningRound();
 
       await request(server())
@@ -307,7 +311,7 @@ describe('crash and plinko security boundaries (PostgreSQL + Redis)', () => {
 
   describe('registry, history and admin', () => {
     it('lists crash and plinko among the playable games', async () => {
-      const accessToken = await token('m3-user@example.test');
+      const accessToken = await token(userEmail);
       const response = await request(server())
         .get('/casino/games')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -323,7 +327,7 @@ describe('crash and plinko security boundaries (PostgreSQL + Redis)', () => {
     });
 
     it('publishes safe public config for both games without any seed', async () => {
-      const accessToken = await token('m3-user@example.test');
+      const accessToken = await token(userEmail);
       for (const gameType of ['CRASH', 'PLINKO']) {
         const response = await request(server())
           .get(`/casino/games/${gameType}/config`)
@@ -336,8 +340,8 @@ describe('crash and plinko security boundaries (PostgreSQL + Redis)', () => {
     });
 
     it('shows terminal crash and plinko rounds in history and admin performance', async () => {
-      const accessToken = await token('m3-user@example.test');
-      const adminToken = await token('m3-admin@example.test');
+      const accessToken = await token(userEmail);
+      const adminToken = await token(adminEmail);
       await request(server())
         .post('/casino/plinko/play')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -369,7 +373,7 @@ describe('crash and plinko security boundaries (PostgreSQL + Redis)', () => {
     });
 
     it('keeps casino administration closed to a USER', async () => {
-      const userToken = await token('m3-user@example.test');
+      const userToken = await token(userEmail);
       await request(server())
         .get('/admin/casino/rounds?gameType=CRASH')
         .set('Authorization', `Bearer ${userToken}`)
@@ -383,7 +387,7 @@ describe('crash and plinko security boundaries (PostgreSQL + Redis)', () => {
 
   describe('cross-game wallet safety', () => {
     it('keeps concurrent crash and plinko spending inside the balance', async () => {
-      const accessToken = await token('m3-user@example.test');
+      const accessToken = await token(userEmail);
       // Both requests stake the entire balance. Plinko is an instant game that
       // may credit a win inside its own transaction, so "exactly one succeeds"
       // is not an invariant here; what must always hold is that spending never
@@ -422,7 +426,7 @@ describe('crash and plinko security boundaries (PostgreSQL + Redis)', () => {
     });
 
     it('never lets sustained plinko concurrency drive the wallet negative', async () => {
-      const accessToken = await token('m3-user@example.test');
+      const accessToken = await token(userEmail);
       await Promise.allSettled(
         Array.from({ length: 20 }, () =>
           request(server())

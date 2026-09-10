@@ -10,6 +10,7 @@ import { BigIntInterceptor } from '../src/common/bigint.interceptor';
 import { RedisService } from '../src/common/redis.service';
 import { PrismaService } from '../src/prisma.service';
 import { PointsService } from '../src/wallet/points.service';
+import { uniqueTestEmail } from './test-identity';
 
 /**
  * HTTP-level slot security and platform integration: strict DTO rejection of
@@ -26,6 +27,8 @@ describe('slots security and platform integration (PostgreSQL + Redis)', () => {
   let adminId: string;
 
   const password = 'correct-horse-battery';
+  const userEmail = uniqueTestEmail('slot-user');
+  const adminEmail = uniqueTestEmail('slot-admin');
   const spinPath = '/casino/slots/fools-gold-rush/spin';
 
   beforeAll(async () => {
@@ -58,11 +61,11 @@ describe('slots security and platform integration (PostgreSQL + Redis)', () => {
     await redis.client.flushdb();
     const hash = await argon2.hash(password);
     const user = await prisma.user.create({
-      data: { email: 'slot-user@example.test', passwordHash: hash, wallet: { create: {} } },
+      data: { email: userEmail, passwordHash: hash, wallet: { create: {} } },
     });
     const admin = await prisma.user.create({
       data: {
-        email: 'slot-admin@example.test',
+        email: adminEmail,
         passwordHash: hash,
         role: 'ADMIN',
         wallet: { create: {} },
@@ -98,7 +101,7 @@ describe('slots security and platform integration (PostgreSQL + Redis)', () => {
       ['balance', { balance: 1_000_000 }],
       ['rtpBps', { rtpBps: 9_950 }],
     ])('rejects a spin carrying %s', async (_label, forged) => {
-      const accessToken = await token('slot-user@example.test');
+      const accessToken = await token(userEmail);
       const response = await request(server())
         .post(spinPath)
         .set('Authorization', `Bearer ${accessToken}`)
@@ -110,7 +113,7 @@ describe('slots security and platform integration (PostgreSQL + Redis)', () => {
     });
 
     it('rejects an invalid stake and a malformed idempotency key', async () => {
-      const accessToken = await token('slot-user@example.test');
+      const accessToken = await token(userEmail);
       for (const body of [
         { stake: 0, idempotencyKey: randomUUID() },
         { stake: -50, idempotencyKey: randomUUID() },
@@ -129,7 +132,7 @@ describe('slots security and platform integration (PostgreSQL + Redis)', () => {
     });
 
     it('rejects a stake below one point per payline', async () => {
-      const accessToken = await token('slot-user@example.test');
+      const accessToken = await token(userEmail);
       const response = await request(server())
         .post(spinPath)
         .set('Authorization', `Bearer ${accessToken}`)
@@ -139,7 +142,7 @@ describe('slots security and platform integration (PostgreSQL + Redis)', () => {
     });
 
     it('returns 404 for an unknown slot game and never charges for it', async () => {
-      const accessToken = await token('slot-user@example.test');
+      const accessToken = await token(userEmail);
       await request(server())
         .post('/casino/slots/not-a-real-slot/spin')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -157,7 +160,7 @@ describe('slots security and platform integration (PostgreSQL + Redis)', () => {
 
   describe('registry and public configuration', () => {
     it('lists seven playable games including the slot', async () => {
-      const accessToken = await token('slot-user@example.test');
+      const accessToken = await token(userEmail);
       const response = await request(server())
         .get('/casino/games')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -174,7 +177,7 @@ describe('slots security and platform integration (PostgreSQL + Redis)', () => {
     });
 
     it('publishes the full rules through both config endpoints without seed material', async () => {
-      const accessToken = await token('slot-user@example.test');
+      const accessToken = await token(userEmail);
       const shared = await request(server())
         .get('/casino/games/SLOTS/config')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -216,7 +219,7 @@ describe('slots security and platform integration (PostgreSQL + Redis)', () => {
     };
 
     it('shows slot rounds in personal history with their config version', async () => {
-      const accessToken = await token('slot-user@example.test');
+      const accessToken = await token(userEmail);
       await play(accessToken);
       const history = await request(server())
         .get('/casino/history?gameType=SLOTS')
@@ -233,7 +236,7 @@ describe('slots security and platform integration (PostgreSQL + Redis)', () => {
     });
 
     it('verifies a settled spin and reveals its seed', async () => {
-      const accessToken = await token('slot-user@example.test');
+      const accessToken = await token(userEmail);
       const round = await play(accessToken);
       const verification = await request(server())
         .get(`/casino/rounds/${round.roundId}/verification`)
@@ -247,8 +250,8 @@ describe('slots security and platform integration (PostgreSQL + Redis)', () => {
     });
 
     it('reports the slot in admin rounds and performance with its exact theoretical RTP', async () => {
-      const accessToken = await token('slot-user@example.test');
-      const adminToken = await token('slot-admin@example.test');
+      const accessToken = await token(userEmail);
+      const adminToken = await token(adminEmail);
       await play(accessToken, 200);
       await play(accessToken, 200);
 
@@ -257,7 +260,7 @@ describe('slots security and platform integration (PostgreSQL + Redis)', () => {
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
       expect(adminRounds.body.rounds).toHaveLength(2);
-      expect(adminRounds.body.rounds[0].player.email).toBe('slot-user@example.test');
+      expect(adminRounds.body.rounds[0].player.email).toBe(userEmail);
       expect(adminRounds.body.rounds[0].state.matrix).toHaveLength(3);
 
       const performance = await request(server())
@@ -276,7 +279,7 @@ describe('slots security and platform integration (PostgreSQL + Redis)', () => {
     });
 
     it('keeps slot administration closed to a USER', async () => {
-      const userToken = await token('slot-user@example.test');
+      const userToken = await token(userEmail);
       await request(server())
         .get('/admin/casino/rounds?gameType=SLOTS')
         .set('Authorization', `Bearer ${userToken}`)
@@ -288,8 +291,8 @@ describe('slots security and platform integration (PostgreSQL + Redis)', () => {
     });
 
     it('hides another player slot round', async () => {
-      const accessToken = await token('slot-user@example.test');
-      const adminToken = await token('slot-admin@example.test');
+      const accessToken = await token(userEmail);
+      const adminToken = await token(adminEmail);
       const round = await play(accessToken);
       await request(server())
         .get(`/casino/rounds/${round.roundId}`)
@@ -300,7 +303,7 @@ describe('slots security and platform integration (PostgreSQL + Redis)', () => {
 
   describe('cross-game wallet safety', () => {
     it('never lets concurrent slot, crash and plinko play overdraw the wallet', async () => {
-      const accessToken = await token('slot-user@example.test');
+      const accessToken = await token(userEmail);
       // Far more committed than the wallet holds. Instant games may credit a win
       // mid-flight, so the invariant is that accounting closes and the wallet
       // never goes negative, not that a fixed number of requests succeed.
