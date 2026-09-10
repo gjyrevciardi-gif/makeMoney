@@ -74,8 +74,22 @@ backend logs, and preserve request IDs for any failures.
 
 Schedule `scripts/backup-postgres.sh` with a service account, a restrictive
 backup directory, retention, and encrypted off-host copies. Test each new
-backup by restoring into a disposable database before relying on it for
-disaster recovery.
+backup with `scripts/backup-restore-drill.sh` before relying on it for
+disaster recovery. The drill uses disposable PostgreSQL containers.
+
+Restore production data into a fresh recovery database by default:
+
+```sh
+DATABASE_URL='postgresql://...' scripts/restore-postgres.sh backups/file.dump.gz
+npx prisma migrate status --schema backend/prisma/schema.prisma
+node scripts/integrity-check.js
+```
+
+Safe mode refuses populated databases. An intentional overwrite requires
+`RESTORE_MODE=destructive` and an exact confirmation matching the target
+database name, either at the prompt or through
+`RESTORE_CONFIRM='RESTORE <database_name>'`. Never assume Prisma migrations
+provide automatic rollback.
 
 There are no default Admin credentials. For the first deployment only, either
 temporarily enable registration over HTTPS and create the operator account, or

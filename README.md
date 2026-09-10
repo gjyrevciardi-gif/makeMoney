@@ -61,12 +61,20 @@ Before launch, confirm:
   TCP 443; PostgreSQL 5432 and Redis 6379 are not public.
 - Production registration is disabled after the controlled Admin bootstrap.
 - `docker compose ... config`, migrations, readiness, the integrity checker,
-  backups, and the non-destructive smoke test all pass.
+  backups, a backup/restore drill, and the non-destructive smoke test all pass.
 - The operator has recorded the current release, backup artifact, and rollback
   decision.
 
 Use `scripts/smoke.sh` only for non-destructive checks. It never places bets,
 starts casino rounds, grants points, or changes Admin state.
+
+Backups are restored into a fresh recovery database by default:
+`scripts/restore-postgres.sh` refuses populated databases and validates the
+archive before restoring. An intentional overwrite requires
+`RESTORE_MODE=destructive` plus confirmation of the exact target database name
+through the prompt or `RESTORE_CONFIRM`. Prisma migrations do not provide
+automatic rollback. Run `scripts/backup-restore-drill.sh` to verify the
+backup/restore procedure against disposable PostgreSQL containers.
 
 ## Sports data and virtual bets
 
