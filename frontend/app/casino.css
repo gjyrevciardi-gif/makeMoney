@@ -181,6 +181,82 @@
   .casino-card-tag.warn { background: var(--color-warn); }
   .casino-card-tag.bad { background: var(--color-bad); color: #fff; }
 
+  /* --------------------------------------------------- external demo games */
+  /* Third-party demos must never read as one of our games. They get a dashed
+     frame, a cool accent instead of the brand gold, and a permanent notice. */
+  .casino-demo-section { border-top: 1px solid var(--color-line); padding-top: 16px; }
+  .casino-demo-section .casino-lobby-section-heading p { color: var(--color-ink-muted); }
+
+  .casino-demo-explainer {
+    margin: -2px 0 10px; max-width: 68ch;
+    font-size: 0.6875rem; line-height: 1.5; color: var(--color-ink-faint);
+  }
+
+  .casino-demo-card {
+    position: relative; display: flex; flex-direction: column;
+    border: 1px dashed var(--color-line-strong); border-radius: var(--radius-lg);
+    background: var(--color-surface-2); overflow: hidden;
+    transition: border-color 140ms ease, transform 140ms ease;
+  }
+  .casino-demo-card:hover { border-color: var(--color-ink-muted); transform: translateY(-2px); }
+  .casino-demo-card:focus-within { border-color: var(--color-ink); }
+  .casino-demo-card-link { display: flex; flex-direction: column; height: 100%; }
+
+  .casino-demo-tag {
+    position: absolute; top: 7px; left: 7px; z-index: 2;
+    padding: 2px 7px; border-radius: 999px;
+    font-size: 0.625rem; font-weight: 750; letter-spacing: 0.06em; text-transform: uppercase;
+    background: var(--color-surface); color: var(--color-ink-muted);
+    border: 1px solid var(--color-line-strong);
+  }
+
+  /* Locally drawn artwork only - no provider logo or screenshot is used. */
+  .casino-demo-art {
+    position: relative; aspect-ratio: 4 / 3; overflow: hidden;
+    display: grid; place-items: center;
+    background: linear-gradient(160deg, var(--color-surface-3), var(--color-surface));
+  }
+  .casino-demo-art::after {
+    content: ""; position: absolute; inset: 0;
+    background: radial-gradient(120% 90% at 50% 118%, rgb(0 0 0 / 55%), transparent 62%);
+  }
+  .casino-demo-art svg { position: relative; width: 58%; height: 58%; }
+  .demo-art-olympus { background: linear-gradient(160deg, #1b2233, #0d1018); }
+  .demo-art-bass { background: linear-gradient(160deg, #16262e, #0a1216); }
+  .demo-art-sugar { background: linear-gradient(160deg, #2c1b28, #150d13); }
+  .demo-art-starlight { background: linear-gradient(160deg, #221c33, #100d18); }
+  .demo-art-book { background: linear-gradient(160deg, #2a2418, #14110b); }
+  .demo-art-legacy { background: linear-gradient(160deg, #26201a, #12100c); }
+  .demo-art-reactoonz { background: linear-gradient(160deg, #172a26, #0b1513); }
+  .demo-art-joker { background: linear-gradient(160deg, #2d1d19, #150e0c); }
+  .demo-fill { fill: var(--color-ink-muted); }
+  .demo-stroke {
+    stroke: var(--color-ink-muted); fill: none; stroke-width: 2;
+    stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  .demo-pill { border-style: dashed; color: var(--color-ink-muted); }
+
+  .casino-demo-card-footer {
+    margin-top: auto; padding: 8px 11px 10px;
+    display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
+  }
+  .casino-demo-note {
+    font-size: 0.625rem; line-height: 1.35; color: var(--color-ink-faint);
+  }
+  .casino-demo-play {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 0.75rem; font-weight: 700; color: var(--color-ink);
+  }
+  .casino-demo-external-icon {
+    width: 12px; height: 12px; fill: none;
+    stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .casino-demo-card, .casino-demo-card:hover { transition: none; transform: none; }
+  }
+
   /* ---------------------------------------------------------- game shell */
   .casino-game-shell { width: 100%; max-width: 1240px; margin: 0 auto; padding: 14px 14px 32px; }
 
