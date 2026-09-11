@@ -22,5 +22,5 @@ export interface SportsProvider {
   /** Optional. Providers that cannot batch markets fall back to bare events. */
   getBoard?(sportKey: string): Promise<SportsBoard>;
 }
-export type ProviderStatus = { provider: string; configured: boolean; lastSuccessAt?: string; lastFailureAt?: string; remainingQuota?: number; cacheHealthy?: boolean };
+export type ProviderStatus = { provider: string; configured: boolean; lastSuccessAt?: string; lastFailureAt?: string; lastErrorCode?: string; lastErrorStatus?: number; remainingQuota?: number; cacheHealthy?: boolean };
 export const SPORTS_PROVIDER = Symbol('SPORTS_PROVIDER');

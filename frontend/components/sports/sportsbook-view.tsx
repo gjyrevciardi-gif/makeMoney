@@ -170,7 +170,7 @@ export function SportsbookView({ mode }: { mode: 'PREMATCH' | 'LIVE' }) {
                   ? 'No events match your search.'
                   : mode === 'LIVE'
                   ? 'No live events right now.'
-                  : 'No upcoming events for this sport.'}
+                  : 'No upcoming events are available for this competition.'}
               </strong>
               <span>
                 {search.trim()

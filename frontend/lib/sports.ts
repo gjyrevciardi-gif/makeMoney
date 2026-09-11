@@ -182,6 +182,15 @@ export const SPORTS_MESSAGES: Record<string, string> = {
   SPORTS_PROVIDER_UNAVAILABLE: 'Sports data is temporarily unavailable.',
   SPORTS_PROVIDER_RATE_LIMITED: 'Sports data is temporarily unavailable.',
   SPORTS_PROVIDER_INVALID_RESPONSE: 'Sports data is temporarily unavailable.',
+  // Operators see the precise cause on /admin/sports; a player is told the same
+  // neutral thing either way, so a bad key or a spent quota leaks nothing.
+  SPORTS_PROVIDER_UNAUTHORIZED: 'Sports data is temporarily unavailable.',
+  SPORTS_PROVIDER_FORBIDDEN: 'Sports data is temporarily unavailable.',
+  // A 422 on a board means our markets (h2h/spreads/totals) do not apply to
+  // that competition - an outright/futures market, typically. That is not an
+  // outage, so it does not get outage copy.
+  SPORTS_PROVIDER_INVALID_REQUEST: 'This competition is not offered here.',
+  SPORTS_PROVIDER_TIMEOUT: 'Sports data is temporarily unavailable.',
   SPORTS_ODDS_UNAVAILABLE: 'Prices are not available for this event right now.',
   SPORTS_EVENT_NOT_FOUND: 'That event is no longer listed.',
   SPORTS_UNSUPPORTED: 'That sport is not offered.',

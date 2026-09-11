@@ -3,13 +3,31 @@ import { z } from 'zod';
 import { BoardEvent, EventOdds, Market, ProviderStatus, Sport, SportsBoard, SportsEvent, SportsProvider } from './domain';
 import { sportsConfig } from './sports.config';
 import { SportsError } from './provider.errors';
-import { eventSchema, ProviderEvent, sportSchema } from './the-odds-api.schemas';
+import { eventSchema, isSupportedMarketKey, ProviderEvent, sportSchema, SupportedMarketKey } from './the-odds-api.schemas';
+import { OperationsHealthService } from '../operations/operations-health.service';
+
+/**
+ * Maps an upstream HTTP status onto a distinct error code.
+ *
+ * The distinction is for operators, not players: every one of these still
+ * reaches the browser as the same neutral "temporarily unavailable" copy, but
+ * an admin can tell a dead key from a spent quota from a malformed request
+ * without reading container logs.
+ */
+function classifyHttpStatus(status: number): string {
+  if (status === 401) return 'SPORTS_PROVIDER_UNAUTHORIZED';
+  if (status === 403) return 'SPORTS_PROVIDER_FORBIDDEN';
+  if (status === 422) return 'SPORTS_PROVIDER_INVALID_REQUEST';
+  if (status === 429) return 'SPORTS_PROVIDER_RATE_LIMITED';
+  return 'SPORTS_PROVIDER_UNAVAILABLE';
+}
 
 @Injectable()
 export class TheOddsApiProvider implements SportsProvider {
   private readonly logger = new Logger(TheOddsApiProvider.name);
   private readonly config = sportsConfig();
   private status: ProviderStatus = { provider: 'the-odds-api', configured: Boolean(this.config.apiKey) };
+  constructor(private readonly health: OperationsHealthService) {}
   getStatus() { return { ...this.status }; }
   private url(path: string, params: Record<string, string> = {}) { const url = new URL(`${this.config.baseUrl}${path}`); for (const [key, value] of Object.entries(params)) url.searchParams.set(key, value); url.searchParams.set('apiKey', this.config.apiKey!); return url; }
   private async request<T>(path: string, schema: z.ZodType<T>, params: Record<string, string> = {}): Promise<T> {
@@ -18,21 +36,39 @@ export class TheOddsApiProvider implements SportsProvider {
     try {
       const response = await fetch(this.url(path, params), { signal: controller.signal, headers: { accept: 'application/json' } });
       const remaining = response.headers.get('x-requests-remaining');
+      const used = response.headers.get('x-requests-used');
       if (!response.ok) {
-        if (response.status === 429) throw new SportsError('SPORTS_PROVIDER_RATE_LIMITED', 503);
-        if (response.status === 404) throw new SportsError('SPORTS_EVENT_NOT_FOUND', 404, 'Sports event not found.');
-        throw new SportsError('SPORTS_PROVIDER_UNAVAILABLE', 503);
+        if (response.status === 404) throw new SportsError('SPORTS_EVENT_NOT_FOUND', 404, 'Sports event not found.', response.status);
+        throw new SportsError(classifyHttpStatus(response.status), 503, undefined, response.status);
       }
       const parsed = schema.safeParse(await response.json());
-      if (!parsed.success) throw new SportsError('SPORTS_PROVIDER_INVALID_RESPONSE', 503);
-      this.status = { ...this.status, lastSuccessAt: new Date().toISOString(), remainingQuota: remaining === null ? undefined : Number(remaining) };
+      if (!parsed.success) throw new SportsError('SPORTS_PROVIDER_INVALID_RESPONSE', 503, undefined, response.status);
+      this.status = {
+        ...this.status,
+        lastSuccessAt: new Date().toISOString(),
+        remainingQuota: remaining === null ? undefined : Number(remaining),
+      };
+      await this.health.providerSuccess({
+        remaining: remaining === null ? undefined : Number(remaining),
+        used: used === null ? undefined : Number(used),
+      });
       this.logger.log({ event: 'SPORTS_PROVIDER_REQUEST_SUCCESS', path });
       return parsed.data;
     } catch (error) {
-      this.status = { ...this.status, lastFailureAt: new Date().toISOString() };
-      this.logger.warn({ event: 'SPORTS_PROVIDER_REQUEST_FAILED', path, code: error instanceof SportsError ? error.code : 'SPORTS_PROVIDER_UNAVAILABLE' });
+      // An aborted fetch is a timeout on our side, not an upstream rejection;
+      // reporting it as a generic outage hid a too-short SPORTS_PROVIDER_TIMEOUT_MS.
+      // DOMException does not always satisfy `instanceof Error` across runtimes,
+      // so the abort is identified by name rather than by prototype.
+      const aborted = typeof error === 'object' && error !== null && (error as { name?: unknown }).name === 'AbortError';
+      const code = error instanceof SportsError
+        ? error.code
+        : aborted ? 'SPORTS_PROVIDER_TIMEOUT' : 'SPORTS_PROVIDER_UNAVAILABLE';
+      const upstreamStatus = error instanceof SportsError ? error.upstreamStatus : undefined;
+      this.status = { ...this.status, lastFailureAt: new Date().toISOString(), lastErrorCode: code, lastErrorStatus: upstreamStatus };
+      await this.health.providerFailure(code);
+      this.logger.warn({ event: 'SPORTS_PROVIDER_REQUEST_FAILED', path, code, upstreamStatus: upstreamStatus ?? null });
       if (error instanceof SportsError) throw error;
-      throw new SportsError('SPORTS_PROVIDER_UNAVAILABLE', 503);
+      throw new SportsError(code, 503);
     } finally { clearTimeout(timer); }
   }
   async getSports(): Promise<Sport[]> { const rows = await this.request('/sports', z.array(sportSchema)); return rows.filter(x => x.active).map(x => ({ key: x.key, name: x.title, active: x.active, ...(x.group === undefined ? {} : { group: x.group }) })); }
@@ -42,10 +78,28 @@ export class TheOddsApiProvider implements SportsProvider {
   private board(sportKey: string) { return this.request(`/sports/${encodeURIComponent(sportKey)}/odds`, z.array(eventSchema), { regions: 'eu', markets: 'h2h,spreads,totals', oddsFormat: 'decimal' }); }
   async getEvents(sportKey: string) { return (await this.board(sportKey)).map(x => this.event(x)); }
   /** Chooses the configured primary bookmaker, else the lowest key, deterministically. */
-  private pick(row: ProviderEvent) { const available = row.bookmakers ?? []; return this.config.bookmakers.map(key => available.find(x => x.key === key)).find(Boolean) ?? [...available].sort((a, b) => a.key.localeCompare(b.key))[0]; }
+  private pick(row: ProviderEvent) {
+    // A bookmaker quoting only unsupported markets would otherwise be chosen and
+    // then render as an event with no prices at all.
+    const available = (row.bookmakers ?? []).filter(b => b.markets.some(m => isSupportedMarketKey(m.key) && m.outcomes.length > 0));
+    return this.config.bookmakers.map(key => available.find(x => x.key === key)).find(Boolean) ?? [...available].sort((a, b) => a.key.localeCompare(b.key))[0];
+  }
+  /**
+   * Only the markets this product prices. An exchange's `h2h_lay` quote, or any
+   * future market the provider adds, is dropped here rather than surfaced with
+   * an invented name.
+   */
   private markets(bookmaker: NonNullable<ProviderEvent['bookmakers']>[number]): Market[] {
-    const names = { h2h: 'Match Winner', spreads: 'Handicap', totals: 'Total' } as const;
-    return bookmaker.markets.map(m => ({ key: m.key, name: names[m.key], selections: m.outcomes.map((o, index) => ({ key: `${m.key}:${o.name}:${o.point ?? ''}:${index}`, name: o.name, price: o.price.toString(), ...(o.point === undefined ? {} : { point: o.point.toString() }) })) }));
+    const names: Record<SupportedMarketKey, string> = { h2h: 'Match Winner', spreads: 'Handicap', totals: 'Total' };
+    return bookmaker.markets.flatMap<Market>(m => {
+      const key = m.key;
+      if (!isSupportedMarketKey(key) || m.outcomes.length === 0) return [];
+      return [{
+        key,
+        name: names[key],
+        selections: m.outcomes.map((o, index) => ({ key: `${key}:${o.name}:${o.point ?? ''}:${index}`, name: o.name, price: o.price.toString(), ...(o.point === undefined ? {} : { point: o.point.toString() }) })),
+      }];
+    });
   }
   /**
    * Events *and* their primary markets from the one upstream call the event
