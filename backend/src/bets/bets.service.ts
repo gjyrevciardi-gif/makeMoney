@@ -1,6 +1,7 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { BetType, Prisma } from '@prisma/client';
 import { SportsService } from '../sports/sports.service';
+import { isBettableMarket, marketDefinition } from '../sports/markets';
 import { PrismaService } from '../prisma.service';
 import { CasinoConfigService } from '../casino/casino-config.service';
 import { betsConfig } from './bets.config';
@@ -27,7 +28,17 @@ export class BetsService {
       if (Date.parse(odds.staleAt) < Date.now() || Date.now() - Date.parse(odds.fetchedAt) > this.config.maxOddsStalenessSeconds * 1000) throw new ConflictException({ code: 'SPORTS_ODDS_UNAVAILABLE', message: 'Current odds are unavailable.' });
       if (Date.parse(odds.event.startTime) <= Date.now()) throw new ConflictException({ code: 'SELECTION_UNAVAILABLE', message: 'One or more selections are no longer available.' });
       const market = odds.markets.find(item => item.key === selection.marketKey); if (!market) throw new ConflictException({ code: 'SELECTION_UNAVAILABLE', message: 'One or more selections are no longer available.' });
+      // The settlement gate (§5). Derived here from our own catalogue rather
+      // than read off the payload, so a crafted request claiming `bettable`
+      // cannot buy a stake on a market nothing can settle. A market we cannot
+      // settle is refused even though the event page happily renders it.
+      if (!isBettableMarket(market.key)) throw new ConflictException({ code: 'MARKET_NOT_BETTABLE', message: marketDefinition(market.key)?.unsettleableReason ?? 'This market is available to view only.', marketKey: market.key });
+      // A provider that has pulled a market mid-event blocks the whole market;
+      // taking the price anyway is how a book ends up on the wrong side of a
+      // goal it already knows about (§8).
+      if (market.suspended) throw new ConflictException({ code: 'SELECTION_SUSPENDED', message: 'This market is temporarily suspended.', marketKey: market.key });
       const current = market.selections.find(item => item.key === selection.selectionKey); if (!current) throw new ConflictException({ code: 'SELECTION_UNAVAILABLE', message: 'One or more selections are no longer available.' });
+      if (current.suspended) throw new ConflictException({ code: 'SELECTION_SUSPENDED', message: 'This selection is temporarily suspended.', marketKey: market.key, selectionKey: current.key });
       const exact = new Prisma.Decimal(current.price);
       if (selection.displayedOdds && !exact.equals(new Prisma.Decimal(selection.displayedOdds))) changed.push({ eventId: selection.eventId, marketKey: selection.marketKey, selectionKey: selection.selectionKey, oldOdds: selection.displayedOdds, newOdds: exact.toString() });
       return { event: odds.event, marketKey: market.key, marketName: market.name, selectionKey: current.key, selectionName: current.name, odds: exact, point: current.point === undefined ? undefined : new Prisma.Decimal(current.point) };
