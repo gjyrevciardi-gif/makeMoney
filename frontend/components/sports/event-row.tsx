@@ -23,7 +23,28 @@ function EventRowBase({ row, stale }: EventRowProps) {
   const { event } = row;
   const live = isLive(event);
   const cells = h2hCells(row);
-  const marketCount = row.markets.reduce((total, market) => total + market.selections.length, 0);
+  // The real number of normalized markets on this event — never a guess, and
+  // never a selection count dressed up as a market count (§1).
+  const marketCount = row.markets.length;
+  const eventId = event.internalEventId ?? event.providerEventId;
+
+  // Secondary primary markets shown inline beside 1/X/2, only where the
+  // provider actually priced them.
+  const totals = row.markets.find((market) => market.key === 'totals');
+  const btts = row.markets.find((market) => market.key === 'btts');
+  const over = totals?.selections.find((selection) => selection.key === 'over');
+  const under = totals?.selections.find((selection) => selection.key === 'under');
+  // Only cells the provider actually priced are rendered; a missing side leaves
+  // the group out entirely rather than showing an empty slot.
+  const overUnderCells = [
+    over ? { selection: over, label: `O ${over.point ?? ''}`.trim() } : null,
+    under ? { selection: under, label: `U ${under.point ?? ''}`.trim() } : null,
+  ].filter((cell): cell is { selection: Selection; label: string } => cell !== null);
+
+  const bttsCells = [
+    btts?.selections.find((selection) => selection.key === 'yes') ? { selection: btts.selections.find((s) => s.key === 'yes')!, label: 'Yes' } : null,
+    btts?.selections.find((selection) => selection.key === 'no') ? { selection: btts.selections.find((s) => s.key === 'no')!, label: 'No' } : null,
+  ].filter((cell): cell is { selection: Selection; label: string } => cell !== null);
 
   const select = useCallback((selection: Selection, marketKey: string, marketName: string) => {
     const pick: SlipPick = {
@@ -66,35 +87,73 @@ function EventRowBase({ row, stale }: EventRowProps) {
             <span className="event-team-name">{event.awayTeam}</span>
           </span>
           <span className="event-meta-line">
+            {event.competitionName && <span className="event-competition">{event.competitionName}</span>}
             <Link
-              href={`/sports/event/${encodeURIComponent(event.providerEventId)}?sport=${encodeURIComponent(event.sportKey)}`}
+              href={`/sports/event/${encodeURIComponent(eventId)}?sport=${encodeURIComponent(event.sportKey)}`}
+              className="event-more-markets"
             >
-              {marketCount > 0 ? `${marketCount} selections` : 'Event details'}
+              {marketCount > 0 ? `+${marketCount} Markets` : 'Event details'}
             </Link>
-            {live && <span>In-play betting is not offered</span>}
           </span>
         </div>
       </div>
 
       <div className="event-odds">
-        {cells.map((selection, index) => (
-          <OddsButton
-            key={selection?.key ?? `empty-${index}`}
-            label={H2H_LABELS[index]}
-            price={selection?.price ?? null}
-            selected={selection ? slip.ids.has(pickId({
-              eventId: event.providerEventId,
-              marketKey: 'h2h',
-              selectionKey: selection.key,
-            })) : false}
-            // A started event is refused by the backend, so its prices are
-            // presented as suspended rather than as something a player can take.
-            suspended={live}
-            stale={stale}
-            describe={selection ? `${selection.name}, ${event.homeTeam} v ${event.awayTeam}` : undefined}
-            onSelect={() => { if (selection && h2h) select(selection, 'h2h', h2h.name); }}
-          />
-        ))}
+        <div className="odds-group" role="group" aria-label="Match result">
+          {cells.map((selection, index) => (
+            <OddsButton
+              key={selection?.key ?? `empty-${index}`}
+              label={H2H_LABELS[index]}
+              price={selection?.price ?? null}
+              selected={selection ? slip.ids.has(pickId({ eventId, marketKey: 'h2h', selectionKey: selection.key })) : false}
+              // A started event is refused by the backend, so its prices show
+              // as suspended rather than as something a player can take. The
+              // market's own flags are honoured too, so a provider suspension
+              // disables the cell without waiting for a rejected placement.
+              suspended={live || h2h?.suspended === true || selection?.suspended === true}
+              disabled={h2h !== undefined && h2h.bettable === false}
+              stale={stale}
+              describe={selection ? `${selection.name}, ${event.homeTeam} v ${event.awayTeam}` : undefined}
+              onSelect={() => { if (selection && h2h) select(selection, 'h2h', h2h.name); }}
+            />
+          ))}
+        </div>
+
+        {overUnderCells.length > 0 && (
+          <div className="odds-group" role="group" aria-label="Total goals">
+            {overUnderCells.map(({ selection, label }) => (
+              <OddsButton
+                key={`ou-${selection.key}`}
+                label={label}
+                price={selection.price}
+                selected={slip.ids.has(pickId({ eventId, marketKey: 'totals', selectionKey: selection.key }))}
+                suspended={live || totals?.suspended === true || selection.suspended === true}
+                disabled={totals?.bettable === false}
+                stale={stale}
+                describe={`${selection.name}, ${event.homeTeam} v ${event.awayTeam}`}
+                onSelect={() => { if (totals) select(selection, 'totals', totals.name); }}
+              />
+            ))}
+          </div>
+        )}
+
+        {bttsCells.length > 0 && (
+          <div className="odds-group" role="group" aria-label="Both teams to score">
+            {bttsCells.map(({ selection, label }) => (
+              <OddsButton
+                key={`btts-${selection.key}`}
+                label={label}
+                price={selection.price}
+                selected={slip.ids.has(pickId({ eventId, marketKey: 'btts', selectionKey: selection.key }))}
+                suspended={live || btts?.suspended === true || selection.suspended === true}
+                disabled={btts?.bettable === false}
+                stale={stale}
+                describe={`Both teams to score ${label}, ${event.homeTeam} v ${event.awayTeam}`}
+                onSelect={() => { if (btts) select(selection, 'btts', btts.name); }}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

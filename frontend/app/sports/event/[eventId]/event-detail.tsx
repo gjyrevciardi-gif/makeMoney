@@ -8,6 +8,7 @@ import { formatDateTime } from '../../../../lib/format';
 import { pickId, useBetSlip, type SlipPick } from '../../../../lib/bet-slip';
 import {
   describeSportsError,
+  groupMarkets,
   isLive,
   isStale,
   useEventOdds,
@@ -24,23 +25,30 @@ import { OddsButton } from '../../../../components/sports/odds-button';
  * Only groups that actually contain a market the feed returned are rendered -
  * an empty "Totals" heading is never shown for an event that has no totals.
  */
-const GROUPS: { id: string; title: string; keys: Market['key'][] }[] = [
-  { id: 'popular', title: 'Popular', keys: ['h2h'] },
-  { id: 'totals', title: 'Totals', keys: ['totals'] },
-  { id: 'spreads', title: 'Handicaps', keys: ['spreads'] },
-];
-
-function MarketBlock({ odds, market, suspended, stale }: {
+/**
+ * One market's prices.
+ *
+ * A market settlement cannot decide is rendered in full but every price is
+ * inert: the buttons are disabled and `select` refuses outright, so a
+ * display-only market cannot reach the bet slip however it is activated. The
+ * server enforces the same rule again on placement — this is the visible half
+ * of that guarantee, never the whole of it.
+ */
+function MarketBlock({ odds, market, eventSuspended, stale }: {
   odds: EventOdds;
   market: Market;
-  suspended: boolean;
+  eventSuspended: boolean;
   stale: boolean;
 }) {
   const slip = useBetSlip();
+  const eventId = odds.event.internalEventId ?? odds.event.providerEventId;
+  const displayOnly = market.bettable === false;
+  const marketSuspended = eventSuspended || market.suspended === true;
 
   const select = (selection: Selection) => {
+    if (displayOnly || marketSuspended || selection.suspended === true) return;
     const pick: SlipPick = {
-      eventId: odds.event.providerEventId,
+      eventId,
       sportKey: odds.event.sportKey,
       marketKey: market.key,
       marketName: market.name,
@@ -56,23 +64,28 @@ function MarketBlock({ odds, market, suspended, stale }: {
   };
 
   return (
-    <div className="market-grid">
-      {market.selections.map((selection) => (
-        <OddsButton
-          key={selection.key}
-          label={selection.point ? `${selection.name} ${selection.point}` : selection.name}
-          price={selection.price}
-          selected={slip.ids.has(pickId({
-            eventId: odds.event.providerEventId,
-            marketKey: market.key,
-            selectionKey: selection.key,
-          }))}
-          suspended={suspended}
-          stale={stale}
-          describe={`${selection.name} in ${market.name}`}
-          onSelect={() => select(selection)}
-        />
-      ))}
+    <div className={`market-block${displayOnly ? ' display-only' : ''}`}>
+      <p className="section-head market-block-head">
+        <span>{market.name}</span>
+        {displayOnly && <span className="market-tag" title={market.unavailableReason}>View only</span>}
+        {!displayOnly && marketSuspended && <span className="market-tag suspended">Suspended</span>}
+      </p>
+      {displayOnly && market.unavailableReason && <p className="market-note">{market.unavailableReason}</p>}
+      <div className="market-grid">
+        {market.selections.map((selection) => (
+          <OddsButton
+            key={selection.key}
+            label={selection.name}
+            price={selection.price}
+            selected={slip.ids.has(pickId({ eventId, marketKey: market.key, selectionKey: selection.key }))}
+            suspended={marketSuspended || selection.suspended === true}
+            disabled={displayOnly}
+            stale={stale}
+            describe={`${selection.name} in ${market.name}${displayOnly ? ', view only' : ''}`}
+            onSelect={() => select(selection)}
+          />
+        ))}
+      </div>
     </div>
   );
 }
@@ -85,17 +98,9 @@ export function EventDetail({ eventId }: { eventId: string }) {
   const stale = isStale(odds?.staleAt);
   const live = odds ? isLive(odds.event) : false;
 
-  const groups = useMemo(() => {
-    if (!odds) return [];
-    return GROUPS
-      .map((group) => ({
-        ...group,
-        markets: group.keys
-          .map((key) => odds.markets.find((market) => market.key === key))
-          .filter((market): market is Market => market !== undefined),
-      }))
-      .filter((group) => group.markets.length > 0);
-  }, [odds]);
+  // Groups come from the backend catalogue's own ordering, and only groups the
+  // provider actually returned markets for are rendered.
+  const groups = useMemo(() => (odds ? groupMarkets(odds.markets) : []), [odds]);
 
   const error = query.error instanceof ApiError ? query.error : undefined;
 
@@ -167,21 +172,16 @@ export function EventDetail({ eventId }: { eventId: string }) {
               )}
 
               {groups.map((group, index) => (
-                <details className="market-group" key={group.id} open={index < 2}>
+                <details className="market-group" key={group.group} open={index < 2}>
                   <summary>
-                    {group.title}
+                    {group.name}
                     <span className="market-count">
-                      {group.markets.reduce((total, market) => total + market.selections.length, 0)} selections
+                      {group.markets.length} {group.markets.length === 1 ? 'market' : 'markets'}
                     </span>
                   </summary>
                   <div className="market-body">
                     {group.markets.map((market) => (
-                      <div key={market.key} style={{ marginBottom: 8 }}>
-                        <p className="section-head" style={{ marginBottom: 6 }}>
-                          <span>{market.name}</span>
-                        </p>
-                        <MarketBlock odds={odds} market={market} suspended={live} stale={stale} />
-                      </div>
+                      <MarketBlock key={market.key} odds={odds} market={market} eventSuspended={live} stale={stale} />
                     ))}
                   </div>
                 </details>

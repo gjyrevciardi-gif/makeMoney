@@ -877,3 +877,55 @@
   .home-tile p { font-size: 0.8125rem; color: var(--color-ink-muted); }
   .home-tile .home-tile-link { margin-top: auto; padding-top: 8px; font-size: 0.8125rem; font-weight: 650; color: var(--color-brand); }
 }
+
+/*
+ * Rich soccer markets.
+ *
+ * The board now carries more than one primary market per row, and the event
+ * page renders markets we can price but deliberately cannot accept stakes on.
+ * Both needed visual language that separates "unavailable right now" from
+ * "never bettable", so a player is never left guessing why a price is inert.
+ */
+@layer components {
+  /* Board: several primary groups per row, wrapping rather than squeezing. */
+  .event-odds { display: flex; flex-wrap: wrap; gap: 6px; align-items: stretch; }
+  .odds-group { display: grid; gap: 4px; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); flex: 1 1 auto; min-width: 0; }
+  .event-competition { color: var(--color-ink-muted); }
+  .event-more-markets { font-weight: 650; white-space: nowrap; }
+
+  @media (min-width: 1200px) {
+    /* Wide desktop has room for 1X2 + O/U + BTTS side by side. */
+    .event-odds { width: 420px; flex: none; flex-wrap: nowrap; }
+    .odds-group { flex: 0 0 auto; }
+    .odds-group:first-child { min-width: 150px; }
+  }
+  @media (min-width: 768px) and (max-width: 1199px) {
+    /* Narrow desktop wraps the secondary groups under the 1X2 block. */
+    .event-odds { width: 236px; flex: none; }
+    .odds-group { flex: 1 1 100%; }
+  }
+
+  /* Event page: one block per market, with its own availability state. */
+  .market-block { margin-bottom: 12px; }
+  .market-block-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .market-tag {
+    font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 999px;
+    background: var(--color-surface-2, #eceff3); color: var(--color-ink-muted);
+    border: 1px solid var(--color-border, #d8dde5);
+  }
+  .market-tag.suspended { background: #fdf3e3; color: #8a5a00; border-color: #f0dcb4; }
+  .market-note { font-size: 0.8125rem; color: var(--color-ink-muted); margin: 0 0 6px; }
+
+  /* A view-only market stays readable: dimmed, never hidden, never clickable. */
+  .market-block.display-only .market-grid { opacity: 0.62; }
+  .market-block.display-only .odds-button { cursor: not-allowed; }
+
+  @media (max-width: 430px) {
+    /* Phone: odds stay tappable rather than shrinking to fit more columns. */
+    .odds-group { grid-auto-flow: row; grid-auto-columns: auto; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .event-odds { width: 100%; }
+    .market-grid { grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); }
+    .market-grid .odds-button { min-height: 44px; }
+  }
+}

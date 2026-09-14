@@ -74,7 +74,10 @@ export class TheOddsApiProvider implements SportsProvider {
   async getSports(): Promise<Sport[]> { const rows = await this.request('/sports', z.array(sportSchema)); return rows.filter(x => x.active).map(x => ({ key: x.key, name: x.title, active: x.active, ...(x.group === undefined ? {} : { group: x.group }) })); }
   // `sport_title` is the provider's own name for the competition ("EPL"). It is
   // carried through rather than invented so the UI can group by real leagues.
-  private event(row: ProviderEvent): SportsEvent { return { provider: 'the-odds-api', providerEventId: row.id, sportKey: row.sport_key, sportName: row.sport_title, competitionName: row.sport_title, homeTeam: row.home_team, awayTeam: row.away_team, startTime: row.commence_time, status: new Date(row.commence_time) > new Date() ? 'UPCOMING' : 'STARTED_UNKNOWN' }; }
+  // internalEventId is identical to the provider id here, deliberately: only
+  // API-Football ids carry a prefix, so every id already stored on a BetLeg
+  // stays valid and routable with no migration (§10).
+  private event(row: ProviderEvent): SportsEvent { return { provider: 'the-odds-api', providerEventId: row.id, internalEventId: row.id, sportKey: row.sport_key, sportName: row.sport_title, competitionName: row.sport_title, homeTeam: row.home_team, awayTeam: row.away_team, startTime: row.commence_time, status: new Date(row.commence_time) > new Date() ? 'UPCOMING' : 'STARTED_UNKNOWN' }; }
   private board(sportKey: string) { return this.request(`/sports/${encodeURIComponent(sportKey)}/odds`, z.array(eventSchema), { regions: 'eu', markets: 'h2h,spreads,totals', oddsFormat: 'decimal' }); }
   async getEvents(sportKey: string) { return (await this.board(sportKey)).map(x => this.event(x)); }
   /** Chooses the configured primary bookmaker, else the lowest key, deterministically. */

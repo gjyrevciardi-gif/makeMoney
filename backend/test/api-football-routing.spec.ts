@@ -11,7 +11,7 @@ import { ProviderStatus, Sport, SportsBoard } from '../src/sports/domain';
  */
 const board = (sportKey: string, provider: string): SportsBoard => ({
   sportKey, sportName: sportKey, fetchedAt: new Date().toISOString(), staleAt: new Date(Date.now() + 60_000).toISOString(),
-  events: [{ event: { provider, providerEventId: '1', sportKey, sportName: sportKey, homeTeam: 'H', awayTeam: 'A', startTime: new Date().toISOString(), status: 'UPCOMING' }, bookmaker: null, markets: [] }],
+  events: [{ event: { provider, providerEventId: '1', internalEventId: '1', sportKey, sportName: sportKey, homeTeam: 'H', awayTeam: 'A', startTime: new Date().toISOString(), status: 'UPCOMING' }, bookmaker: null, markets: [] }],
 });
 
 type Fakes = { footballBoard?: () => Promise<SportsBoard>; oddsBoard?: (key: string) => Promise<SportsBoard>; oddsSports?: Sport[]; configured?: boolean; footballOdds?: () => Promise<unknown>; oddsOdds?: () => Promise<unknown> };

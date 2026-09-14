@@ -1,5 +1,12 @@
 export type Sport = { key: string; name: string; active: boolean; group?: string };
-export type SportsEvent = { provider: string; providerEventId: string; sportKey: string; sportName: string; competitionName?: string; homeTeam: string; awayTeam: string; startTime: string; status: 'UPCOMING' | 'STARTED_UNKNOWN'; };
+/**
+ * `providerEventId` stays the provider's own id and is what a BetLeg stores, so
+ * provenance is never lost. `internalEventId` is the namespaced id the browser
+ * and the placement DTO use, because it alone says which provider owns the
+ * event — routing on the bare provider id would look an API-Football fixture up
+ * in The Odds API's id space (§10).
+ */
+export type SportsEvent = { provider: string; providerEventId: string; internalEventId: string; sportKey: string; sportName: string; competitionName?: string; homeTeam: string; awayTeam: string; startTime: string; status: 'UPCOMING' | 'STARTED_UNKNOWN'; };
 export type Selection = { key: string; name: string; price: string; point?: string; /** Provider reports this individual price as not currently takeable (§8). */ suspended?: boolean };
 /**
  * `key` is a normalized catalogue key (see `markets.ts`), never a provider's own

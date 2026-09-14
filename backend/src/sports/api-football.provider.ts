@@ -83,6 +83,7 @@ export class ApiFootballProvider implements SportsProvider {
     return {
       provider: PROVIDER_API_FOOTBALL,
       providerEventId: String(fixture.fixture.id),
+      internalEventId: toInternalEventId(PROVIDER_API_FOOTBALL, String(fixture.fixture.id)),
       sportKey: API_FOOTBALL_SPORT_KEY,
       sportName: 'Football',
       competitionName: fixture.league.name,
