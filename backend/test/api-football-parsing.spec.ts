@@ -85,7 +85,7 @@ describe('pre-match odds parsing', () => {
     const bet = betFor('totals');
     expect(bet).toBeDefined();
     const selection = normalizeSelection('totals', bet!.values[0])!;
-    expect(['over', 'under']).toContain(selection.key);
+    expect(selection.key).toMatch(/^(over|under)_\d+(\.\d+)?$/);
     expect(selection.point).toMatch(/^\d+(\.\d+)?$/);
   });
 
@@ -116,8 +116,22 @@ describe('live odds parsing', () => {
 
   it('reads the line from the separate handicap field live uses', () => {
     const selection = normalizeSelection('totals', { value: 'Over', odd: '2.75', handicap: '1.5', main: null, suspended: true })!;
-    expect(selection.key).toBe('over');
+    expect(selection.key).toBe('over_1.5');
     expect(selection.point).toBe('1.5');
+  });
+
+  it('keys each over/under line separately so lines cannot collide', () => {
+    // A provider offers several lines of one market at once. Keying them all
+    // as "over" made them indistinguishable, and the placement path resolves a
+    // selection by key — so a stake clicked on Over 2.5 could be matched to
+    // Over 0.5 and accepted at the wrong price.
+    const lines = ['0.5', '1.5', '2.5', '3.5'].map(point =>
+      normalizeSelection('ht_totals', { value: `Over ${point}`, odd: '2.00' })!);
+    const keys = lines.map(selection => selection.key);
+    expect(new Set(keys).size).toBe(keys.length);
+    expect(keys).toEqual(['over_0.5', 'over_1.5', 'over_2.5', 'over_3.5']);
+    // The line stays available separately for settlement, which reads it there.
+    expect(lines[2].point).toBe('2.5');
   });
 
   it('carries the per-selection suspended flag through', () => {

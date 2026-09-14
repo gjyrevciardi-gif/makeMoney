@@ -929,3 +929,40 @@
     .market-grid .odds-button { min-height: 44px; }
   }
 }
+
+@layer components {
+  /* A fixture with no book yet: stated once, quietly, instead of phantom cells. */
+  .event-no-prices {
+    display: flex; align-items: center; justify-content: flex-end;
+    width: 100%; font-size: 0.75rem; color: var(--color-ink-muted); font-style: italic;
+  }
+  /* Unpriced rows are the majority of a daily card; keep them compact. */
+  .event-row:has(.event-no-prices) { padding-top: 8px; padding-bottom: 8px; }
+  @media (max-width: 767px) {
+    .event-no-prices { justify-content: flex-start; padding-top: 2px; }
+  }
+}
+
+@layer components {
+  /*
+   * Legend alignment. `.legend-odds` is the same width as `.event-odds` at each
+   * breakpoint and `.legend-cells` the same width as the first `.odds-group`,
+   * so "1 X 2" sits exactly over the prices it names.
+   */
+  .market-legend .legend-odds { display: flex; flex: none; }
+  .market-legend .legend-cells {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px; text-align: center; width: 100%;
+  }
+  @media (min-width: 1200px) {
+    .market-legend .legend-odds { width: 420px; }
+    .market-legend .legend-cells { width: 150px; flex: 0 0 auto; }
+  }
+  @media (min-width: 768px) and (max-width: 1199px) {
+    .market-legend .legend-odds { width: 236px; }
+  }
+  @media (max-width: 767px) {
+    /* Stacked layout has no columns to head, so the legend would only mislead. */
+    .market-legend .legend-odds { display: none; }
+  }
+}

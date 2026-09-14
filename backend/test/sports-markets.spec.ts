@@ -91,6 +91,19 @@ describe('soccer settlement evaluators', () => {
     expect(evaluator.evaluate(home('over', '2'), result(2, 0))).toBe('VOID');
   });
 
+  it('settles team totals whose key carries the line, and legacy bare keys', () => {
+    // Keys became "over_1.5" so multiple lines stay distinct; settlement still
+    // reads the line from marketPoint, and bets stored under the old bare key
+    // must keep settling identically.
+    const evaluator = new TeamTotalsSettlementEvaluator();
+    const leg1 = leg({ marketKey: 'team_totals_home', selectionKey: 'over_1.5', marketPoint: new Prisma.Decimal('1.5') });
+    const legacy = leg({ marketKey: 'team_totals_home', selectionKey: 'over', marketPoint: new Prisma.Decimal('1.5') });
+    expect(evaluator.evaluate(leg1, result(2, 0))).toBe('WON');
+    expect(evaluator.evaluate(legacy, result(2, 0))).toBe('WON');
+    expect(evaluator.evaluate(leg({ marketKey: 'team_totals_away', selectionKey: 'under_1.5', marketPoint: new Prisma.Decimal('1.5') }), result(2, 0))).toBe('WON');
+    expect(evaluator.evaluate(leg({ marketKey: 'team_totals_home', selectionKey: 'sideways_1.5', marketPoint: new Prisma.Decimal('1.5') }), result(2, 0))).toBe('UNRESOLVED');
+  });
+
   it('leaves unfinished events unresolved and voids cancelled ones', () => {
     const pending = { provider: 'fixture', providerEventId: 'event', status: 'UNKNOWN' as const };
     const cancelled = { provider: 'fixture', providerEventId: 'event', status: 'CANCELLED' as const };

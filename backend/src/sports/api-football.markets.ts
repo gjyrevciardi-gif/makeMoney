@@ -115,7 +115,13 @@ export function normalizeSelection(marketKey: string, raw: RawValue): Selection 
     case 'corners_totals':
     case 'cards_totals': {
       const parsed = overUnder(value, raw.handicap);
-      return parsed ? { key: parsed.key, name: `${parsed.key === 'over' ? 'Over' : 'Under'} ${parsed.point}`, point: parsed.point, ...base } : undefined;
+      if (!parsed) return undefined;
+      // The line belongs in the key. A provider offers several lines of the
+      // same market at once (Over 0.5, 1.5, 2.5, 3.5), and keying them all as
+      // "over" makes them indistinguishable: the placement path resolves a
+      // selection with selections.find(key), so it would match the first line
+      // and accept the stake at a different line's price than the one clicked.
+      return { key: `${parsed.key}_${parsed.point}`, name: `${parsed.key === 'over' ? 'Over' : 'Under'} ${parsed.point}`, point: parsed.point, ...base };
     }
     case 'asian_handicap': {
       // Display-only, so the key only has to be stable and unique, never

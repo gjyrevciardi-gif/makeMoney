@@ -99,6 +99,16 @@ function EventRowBase({ row, stale }: EventRowProps) {
       </div>
 
       <div className="event-odds">
+        {/*
+          A fixture the feed returned with no book at all is real, but three
+          phantom "—" cells imply prices that were never offered and stretch the
+          board with dead rows. One muted note is honest and far denser.
+        */}
+        {row.markets.length === 0 && (
+          <span className="event-no-prices">No prices yet</span>
+        )}
+
+        {row.markets.length > 0 && (
         <div className="odds-group" role="group" aria-label="Match result">
           {cells.map((selection, index) => (
             <OddsButton
@@ -118,6 +128,7 @@ function EventRowBase({ row, stale }: EventRowProps) {
             />
           ))}
         </div>
+        )}
 
         {overUnderCells.length > 0 && (
           <div className="odds-group" role="group" aria-label="Total goals">

@@ -8,80 +8,19 @@ import { CADENCE, qk } from './queries';
 
 export type Sport = { key: string; name: string; active: boolean; group?: string };
 
-export type SportsEvent = {
-  provider: string;
-  /** The provider's own id, as stored on a bet leg. */
-  providerEventId: string;
-  /**
-   * The namespaced id used for links and odds lookups. It encodes which
-   * provider owns the event, so routing cannot send an API-Football fixture
-   * into The Odds API's id space. Optional so older payloads still parse.
-   */
-  internalEventId?: string;
-  sportKey: string;
-  sportName: string;
-  competitionName?: string;
-  homeTeam: string;
-  awayTeam: string;
-  startTime: string;
-  status: 'UPCOMING' | 'STARTED_UNKNOWN';
-};
-
-export type Selection = { key: string; name: string; price: string; point?: string; suspended?: boolean };
-
-/**
- * `key` mirrors the backend catalogue and is no longer a closed union: soccer
- * carries real provider markets alongside the original three.
- *
- * `bettable` is the display/stake split. It is advisory on the client — the
- * server re-derives it on placement — but the UI must honour it so a
- * display-only or suspended market never reaches the bet slip.
+/*
+ * Types and pure market helpers live in ./sports-markets so they can be unit
+ * tested without React or the API client. Re-exported here so callers keep a
+ * single import site.
  */
-export type MarketKey = string;
-export type MarketGroup =
-  | 'popular' | 'match_result' | 'goals' | 'handicaps'
-  | 'halves' | 'team' | 'corners' | 'cards' | 'correct_score';
+export type {
+  SportsEvent, Selection, MarketKey, MarketGroup, Market, LiveState, BoardEvent,
+} from './sports-markets';
+export {
+  MARKET_GROUP_ORDER, MARKET_GROUP_NAMES, isSelectable, groupMarkets, findMarket, h2hCells,
+} from './sports-markets';
 
-export type Market = {
-  key: MarketKey;
-  name: string;
-  group?: MarketGroup;
-  selections: Selection[];
-  bettable?: boolean;
-  suspended?: boolean;
-  unavailableReason?: string;
-};
-
-/** Live state for an in-play fixture. Absent for pre-match events. */
-export type LiveState = { status: string; minute?: number; homeScore?: number; awayScore?: number };
-
-export type BoardEvent = {
-  event: SportsEvent;
-  bookmaker: { key: string; name: string } | null;
-  markets: Market[];
-};
-
-export const MARKET_GROUP_ORDER: MarketGroup[] = ['popular', 'match_result', 'goals', 'handicaps', 'halves', 'team', 'corners', 'cards', 'correct_score'];
-export const MARKET_GROUP_NAMES: Record<MarketGroup, string> = {
-  popular: 'Popular', match_result: 'Match Result', goals: 'Goals', handicaps: 'Handicaps',
-  halves: 'Halves', team: 'Team', corners: 'Corners', cards: 'Cards', correct_score: 'Correct Score',
-};
-
-/** A selection may enter the slip only if its market AND itself both allow it. */
-export const isSelectable = (market: Market, selection: Selection) =>
-  market.bettable === true && market.suspended !== true && selection.suspended !== true;
-
-/** Group markets for the event page, preserving catalogue order, dropping empties. */
-export function groupMarkets(markets: Market[]): { group: MarketGroup; name: string; markets: Market[] }[] {
-  const byGroup = new Map<MarketGroup, Market[]>();
-  for (const market of markets) {
-    const group = (market.group ?? 'popular') as MarketGroup;
-    byGroup.set(group, [...(byGroup.get(group) ?? []), market]);
-  }
-  return MARKET_GROUP_ORDER
-    .filter(group => (byGroup.get(group)?.length ?? 0) > 0)
-    .map(group => ({ group, name: MARKET_GROUP_NAMES[group], markets: byGroup.get(group)! }));
-}
+import type { BoardEvent, Market, SportsEvent } from './sports-markets';
 
 export type SportsBoard = {
   sportKey: string;
@@ -98,10 +37,11 @@ export type EventOdds = {
   fetchedAt: string;
   staleAt: string;
   /** Present only while the fixture is in play. */
-  live?: LiveState;
+  live?: import('./sports-markets').LiveState;
   /** Markets the provider offered, before our mapping narrowed them. */
   marketCount?: number;
 };
+
 
 /**
  * Sport groups.
@@ -165,25 +105,6 @@ export function matchesSportsSearch(row: BoardEvent, value: string) {
     row.event.sportName,
   ].filter(Boolean).join(' ').toLowerCase();
   return query.split(' ').every((token) => haystack.includes(token));
-}
-
-export const findMarket = (markets: Market[], key: MarketKey) =>
-  markets.find((market) => market.key === key);
-
-/**
- * Football keeps 1 / X / 2. Other sports have no draw, so the home and away
- * prices are shown in the two outer cells and the middle is left empty rather
- * than padded with an invented price.
- */
-export function h2hCells(row: BoardEvent): (Selection | null)[] {
-  const market = findMarket(row.markets, 'h2h');
-  if (!market) return [null, null, null];
-  const home = market.selections.find((s) => s.name === row.event.homeTeam) ?? null;
-  const away = market.selections.find((s) => s.name === row.event.awayTeam) ?? null;
-  const draw = market.selections.find((s) => s.name.toLowerCase() === 'draw') ?? null;
-  if (home || away || draw) return [home, draw, away];
-  // Fall back to positional order for a provider naming outcomes differently.
-  return [market.selections[0] ?? null, market.selections[2] ?? null, market.selections[1] ?? null];
 }
 
 export const isStale = (staleAt: string | undefined) =>

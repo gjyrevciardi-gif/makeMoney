@@ -43,8 +43,18 @@ export class CorrectScoreSettlementEvaluator implements MarketSettlementEvaluato
   supports(key: string) { return key === 'correct_score'; }
   evaluate(leg: BetLeg, result: NormalizedEventResult): Evaluation { const value = finalScores(result); if (value === 'VOID' || value === 'UNRESOLVED') return value; const match = /^(\d{1,2})-(\d{1,2})$/.exec(leg.selectionKey); if (!match) return 'UNRESOLVED'; return value[0].equals(new Prisma.Decimal(match[1])) && value[1].equals(new Prisma.Decimal(match[2])) ? 'WON' : 'LOST'; }
 }
+/**
+ * Over/under selection keys carry their line ("over_2.5") so several lines of
+ * one market stay distinguishable. Settlement still reads the line from
+ * `marketPoint`, which is authoritative; the key only says which side was
+ * taken. Bare "over"/"under" keys from before that change still resolve.
+ */
+const overUnderSide = (selectionKey: string): 'over' | 'under' | undefined => {
+  const side = selectionKey.split('_')[0];
+  return side === 'over' || side === 'under' ? side : undefined;
+};
 export class TeamTotalsSettlementEvaluator implements MarketSettlementEvaluator {
   supports(key: string) { return key === 'team_totals_home' || key === 'team_totals_away'; }
-  evaluate(leg: BetLeg, result: NormalizedEventResult): Evaluation { const value = finalScores(result); if (value === 'VOID' || value === 'UNRESOLVED') return value; if (!leg.marketPoint) return 'UNRESOLVED'; if (leg.selectionKey !== 'over' && leg.selectionKey !== 'under') return 'UNRESOLVED'; const scored = leg.marketKey === 'team_totals_home' ? value[0] : value[1]; const comparison = scored.comparedTo(leg.marketPoint); if (comparison === 0) return 'VOID'; return (leg.selectionKey === 'over') === (comparison > 0) ? 'WON' : 'LOST'; }
+  evaluate(leg: BetLeg, result: NormalizedEventResult): Evaluation { const value = finalScores(result); if (value === 'VOID' || value === 'UNRESOLVED') return value; if (!leg.marketPoint) return 'UNRESOLVED'; const side = overUnderSide(leg.selectionKey); if (!side) return 'UNRESOLVED'; const scored = leg.marketKey === 'team_totals_home' ? value[0] : value[1]; const comparison = scored.comparedTo(leg.marketPoint); if (comparison === 0) return 'VOID'; return (side === 'over') === (comparison > 0) ? 'WON' : 'LOST'; }
 }
 export const SETTLEMENT_EVALUATORS: MarketSettlementEvaluator[] = [new H2HSettlementEvaluator(), new TotalsSettlementEvaluator(), new SpreadSettlementEvaluator(), new DoubleChanceSettlementEvaluator(), new DrawNoBetSettlementEvaluator(), new BttsSettlementEvaluator(), new CorrectScoreSettlementEvaluator(), new TeamTotalsSettlementEvaluator()];
