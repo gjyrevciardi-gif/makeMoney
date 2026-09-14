@@ -1,0 +1,28 @@
+{
+  "get": "odds/bookmakers",
+  "parameters": [],
+  "errors": [],
+  "results": 4,
+  "paging": {
+    "current": 1,
+    "total": 1
+  },
+  "response": [
+    {
+      "id": 2,
+      "name": "Marathonbet"
+    },
+    {
+      "id": 4,
+      "name": "Pinnacle"
+    },
+    {
+      "id": 7,
+      "name": "William Hill"
+    },
+    {
+      "id": 8,
+      "name": "Bet365"
+    }
+  ]
+}

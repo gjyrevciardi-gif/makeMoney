@@ -1,0 +1,68 @@
+{
+  "get": "odds/bets",
+  "parameters": [],
+  "errors": [],
+  "results": 14,
+  "paging": {
+    "current": 1,
+    "total": 1
+  },
+  "response": [
+    {
+      "id": 1,
+      "name": "Match Winner"
+    },
+    {
+      "id": 2,
+      "name": "Home/Away"
+    },
+    {
+      "id": 4,
+      "name": "Asian Handicap"
+    },
+    {
+      "id": 5,
+      "name": "Goals Over/Under"
+    },
+    {
+      "id": 8,
+      "name": "Both Teams Score"
+    },
+    {
+      "id": 9,
+      "name": "Handicap Result"
+    },
+    {
+      "id": 10,
+      "name": "Exact Score"
+    },
+    {
+      "id": 12,
+      "name": "Double Chance"
+    },
+    {
+      "id": 13,
+      "name": "First Half Winner"
+    },
+    {
+      "id": 16,
+      "name": "Total - Home"
+    },
+    {
+      "id": 17,
+      "name": "Total - Away"
+    },
+    {
+      "id": 45,
+      "name": "Corners Over Under"
+    },
+    {
+      "id": 55,
+      "name": "Corners 1x2"
+    },
+    {
+      "id": 80,
+      "name": "Cards Over/Under"
+    }
+  ]
+}
