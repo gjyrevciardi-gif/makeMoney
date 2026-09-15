@@ -12,6 +12,7 @@ import {
   formatPoints,
   newIdempotencyKey,
 } from '../../../lib/casino';
+import { useSettledBalance } from '../../../lib/casino-queries';
 
 type PlinkoBoard = {
   rows: number;
@@ -45,6 +46,7 @@ type PlinkoState = {
 const STEP_MS = 90;
 
 export default function PlinkoPage() {
+  const refreshBalance = useSettledBalance();
   const [config, setConfig] = useState<PlinkoConfig | null>(null);
   const [balance, setBalance] = useState('0');
   const [stake, setStake] = useState('100');
@@ -125,7 +127,7 @@ export default function PlinkoPage() {
       });
       setResult(round);
       animate((round.state as unknown as PlinkoState).path);
-      setBalance(await fetchBalance());
+      setBalance(await refreshBalance());
       await loadHistory();
     } catch (failure) {
       setError(describeError(failure as { code: string; message: string }));

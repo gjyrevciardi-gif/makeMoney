@@ -12,6 +12,7 @@ import {
   formatPoints,
   newIdempotencyKey,
 } from '../../../lib/casino';
+import { useSettledBalance } from '../../../lib/casino-queries';
 
 type DiceConfig = {
   minStake: string;
@@ -47,6 +48,7 @@ const estimate = (config: DiceConfig | null, mode: string, target: number) => {
 };
 
 export default function DicePage() {
+  const refreshBalance = useSettledBalance();
   const [config, setConfig] = useState<DiceConfig | null>(null);
   const [balance, setBalance] = useState('0');
   const [stake, setStake] = useState('100');
@@ -100,7 +102,7 @@ export default function DicePage() {
       setResult(round);
       setHistory((previous) => [round, ...previous].slice(0, 10));
       // The wallet is refetched from the backend; it is never adjusted locally.
-      setBalance(await fetchBalance());
+      setBalance(await refreshBalance());
     } catch (failure) {
       setError(describeError(failure as { code: string; message: string }));
     } finally {
