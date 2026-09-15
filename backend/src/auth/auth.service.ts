@@ -50,9 +50,34 @@ export class AuthService {
     return { pair, user: { id: user.id, email: user.email, role: user.role, balance: (user.wallet?.balance ?? 0n).toString() } };
   }
 
+  /**
+   * A refresh that loses a concurrent race is not a server fault.
+   *
+   * Rotation runs Serializable, so two tabs refreshing the same cookie at the
+   * same moment make Postgres abort one of them with a write conflict. That
+   * surfaced as an unhandled PrismaClientKnownRequestError and a 500, which is
+   * both alarming to an operator and wrong: the loser's token really has been
+   * rotated by the winner, so the honest answer is the same "invalid refresh
+   * token" any stale token gets.
+   *
+   * It is deliberately NOT treated as reuse. Genuine reuse - presenting a token
+   * already marked revoked - still takes the branch below that revokes the whole
+   * family and returns 403; downgrading a lost race to that would log a user out
+   * of every session merely for having two tabs open.
+   */
+  private static readonly RACE_CODES = new Set(['P2034', 'P2028']);
+
   async rotateRefreshToken(rawToken: string): Promise<TokenPair> {
     if (!rawToken) throw new UnauthorizedException('REFRESH_TOKEN_REQUIRED');
-    const outcome = await this.prisma.$transaction(async (tx) => {
+    const outcome = await this.runRotation(rawToken);
+    if (outcome.kind === 'reuse') throw new ForbiddenException('REFRESH_TOKEN_REUSE_DETECTED');
+    if (outcome.kind !== 'success') throw new UnauthorizedException('INVALID_REFRESH_TOKEN');
+    return outcome.pair;
+  }
+
+  private async runRotation(rawToken: string): Promise<{ kind: 'invalid' | 'reuse' } | { kind: 'success'; pair: TokenPair }> {
+    try {
+      return await this.prisma.$transaction(async (tx) => {
       const record = await tx.refreshToken.findUnique({ where: { tokenHash: this.hashToken(rawToken) }, include: { user: true } });
       if (!record) return { kind: 'invalid' as const };
       if (record.revokedAt) {
@@ -65,10 +90,16 @@ export class AuthService {
       const pair = await this.createPair(tx, record.userId, record.user.role, record.familyId);
       await tx.auditLog.create({ data: { actorId: record.userId, targetType: 'TOKEN_FAMILY', targetId: record.familyId, action: 'REFRESH_SUCCESS', result: 'SUCCESS' } });
       return { kind: 'success' as const, pair };
-    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
-    if (outcome.kind === 'reuse') throw new ForbiddenException('REFRESH_TOKEN_REUSE_DETECTED');
-    if (outcome.kind !== 'success') throw new UnauthorizedException('INVALID_REFRESH_TOKEN');
-    return outcome.pair;
+      }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+    } catch (error) {
+      // Only a serialization conflict is swallowed, and only into "invalid".
+      // Any other database fault still propagates, so a real outage is not
+      // disguised as an expired session.
+      if (error instanceof Prisma.PrismaClientKnownRequestError && AuthService.RACE_CODES.has(error.code)) {
+        return { kind: 'invalid' as const };
+      }
+      throw error;
+    }
   }
 
   async revokeFamily(rawToken?: string): Promise<void> {
