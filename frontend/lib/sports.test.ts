@@ -1,6 +1,6 @@
 import { strict as assert } from 'node:assert';
 import { test } from 'node:test';
-import { groupMarkets, h2hCells, isSelectable, type BoardEvent, type Market, type Selection } from './sports-markets.ts';
+import { groupMarkets, h2hCells, isSelectable, liveClockText, liveScoreText, type BoardEvent, type Market, type Selection } from './sports-markets.ts';
 
 const sel = (key: string, name: string, extra: Partial<Selection> = {}): Selection =>
   ({ key, name, price: '2.00', ...extra });
@@ -80,4 +80,29 @@ test('over/under lines stay distinct so a stake cannot match the wrong line', ()
   const m = market('totals', [sel('over_1.5', 'Over 1.5'), sel('over_2.5', 'Over 2.5')], { bettable: true });
   const keys = m.selections.map(s => s.key);
   assert.equal(new Set(keys).size, keys.length);
+});
+
+test('live score renders only when the provider reported both sides', () => {
+  assert.equal(liveScoreText({ status: 'Second Half', homeScore: 1, awayScore: 0 }), '1 - 0');
+  // A goalless game genuinely reports 0, so 0-0 is real and must show.
+  assert.equal(liveScoreText({ status: 'First Half', homeScore: 0, awayScore: 0 }), '0 - 0');
+  // Absent means not reported, and must never be invented as 0-0.
+  assert.equal(liveScoreText({ status: 'First Half' }), undefined);
+  assert.equal(liveScoreText({ status: 'First Half', homeScore: 1 }), undefined);
+  assert.equal(liveScoreText(undefined), undefined);
+});
+
+test('live clock renders only when elapsed is reported', () => {
+  assert.equal(liveClockText({ status: 'Second Half', minute: 81 }), "81'");
+  // Minute 0 is a real kick-off minute, not a missing value.
+  assert.equal(liveClockText({ status: 'First Half', minute: 0 }), "0'");
+  assert.equal(liveClockText({ status: 'Halftime' }), undefined);
+  assert.equal(liveClockText(undefined), undefined);
+});
+
+test('an Odds API event without live detail yields no score or clock', () => {
+  // The Odds API reports no in-play detail at all; absence must stay absence.
+  const r = row([]);
+  assert.equal(liveScoreText(r.live), undefined);
+  assert.equal(liveClockText(r.live), undefined);
 });

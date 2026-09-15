@@ -50,11 +50,30 @@ export type Market = {
 /** Live state for an in-play fixture. Absent for pre-match events. */
 export type LiveState = { status: string; minute?: number; homeScore?: number; awayScore?: number };
 
+/**
+ * `live` is present only for a provider that reports in-play detail. Its
+ * absence means "not reported" and must never be rendered as 0-0 or as a clock
+ * at zero — The Odds API supplies no live detail at all.
+ */
 export type BoardEvent = {
   event: SportsEvent;
   bookmaker: { key: string; name: string } | null;
   markets: Market[];
+  live?: LiveState;
 };
+
+/** The score line, or undefined when the provider did not report one. */
+export const liveScoreText = (live: LiveState | undefined): string | undefined =>
+  live && live.homeScore !== undefined && live.awayScore !== undefined
+    ? `${live.homeScore} - ${live.awayScore}`
+    : undefined;
+
+/**
+ * The clock, or undefined when elapsed is absent. A fixture at minute 0 is
+ * genuinely at minute 0, so only undefined suppresses the clock.
+ */
+export const liveClockText = (live: LiveState | undefined): string | undefined =>
+  live && live.minute !== undefined ? `${live.minute}'` : undefined;
 
 export const MARKET_GROUP_ORDER: MarketGroup[] = ['popular', 'match_result', 'goals', 'handicaps', 'halves', 'team', 'corners', 'cards', 'correct_score'];
 export const MARKET_GROUP_NAMES: Record<MarketGroup, string> = {

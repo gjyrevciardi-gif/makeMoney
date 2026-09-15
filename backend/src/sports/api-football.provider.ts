@@ -162,6 +162,31 @@ export class ApiFootballProvider implements SportsProvider {
     return markets;
   }
 
+  /**
+   * Live state taken from the fixtures response, which already carries
+   * `status.long`, `status.elapsed` and `goals`. Deriving it here rather than
+   * from `/odds/live` means the board gains a real score and clock at no extra
+   * provider call (§9).
+   *
+   * Every field is omitted when the provider reports null. A fixture that has
+   * kicked off with no goals yet genuinely reports 0, so a missing score means
+   * "not reported" and must never be rendered as 0-0; likewise a null elapsed
+   * leaves the clock absent and the status standing on its own.
+   */
+  private fixtureLiveState(fixture: FixtureEntry): LiveState | undefined {
+    const short = fixture.fixture.status.short;
+    if (!IN_PLAY_STATUSES.has(short)) return undefined;
+    const elapsed = fixture.fixture.status.elapsed;
+    const home = fixture.goals?.home;
+    const away = fixture.goals?.away;
+    return {
+      status: fixture.fixture.status.long,
+      ...(elapsed === null || elapsed === undefined ? {} : { minute: elapsed }),
+      ...(home === null || home === undefined ? {} : { homeScore: home }),
+      ...(away === null || away === undefined ? {} : { awayScore: away }),
+    };
+  }
+
   private liveState(entry: LiveOddsEntry): LiveState {
     return {
       status: entry.fixture.status.long,
@@ -173,9 +198,41 @@ export class ApiFootballProvider implements SportsProvider {
 
   // --- Public odds surfaces. ---
 
-  private prematchOddsByDate(date: string) {
-    return this.cache.cached(`af:v1:odds:${date}`, this.config.ttl.prematch, async () =>
-      parseAll(prematchOddsEntry, await this.call(`/odds?date=${encodeURIComponent(date)}`)));
+  /**
+   * One page of a day's pre-match odds, cached per page so pages are reused
+   * across users and across board refreshes (§7C). The frontend never reaches
+   * the provider: it asks for a board, and only a cache miss here costs a call.
+   */
+  private prematchOddsPage(date: string, page: number) {
+    return this.cache.cached(`af:v1:odds:${date}:p${page}`, this.config.ttl.prematch, async () =>
+      parseAll(prematchOddsEntry, await this.call(`/odds?date=${encodeURIComponent(date)}&page=${page}`)));
+  }
+
+  /**
+   * As much of a day's book as the page budget allows.
+   *
+   * Pages are fetched in order and stop early on three conditions: the budget
+   * is spent, a page comes back short (the last page), or the account's
+   * remaining quota has fallen to the configured floor. The last of these is
+   * what keeps a nearly-exhausted key usable — cached pages still serve, and
+   * only the discretionary next page is skipped.
+   */
+  private async prematchOddsByDate(date: string): Promise<PrematchOddsEntry[]> {
+    const budget = Math.max(1, this.config.prematchPageBudget);
+    const collected: PrematchOddsEntry[] = [];
+    for (let page = 1; page <= budget; page++) {
+      const remaining = this.quota.remainingDay;
+      if (page > 1 && remaining !== undefined && remaining <= this.config.quotaFloor) {
+        this.logger.warn({ event: 'API_FOOTBALL_ENRICHMENT_STOPPED', reason: 'QUOTA_FLOOR', remaining, page });
+        break;
+      }
+      const rows = await this.prematchOddsPage(date, page);
+      collected.push(...rows);
+      // A short page is the last one; asking for the next would spend a call to
+      // learn nothing.
+      if (rows.length < 10) break;
+    }
+    return collected;
   }
 
   /** Live odds for everything in play. Short TTL, and only while games run (§9). */
@@ -192,7 +249,8 @@ export class ApiFootballProvider implements SportsProvider {
     const events: BoardEvent[] = fixtures.map(fixture => {
       const entry = oddsByFixture.get(fixture.fixture.id);
       const normalized = entry ? this.prematchMarkets(entry) : { bookmaker: null, markets: [] as Market[] };
-      return { event: this.toEvent(fixture), bookmaker: normalized.bookmaker, markets: normalized.markets };
+      const live = this.fixtureLiveState(fixture);
+      return { event: this.toEvent(fixture), bookmaker: normalized.bookmaker, markets: normalized.markets, ...(live ? { live } : {}) };
     });
     return {
       sportKey: API_FOOTBALL_SPORT_KEY,

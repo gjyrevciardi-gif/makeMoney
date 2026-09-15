@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { memo, useCallback } from 'react';
 import { formatDay, formatTime } from '../../lib/format';
 import { pickId, useBetSlip, type SlipPick } from '../../lib/bet-slip';
-import { h2hCells, isLive, type BoardEvent, type Selection } from '../../lib/sports';
+import { h2hCells, isLive, liveClockText, type BoardEvent, type Selection } from '../../lib/sports';
 import { OddsButton } from './odds-button';
 
 /** Labels for the three primary cells. Football keeps 1 / X / 2. */
@@ -27,18 +27,27 @@ function EventRowBase({ row, stale }: EventRowProps) {
   // never a selection count dressed up as a market count (§1).
   const marketCount = row.markets.length;
   const eventId = event.internalEventId ?? event.providerEventId;
+  // Real in-play detail, or nothing. Undefined means the provider did not
+  // report it, which is not the same as zero.
+  const clock = liveClockText(row.live);
+  const homeScore = row.live?.homeScore;
+  const awayScore = row.live?.awayScore;
 
   // Secondary primary markets shown inline beside 1/X/2, only where the
   // provider actually priced them.
   const totals = row.markets.find((market) => market.key === 'totals');
   const btts = row.markets.find((market) => market.key === 'btts');
-  const over = totals?.selections.find((selection) => selection.key === 'over');
-  const under = totals?.selections.find((selection) => selection.key === 'under');
-  // Only cells the provider actually priced are rendered; a missing side leaves
-  // the group out entirely rather than showing an empty slot.
+  // Selection keys carry their line ("over_2.5"), so the board picks one line
+  // and shows both sides of it. The first over the provider listed is treated
+  // as the headline line, and the under must be the SAME line — pairing Over
+  // 2.5 with Under 1.5 would read as one market and is simply wrong.
+  const mainOver = totals?.selections.find((selection) => selection.key.startsWith('over'));
+  const mainUnder = mainOver
+    ? totals?.selections.find((selection) => selection.key === `under_${mainOver.point ?? ''}` || (mainOver.point === undefined && selection.key.startsWith('under')))
+    : undefined;
   const overUnderCells = [
-    over ? { selection: over, label: `O ${over.point ?? ''}`.trim() } : null,
-    under ? { selection: under, label: `U ${under.point ?? ''}`.trim() } : null,
+    mainOver ? { selection: mainOver, label: `O ${mainOver.point ?? ''}`.trim() } : null,
+    mainUnder ? { selection: mainUnder, label: `U ${mainUnder.point ?? ''}`.trim() } : null,
   ].filter((cell): cell is { selection: Selection; label: string } => cell !== null);
 
   const bttsCells = [
@@ -48,7 +57,10 @@ function EventRowBase({ row, stale }: EventRowProps) {
 
   const select = useCallback((selection: Selection, marketKey: string, marketName: string) => {
     const pick: SlipPick = {
-      eventId: event.providerEventId,
+      // The namespaced id, not the bare provider id: placement routes on this,
+      // and an unprefixed API-Football id would be resolved against The Odds
+      // API's id space and rejected as an unknown event.
+      eventId: event.internalEventId ?? event.providerEventId,
       sportKey: event.sportKey,
       marketKey,
       marketName,
@@ -70,7 +82,16 @@ function EventRowBase({ row, stale }: EventRowProps) {
       <div className="event-main">
         <div className="event-time">
           {live ? (
-            <span className="pill live"><span className="live-dot" />Live</span>
+            <>
+              <span className="pill live"><span className="live-dot" />Live</span>
+              {/*
+                Only what the provider reported. A missing score stays missing
+                rather than becoming 0-0, and a missing clock leaves the status
+                to speak for itself.
+              */}
+              {clock && <span className="live-clock">{clock}</span>}
+              {!clock && row.live?.status && <span className="live-status">{row.live.status}</span>}
+            </>
           ) : (
             <>
               <b>{formatTime(event.startTime)}</b>
@@ -82,9 +103,11 @@ function EventRowBase({ row, stale }: EventRowProps) {
         <div className="event-teams">
           <span className="event-team">
             <span className="event-team-name">{event.homeTeam}</span>
+            {homeScore !== undefined && <span className="event-team-score">{homeScore}</span>}
           </span>
           <span className="event-team">
             <span className="event-team-name">{event.awayTeam}</span>
+            {awayScore !== undefined && <span className="event-team-score">{awayScore}</span>}
           </span>
           <span className="event-meta-line">
             {event.competitionName && <span className="event-competition">{event.competitionName}</span>}

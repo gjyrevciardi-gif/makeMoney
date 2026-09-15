@@ -966,3 +966,14 @@
     .market-legend .legend-odds { display: none; }
   }
 }
+
+@layer components {
+  /* Live detail. Rendered only when the provider actually reported it. */
+  .live-clock { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 0.8125rem; color: var(--color-brand); }
+  .live-status { font-size: 0.6875rem; color: var(--color-ink-muted); }
+  .event-team-score {
+    margin-left: auto; padding-left: 10px;
+    font-variant-numeric: tabular-nums; font-weight: 700; font-size: 0.9375rem;
+  }
+  .event-team { display: flex; align-items: baseline; }
+}

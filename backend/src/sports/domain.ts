@@ -23,8 +23,15 @@ export type Market = { key: string; name: string; group?: string; selections: Se
 /** Live state for an in-play fixture (§8). Absent for pre-match events. */
 export type LiveState = { status: string; minute?: number; homeScore?: number; awayScore?: number };
 export type EventOdds = { event: SportsEvent; bookmaker: { key: string; name: string }; markets: Market[]; fetchedAt: string; staleAt: string; live?: LiveState; /** Total markets the provider returned, including display-only ones (§7). */ marketCount?: number };
-/** One event as it appears on a listing board: the event plus its primary markets. */
-export type BoardEvent = { event: SportsEvent; bookmaker: { key: string; name: string } | null; markets: Market[] };
+/**
+ * One event as it appears on a listing board: the event plus its primary
+ * markets, and — only for a provider that reports it — its live state.
+ *
+ * `live` is absent for The Odds API, which supplies no in-play detail. A
+ * consumer must therefore treat its absence as "unknown", never as 0-0 or as a
+ * clock at zero.
+ */
+export type BoardEvent = { event: SportsEvent; bookmaker: { key: string; name: string } | null; markets: Market[]; live?: LiveState };
 /**
  * A whole sport's listing in one payload.
  *

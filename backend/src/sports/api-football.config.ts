@@ -26,6 +26,23 @@ export const apiFootballConfig = () => ({
   },
   /** Restrict normalization to these bookmaker ids when the provider returns many. */
   bookmakerIds: ids('API_FOOTBALL_BOOKMAKER_IDS').map(Number).filter(Number.isFinite),
+  /**
+   * How many pages of `/odds?date=` the board may fetch on a cache miss.
+   *
+   * The odds route pages at 10 fixtures, so a full day can run to a dozen-plus
+   * calls. Enriching every page on every miss would empty a small daily
+   * allowance in a handful of refreshes, while fetching one page leaves most of
+   * the card unpriced — so the depth is a budget, not a constant, and an
+   * operator on a larger plan raises it without a code change.
+   */
+  prematchPageBudget: integer('API_FOOTBALL_PREMATCH_PAGE_BUDGET', 3),
+  /**
+   * Stop optional enrichment when the provider reports fewer than this many
+   * requests left for the day. Cached pages are still served; only the
+   * discretionary extra pages are skipped, so a nearly-spent account keeps
+   * working instead of failing outright (§7F).
+   */
+  quotaFloor: integer('API_FOOTBALL_QUOTA_FLOOR', 10),
 });
 
 export const isApiFootballConfigured = () => {

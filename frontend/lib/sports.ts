@@ -18,6 +18,7 @@ export type {
 } from './sports-markets';
 export {
   MARKET_GROUP_ORDER, MARKET_GROUP_NAMES, isSelectable, groupMarkets, findMarket, h2hCells,
+  liveScoreText, liveClockText,
 } from './sports-markets';
 
 import type { BoardEvent, Market, SportsEvent } from './sports-markets';
