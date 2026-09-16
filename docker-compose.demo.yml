@@ -1,0 +1,40 @@
+# Buyer demo datastores. Completely separate from dev, QA, CI and production:
+# its own compose project, its own volume, its own ports. Nothing here shares
+# state with docker-compose.yml, so resetting the demo can never touch the
+# development database.
+#
+# Ports are published on 127.0.0.1 rather than localhost on purpose. On Windows
+# localhost resolves to ::1 first, and a v4-only published port makes every new
+# connection pay a ~2s IPv6 timeout before falling back - which is long enough
+# to blow Prisma's 2s transaction budget. Every demo URL uses 127.0.0.1.
+name: totobuyerdemo
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: demo_user
+      POSTGRES_PASSWORD: ${DEMO_POSTGRES_PASSWORD:?set DEMO_POSTGRES_PASSWORD in .env.demo}
+      POSTGRES_DB: fools_gold_demo
+    ports:
+      - "127.0.0.1:55440:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U demo_user -d fools_gold_demo"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - demo_postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "127.0.0.1:6390:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  demo_postgres_data:

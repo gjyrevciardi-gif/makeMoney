@@ -1,12 +1,19 @@
 {
   "name": "fools-gold-club",
   "private": true,
-  "workspaces": ["backend", "frontend"],
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
   "scripts": {
     "install:all": "npm install",
     "test": "npm run test -w backend",
     "typecheck": "npm run typecheck -w backend && npm run typecheck -w frontend",
-    "build": "npm run build -w backend && npm run build -w frontend"
+    "build": "npm run build -w backend && npm run build -w frontend",
+    "demo:up": "node scripts/demo.mjs up",
+    "demo:reset": "node scripts/demo.mjs reset",
+    "demo:status": "node scripts/demo.mjs status",
+    "demo:down": "node scripts/demo.mjs down",
+    "demo:preflight": "node scripts/demo-preflight.mjs"
   }
 }
-

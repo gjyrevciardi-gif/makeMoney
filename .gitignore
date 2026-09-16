@@ -29,3 +29,6 @@ logs/
 backups/
 tmp/
 frontend/tsconfig.tsbuildinfo
+
+# Buyer demo runtime state (pids, server logs)
+.demo/
