@@ -110,12 +110,20 @@ describe('casino registry, search, favorites and recent games (PostgreSQL + Redi
       expect(new Set(games.map((game) => game.id)).size).toBe(games.length);
       expect(new Set(games.map((game) => game.slug)).size).toBe(games.length);
       expect(new Set(games.map((game) => game.route)).size).toBe(games.length);
-      expect(new Set(games.map((game) => game.gameType)).size).toBe(games.length);
+    });
+
+    it('lets one settlement type back several games', () => {
+      // SLOTS covers two slot families with entirely different mathematics, so
+      // a type is no longer one-to-one with a game. Ids stay the unique key.
+      const slots = registry.list().filter((game) => game.gameType === 'SLOTS');
+      expect(slots.length).toBeGreaterThan(1);
+      expect(new Set(slots.map((game) => game.id)).size).toBe(slots.length);
     });
 
     it('resolves a game by id and by type, and refuses an unknown one', () => {
       expect(registry.findById('dice')?.gameType).toBe('DICE');
-      expect(registry.find('SLOTS')?.id).toBe('fools-gold-rush');
+      expect(registry.findById('titans-tempest')?.gameType).toBe('SLOTS');
+      expect(registry.find('SLOTS')?.gameType).toBe('SLOTS');
       expect(registry.findById('not-a-game')).toBeUndefined();
       expect(() => registry.require('not-a-game')).toThrow();
     });

@@ -29,3 +29,6 @@ logs/
 backups/
 tmp/
 frontend/tsconfig.tsbuildinfo
+
+# graphify knowledge-graph output (local only)
+graphify-out/

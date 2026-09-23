@@ -15,6 +15,7 @@ import { BlackjackService } from './games/blackjack/blackjack.service';
 import { CrashService } from './games/crash/crash.service';
 import { PlinkoService } from './games/plinko/plinko.service';
 import { SlotsService } from './games/slots/slots.service';
+import { TumbleSlotsService } from './games/slots/tumble.service';
 
 /**
  * Cross-game casino reads: lobby metadata, per-user history, and the public
@@ -36,6 +37,7 @@ export class CasinoService {
     private readonly crash: CrashService,
     private readonly plinko: PlinkoService,
     private readonly slots: SlotsService,
+    private readonly tumble: TumbleSlotsService,
   ) {}
 
   /**
@@ -95,8 +97,16 @@ export class CasinoService {
     if (gameType === 'BLACKJACK') return this.blackjack.publicConfig();
     // Plinko publishes its frozen paytables rather than a single RTP number.
     if (gameType === 'PLINKO') return this.plinko.publicConfig();
-    // Slots publish the currently active approved profile.
-    if (gameType === 'SLOTS') return this.slots.publicConfig();
+    // Slots publish the currently active approved profile. There are two slot
+    // families behind the one settlement type, and each publishes its own
+    // shape, so the type-level answer is simply both catalogues.
+    if (gameType === 'SLOTS') {
+      const [payline, tumble] = await Promise.all([
+        this.slots.publicConfig(),
+        this.tumble.publicConfig(),
+      ]);
+      return { gameType: 'SLOTS', games: [...payline.games, ...tumble.games] };
+    }
     const config = this.registry.config(gameType);
     if (!config) {
       throw new NotFoundException({ code: 'GAME_NOT_AVAILABLE', message: 'That game is not available yet.' });

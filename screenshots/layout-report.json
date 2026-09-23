@@ -1,0 +1,137 @@
+{
+  "mobile-390-base.png": {
+    "horizontalOverflow": 0,
+    "verticalOverflow": 0,
+    "viewport": [
+      390,
+      844
+    ],
+    "board": [
+      378,
+      391
+    ],
+    "boardRatio": 0.968,
+    "boardShare": 45,
+    "controlsBottom": 844
+  },
+  "mobile-390-bonus.png": {
+    "horizontalOverflow": 0,
+    "verticalOverflow": 0,
+    "viewport": [
+      390,
+      844
+    ],
+    "board": [
+      378,
+      391
+    ],
+    "boardRatio": 0.968,
+    "boardShare": 45,
+    "controlsBottom": 844
+  },
+  "mobile-390-multiplier.png": {
+    "horizontalOverflow": 0,
+    "verticalOverflow": 0,
+    "viewport": [
+      390,
+      844
+    ],
+    "board": [
+      378,
+      391
+    ],
+    "boardRatio": 0.968,
+    "boardShare": 45,
+    "controlsBottom": 844
+  },
+  "mobile-390-buybonus.png": {
+    "horizontalOverflow": 0,
+    "verticalOverflow": 0,
+    "viewport": [
+      390,
+      844
+    ],
+    "board": [
+      378,
+      391
+    ],
+    "boardRatio": 0.968,
+    "boardShare": 45,
+    "controlsBottom": 844
+  },
+  "mobile-393-base.png": {
+    "horizontalOverflow": 0,
+    "verticalOverflow": 0,
+    "viewport": [
+      393,
+      852
+    ],
+    "board": [
+      381,
+      394
+    ],
+    "boardRatio": 0.968,
+    "boardShare": 45,
+    "controlsBottom": 852
+  },
+  "mobile-430-base.png": {
+    "horizontalOverflow": 0,
+    "verticalOverflow": 0,
+    "viewport": [
+      430,
+      932
+    ],
+    "board": [
+      418,
+      432
+    ],
+    "boardRatio": 0.968,
+    "boardShare": 45,
+    "controlsBottom": 932
+  },
+  "desktop-base.png": {
+    "horizontalOverflow": 0,
+    "verticalOverflow": 0,
+    "viewport": [
+      1440,
+      900
+    ],
+    "board": [
+      796,
+      663
+    ],
+    "boardRatio": 1.2,
+    "boardShare": 41,
+    "controlsBottom": 900
+  },
+  "desktop-win.png": {
+    "horizontalOverflow": 0,
+    "verticalOverflow": 0,
+    "viewport": [
+      1440,
+      900
+    ],
+    "board": [
+      796,
+      663
+    ],
+    "boardRatio": 1.2,
+    "boardShare": 41,
+    "controlsBottom": 900
+  },
+  "desktop-bonus.png": {
+    "horizontalOverflow": 0,
+    "verticalOverflow": 0,
+    "viewport": [
+      1440,
+      900
+    ],
+    "board": [
+      796,
+      663
+    ],
+    "boardRatio": 1.2,
+    "boardShare": 41,
+    "controlsBottom": 900
+  }
+}

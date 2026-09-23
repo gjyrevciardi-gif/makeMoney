@@ -82,6 +82,13 @@ const ART: Record<string, ReactElement> = {
       <path className="accent-stroke" d="M10 50h44" />
     </g>
   ),
+  'titans-tempest': (
+    <g>
+      <path className="accent-stroke" d="M12 14h40v36H12z" />
+      <path className="accent-stroke" d="M25 14v36M39 14v36M12 26h40M12 38h40" opacity="0.5" />
+      <path className="accent-fill" d="M35 18l-9 16h6l-4 12 12-18h-6z" />
+    </g>
+  ),
 };
 
 type CardProps = {

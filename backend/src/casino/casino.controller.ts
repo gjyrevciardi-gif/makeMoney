@@ -43,6 +43,8 @@ import { PlinkoService } from './games/plinko/plinko.service';
 import { PlayPlinkoDto } from './games/plinko/plinko.dto';
 import { SlotsService } from './games/slots/slots.service';
 import { SpinSlotDto } from './games/slots/slot.dto';
+import { TumbleSlotsService } from './games/slots/tumble.service';
+import { SpinTumbleDto } from './games/slots/tumble.dto';
 
 class HistoryQuery {
   @Type(() => Number) @IsInt() @Min(1) @Max(100) limit = 25;
@@ -93,6 +95,7 @@ export class CasinoController {
     private readonly crash: CrashService,
     private readonly plinko: PlinkoService,
     private readonly slots: SlotsService,
+    private readonly tumble: TumbleSlotsService,
     private readonly limits: RateLimitService,
   ) {}
 
@@ -275,17 +278,35 @@ export class CasinoController {
   }
 
   @Get('slots/:gameId/config')
-  slotConfig(@Param('gameId') gameId: string) {
-    return this.slots.gameConfig(gameId);
+  slotConfig(@Param() params: GameIdParam) {
+    return this.slots.gameConfig(params.gameId);
   }
 
   @Post('slots/:gameId/spin')
   async spinSlot(
     @Req() request: AuthenticatedRequest,
-    @Param('gameId') gameId: string,
+    @Param() params: GameIdParam,
     @Body() body: SpinSlotDto,
   ) {
     await this.throttle(request.actor.id);
-    return this.slots.spin(request.actor.id, gameId, body);
+    return this.slots.spin(request.actor.id, params.gameId, body);
+  }
+
+  // The tumbling slots are a separate family with their own board, feature and
+  // spin contract, so they get their own routes rather than overloading the
+  // payline ones with a shape half of them cannot answer.
+  @Get('tumble/:gameId/config')
+  tumbleConfig(@Param() params: GameIdParam) {
+    return this.tumble.gameConfig(params.gameId);
+  }
+
+  @Post('tumble/:gameId/spin')
+  async spinTumble(
+    @Req() request: AuthenticatedRequest,
+    @Param() params: GameIdParam,
+    @Body() body: SpinTumbleDto,
+  ) {
+    await this.throttle(request.actor.id);
+    return this.tumble.spin(request.actor.id, params.gameId, body);
   }
 }

@@ -10,6 +10,7 @@ import {
   FOOLS_GOLD_RUSH_V1,
   slotVersion,
 } from './games/slots/slot.definitions';
+import { TITANS_TEMPEST_V1, tumbleVersion } from './games/slots/tumble.definition';
 
 export const CASINO_CATEGORIES = ['ORIGINALS', 'TABLE_GAMES', 'SLOTS'] as const;
 export type CasinoCategory = (typeof CASINO_CATEGORIES)[number];
@@ -22,6 +23,7 @@ export const CASINO_GAME_IDS = [
   'crash',
   'plinko',
   'fools-gold-rush',
+  'titans-tempest',
 ] as const;
 export type CasinoGameId = (typeof CASINO_GAME_IDS)[number];
 
@@ -205,6 +207,32 @@ const DEFINITIONS: GameDefinition[] = [
       };
     },
   },
+  {
+    id: 'titans-tempest',
+    slug: 'titans-tempest',
+    gameType: 'SLOTS',
+    name: 'Titan’s Tempest',
+    category: 'SLOTS',
+    description: '6x5 pays anywhere, tumbling wins, storm orbs and free spins.',
+    route: '/casino/slots/titans-tempest',
+    featured: true,
+    keywords: [
+      'titans tempest', 'titan', 'tempest', 'storm', 'olympus', 'zeus', 'temple', 'myth',
+      'slot', 'slots', 'tumble', 'cascade', 'scatter', 'multiplier', 'free spins',
+    ],
+    stateful: false,
+    supportsFairness: true,
+    thumbnailKey: 'titans-tempest',
+    envKey: 'CASINO_GAME_TITANS_TEMPEST_ENABLED',
+    config: () => {
+      const config = casinoConfig();
+      return {
+        minStake: config.minStake.toString(),
+        maxStake: config.maxStake.toString(),
+        gameVersion: tumbleVersion(TITANS_TEMPEST_V1),
+      };
+    },
+  },
 ];
 
 function enabledFromEnvironment(key: string) {
@@ -217,6 +245,12 @@ function normalizeSearch(value: string) {
   return value.trim().toLowerCase().replace(/[_\s]+/g, ' ');
 }
 
+/**
+ * Ids, slugs and routes stay unique; game *types* deliberately do not. A type
+ * is a settlement category, and two slots with completely different mathematics
+ * both settle as SLOTS. Every lookup that needs one specific game therefore
+ * goes through the id, which is also what a slot round records in its state.
+ */
 export function validateCasinoGameEntries(games: CasinoGameEntry[]) {
   if (games.length !== CASINO_GAME_IDS.length) {
     throw new Error(`Casino registry must contain exactly ${CASINO_GAME_IDS.length} games.`);
@@ -225,7 +259,6 @@ export function validateCasinoGameEntries(games: CasinoGameEntry[]) {
   const ids = new Set<string>();
   const slugs = new Set<string>();
   const routes = new Set<string>();
-  const gameTypes = new Set<string>();
   const knownGameTypes = new Set(Object.values(CasinoGameType));
   for (const game of games) {
     if (!CASINO_GAME_IDS.includes(game.id)) throw new Error(`Unknown casino game id: ${game.id}`);
@@ -256,7 +289,6 @@ export function validateCasinoGameEntries(games: CasinoGameEntry[]) {
     if (ids.has(game.id)) throw new Error(`Duplicate casino game id: ${game.id}`);
     if (slugs.has(game.slug)) throw new Error(`Duplicate casino game slug: ${game.slug}`);
     if (routes.has(game.route)) throw new Error(`Duplicate casino game route: ${game.route}`);
-    if (gameTypes.has(game.gameType)) throw new Error(`Duplicate casino game type: ${game.gameType}`);
     if (!/^\d+$/.test(game.minStake) || !/^\d+$/.test(game.maxStake)) {
       throw new Error(`Invalid stake metadata for ${game.id}.`);
     }
@@ -266,7 +298,6 @@ export function validateCasinoGameEntries(games: CasinoGameEntry[]) {
     ids.add(game.id);
     slugs.add(game.slug);
     routes.add(game.route);
-    gameTypes.add(game.gameType);
   }
 
   for (const expectedId of CASINO_GAME_IDS) {
@@ -305,6 +336,11 @@ export class CasinoGameRegistry implements OnModuleInit {
       });
   }
 
+  /**
+   * The first game of a type. A type is no longer one-to-one with a game -
+   * SLOTS backs both slot families - so anything that must name a specific slot
+   * resolves it by id, or from the round's own public state, never from here.
+   */
   find(gameType: CasinoGameType) {
     return this.list().find((game) => game.gameType === gameType);
   }

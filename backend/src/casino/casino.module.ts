@@ -26,6 +26,7 @@ import { CrashSettlementWorker } from './games/crash/crash-settlement.worker';
 import { PlinkoService } from './games/plinko/plinko.service';
 import { CasinoClock } from './casino-clock.service';
 import { SlotsService } from './games/slots/slots.service';
+import { TumbleSlotsService } from './games/slots/tumble.service';
 
 @Module({
   imports: [JwtModule.register({ secret: process.env.JWT_ACCESS_SECRET })],
@@ -56,6 +57,7 @@ import { SlotsService } from './games/slots/slots.service';
     CrashSettlementWorker,
     PlinkoService,
     SlotsService,
+    TumbleSlotsService,
   ],
   exports: [
     CasinoService,
