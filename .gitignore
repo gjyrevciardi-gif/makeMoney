@@ -32,3 +32,8 @@ frontend/tsconfig.tsbuildinfo
 
 # graphify knowledge-graph output (local only)
 graphify-out/
+
+# generated visual-test output (references/baselines are committed, output is not)
+tests/visual/output/*
+!tests/visual/output/.gitkeep
+screenshots/
