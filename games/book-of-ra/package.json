@@ -1,8 +1,15 @@
 {
-  "name": "book-of-ra-poc",
+  "name": "book-of-ra",
   "private": true,
   "type": "module",
   "engines": { "node": ">=24" },
+  "dependencies": {
+    "@slot-skills/schema": "0.1.0",
+    "@slot-skills/math": "0.1.0",
+    "@slot-skills/features": "0.1.0",
+    "@slot-skills/runtime": "0.1.0",
+    "@slot-skills/host": "0.1.0"
+  },
   "scripts": {
     "visual:test": "node scripts/iteration/visual.mjs",
     "visual:baseline": "node scripts/iteration/visual.mjs --update-baseline",

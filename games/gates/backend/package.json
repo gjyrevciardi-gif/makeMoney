@@ -1,5 +1,5 @@
 {
-  "name": "backend",
+  "name": "gates-backend",
   "private": true,
   "type": "module",
   "scripts": {
