@@ -11,6 +11,11 @@ import {
   slotVersion,
 } from './games/slots/slot.definitions';
 import { TITANS_TEMPEST_V1, tumbleVersion } from './games/slots/tumble.definition';
+import {
+  BOOK_ACTIVE_LINES,
+  BOOK_GAME_ID,
+  BOOK_GAME_VERSION,
+} from './games/book-of-ra/book-of-ra.definition';
 
 export const CASINO_CATEGORIES = ['ORIGINALS', 'TABLE_GAMES', 'SLOTS'] as const;
 export type CasinoCategory = (typeof CASINO_CATEGORIES)[number];
@@ -24,6 +29,7 @@ export const CASINO_GAME_IDS = [
   'plinko',
   'fools-gold-rush',
   'titans-tempest',
+  'book-of-ra',
 ] as const;
 export type CasinoGameId = (typeof CASINO_GAME_IDS)[number];
 
@@ -230,6 +236,35 @@ const DEFINITIONS: GameDefinition[] = [
         minStake: config.minStake.toString(),
         maxStake: config.maxStake.toString(),
         gameVersion: tumbleVersion(TITANS_TEMPEST_V1),
+      };
+    },
+  },
+  {
+    id: BOOK_GAME_ID,
+    slug: BOOK_GAME_ID,
+    gameType: 'SLOTS',
+    name: 'Book of the Sands',
+    category: 'SLOTS',
+    description: 'Five reels, ten lines, and a Book that pays anywhere and opens ten free games.',
+    route: '/casino/slots/book-of-ra',
+    featured: true,
+    keywords: [
+      'book of ra', 'book of the sands', 'book', 'egypt', 'pharaoh', 'explorer', 'scarab',
+      'slot', 'slots', 'wild', 'scatter', 'free games', 'free spins', 'expanding symbol', 'gamble',
+    ],
+    stateful: false,
+    supportsFairness: true,
+    thumbnailKey: BOOK_GAME_ID,
+    envKey: 'CASINO_GAME_BOOK_OF_RA_ENABLED',
+    config: () => {
+      const config = casinoConfig();
+      // Every line must be worth at least one whole point, so the minimum
+      // total stake is one point per line.
+      const minimum = BigInt(BOOK_ACTIVE_LINES);
+      return {
+        minStake: (config.minStake > minimum ? config.minStake : minimum).toString(),
+        maxStake: config.maxStake.toString(),
+        gameVersion: BOOK_GAME_VERSION,
       };
     },
   },

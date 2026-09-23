@@ -27,6 +27,8 @@ import { PlinkoService } from './games/plinko/plinko.service';
 import { CasinoClock } from './casino-clock.service';
 import { SlotsService } from './games/slots/slots.service';
 import { TumbleSlotsService } from './games/slots/tumble.service';
+import { BookOfRaController } from './games/book-of-ra/book-of-ra.controller';
+import { BookOfRaService } from './games/book-of-ra/book-of-ra.service';
 
 @Module({
   imports: [JwtModule.register({ secret: process.env.JWT_ACCESS_SECRET })],
@@ -35,6 +37,7 @@ import { TumbleSlotsService } from './games/slots/tumble.service';
     CasinoAdminController,
     CasinoConfigController,
     PlatformSettingsController,
+    BookOfRaController,
   ],
   providers: [
     PrismaService,
@@ -58,6 +61,7 @@ import { TumbleSlotsService } from './games/slots/tumble.service';
     PlinkoService,
     SlotsService,
     TumbleSlotsService,
+    BookOfRaService,
   ],
   exports: [
     CasinoService,

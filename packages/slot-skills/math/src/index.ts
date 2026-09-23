@@ -2,6 +2,7 @@ export * from "./rng.js";
 export * from "./payout.js";
 export * from "./grid.js";
 export * from "./evaluators.js";
+export * from "./book-of-ra.profile.js";
 export * from "./book-of-ra.js";
 export * from "./simulation.js";
 export * from "./enumeration.js";

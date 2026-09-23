@@ -9,6 +9,12 @@ import {
 } from './games/slots/slot.definitions';
 import { analyseSlotRtp } from './games/slots/slot.rtp';
 import { TITANS_TEMPEST_V1, tumbleVersion } from './games/slots/tumble.definition';
+import {
+  BOOK_ACTIVE_LINES,
+  BOOK_GAME_VERSION,
+  BOOK_PROFILE_FINGERPRINT,
+  validateBookOfRaEngine,
+} from './games/book-of-ra/book-of-ra.definition';
 
 /**
  * The code-level baseline for every game, and the rules for what an operator
@@ -373,6 +379,50 @@ export const GAME_CONFIG_SPECS: Record<CasinoGameId, GameConfigSpec> = {
         fail(
           'STAKE_RANGE_TOO_NARROW',
           'The maximum stake must cover the feature price of at least the minimum bet.',
+        );
+      }
+    },
+  },
+
+  'book-of-ra': {
+    gameId: 'book-of-ra',
+    // The return is fixed by the published profile. An operator moves the stake
+    // limits and availability, never the mathematics.
+    rtpControl: 'CANONICAL',
+    baseline: () => {
+      const config = casinoConfig();
+      const minimum = BigInt(BOOK_ACTIVE_LINES);
+      return {
+        minStake: config.minStake > minimum ? config.minStake : minimum,
+        maxStake: config.maxStake,
+        rtpBps: 5_000,
+        gameSpecific: { profile: BOOK_GAME_VERSION, profileFingerprint: BOOK_PROFILE_FINGERPRINT },
+        label: BOOK_GAME_VERSION,
+      };
+    },
+    // Configuration versions need unique labels even when the math stays fixed.
+    label: (_candidate, version) => version === 1 ? BOOK_GAME_VERSION : `${BOOK_GAME_VERSION}.config${version}`,
+    validate: (candidate) => {
+      validateBookOfRaEngine();
+      if (candidate.rtpBps !== null && candidate.rtpBps !== 5_000) {
+        fail(
+          'RTP_NOT_ADJUSTABLE',
+          'This game\'s return is fixed by its published mathematics and cannot be dialled.',
+        );
+      }
+      const profile = candidate.gameSpecific.profile;
+      if (profile !== undefined && profile !== BOOK_GAME_VERSION) {
+        fail('UNKNOWN_BOOK_OF_RA_PROFILE', `Only the ${BOOK_GAME_VERSION} profile exists.`);
+      }
+      const fingerprint = candidate.gameSpecific.profileFingerprint;
+      if (fingerprint !== undefined && fingerprint !== BOOK_PROFILE_FINGERPRINT) {
+        fail('BOOK_OF_RA_PROFILE_MISMATCH', 'The submitted profile fingerprint is not the active one.');
+      }
+      const minimum = BigInt(BOOK_ACTIVE_LINES);
+      if (candidate.minStake < minimum) {
+        fail(
+          'STAKE_BELOW_LINE_MINIMUM',
+          `Minimum stake must cover one point per payline (${minimum}).`,
         );
       }
     },

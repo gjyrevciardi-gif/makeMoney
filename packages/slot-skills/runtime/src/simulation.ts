@@ -234,9 +234,30 @@ function mergeFeatureStats(reports: FullSimulationReport[]): Record<string, Feat
 
 interface WorkerEnvelope { type?: "progress" | "result"; roundsDone?: number; report?: FullSimulationReport; }
 
+/**
+ * Overridable worker location.
+ *
+ * The default is resolved lazily from `simulation-worker-url.js`, which is the
+ * only module that needs `import.meta`. A CommonJS host can import the engine
+ * without parsing it and, if it ever runs a parallel simulation, can point the
+ * simulator at the compiled worker directly.
+ */
+let workerUrlOverride: URL | undefined;
+
+export function setSimulationWorkerUrl(url: URL | undefined): void {
+  workerUrlOverride = url;
+}
+
+async function simulationWorkerUrl(): Promise<URL> {
+  if (workerUrlOverride) return workerUrlOverride;
+  const module = await import("./simulation-worker-url.js");
+  return module.default();
+}
+
 export async function simulateGameParallel(game: GameConfig, rounds: number, workers = 4, seed = 1, betUnits = "100", options: SimulationOptions = {}, hooks: SimulationHooks = {}): Promise<FullSimulationReport> {
   const workerCount = Math.max(1, Math.min(Math.floor(workers), rounds));
   if (workerCount === 1) return simulateGame(game, rounds, seed, betUnits, options, hooks);
+  const workerUrl = await simulationWorkerUrl();
   const base = Math.floor(rounds / workerCount);
   const remainder = rounds % workerCount;
   const workerRefs: Worker[] = [];
@@ -253,7 +274,7 @@ export async function simulateGameParallel(game: GameConfig, rounds: number, wor
   try {
     const reports = await Promise.all(Array.from({ length: workerCount }, (_, index) => new Promise<FullSimulationReport>((resolve, reject) => {
       if (hooks.signal?.aborted) { reject(new SimulationCancelledError()); return; }
-      const worker = new Worker(new URL("./simulation-worker.js", import.meta.url), {
+      const worker = new Worker(workerUrl, {
         workerData: { game, rounds: base + (index < remainder ? 1 : 0), seed: seed + index * 1_000_003, betUnits, options },
       });
       workerRefs.push(worker);

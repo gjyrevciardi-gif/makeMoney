@@ -214,35 +214,17 @@
     ],
     "paytable": [
       {
-        "basis": "bet",
+        "basis": "line-bet",
         "count": 2,
         "payout": {
-          "denominator": "10",
-          "numerator": "1"
+          "denominator": "1",
+          "numerator": "10"
         },
         "symbolId": "high-1"
       },
       {
-        "basis": "bet",
+        "basis": "line-bet",
         "count": 3,
-        "payout": {
-          "denominator": "1",
-          "numerator": "2"
-        },
-        "symbolId": "high-1"
-      },
-      {
-        "basis": "bet",
-        "count": 4,
-        "payout": {
-          "denominator": "1",
-          "numerator": "20"
-        },
-        "symbolId": "high-1"
-      },
-      {
-        "basis": "bet",
-        "count": 5,
         "payout": {
           "denominator": "1",
           "numerator": "100"
@@ -250,26 +232,35 @@
         "symbolId": "high-1"
       },
       {
-        "basis": "bet",
-        "count": 3,
-        "payout": {
-          "denominator": "2",
-          "numerator": "3"
-        },
-        "symbolId": "high-2"
-      },
-      {
-        "basis": "bet",
+        "basis": "line-bet",
         "count": 4,
         "payout": {
           "denominator": "1",
-          "numerator": "8"
+          "numerator": "1000"
+        },
+        "symbolId": "high-1"
+      },
+      {
+        "basis": "line-bet",
+        "count": 5,
+        "payout": {
+          "denominator": "1",
+          "numerator": "5000"
+        },
+        "symbolId": "high-1"
+      },
+      {
+        "basis": "line-bet",
+        "count": 2,
+        "payout": {
+          "denominator": "1",
+          "numerator": "5"
         },
         "symbolId": "high-2"
       },
       {
-        "basis": "bet",
-        "count": 5,
+        "basis": "line-bet",
+        "count": 3,
         "payout": {
           "denominator": "1",
           "numerator": "40"
@@ -277,191 +268,227 @@
         "symbolId": "high-2"
       },
       {
-        "basis": "bet",
-        "count": 3,
+        "basis": "line-bet",
+        "count": 4,
         "payout": {
           "denominator": "1",
-          "numerator": "1"
+          "numerator": "400"
+        },
+        "symbolId": "high-2"
+      },
+      {
+        "basis": "line-bet",
+        "count": 5,
+        "payout": {
+          "denominator": "1",
+          "numerator": "2000"
+        },
+        "symbolId": "high-2"
+      },
+      {
+        "basis": "line-bet",
+        "count": 2,
+        "payout": {
+          "denominator": "1",
+          "numerator": "5"
         },
         "symbolId": "high-3"
       },
       {
-        "basis": "bet",
-        "count": 4,
+        "basis": "line-bet",
+        "count": 3,
         "payout": {
           "denominator": "1",
-          "numerator": "4"
+          "numerator": "30"
         },
         "symbolId": "high-3"
       },
       {
-        "basis": "bet",
-        "count": 5,
+        "basis": "line-bet",
+        "count": 4,
         "payout": {
           "denominator": "1",
-          "numerator": "15"
+          "numerator": "100"
         },
         "symbolId": "high-3"
       },
       {
-        "basis": "bet",
-        "count": 3,
+        "basis": "line-bet",
+        "count": 5,
         "payout": {
           "denominator": "1",
-          "numerator": "1"
+          "numerator": "750"
+        },
+        "symbolId": "high-3"
+      },
+      {
+        "basis": "line-bet",
+        "count": 2,
+        "payout": {
+          "denominator": "1",
+          "numerator": "5"
         },
         "symbolId": "high-4"
       },
       {
-        "basis": "bet",
-        "count": 4,
+        "basis": "line-bet",
+        "count": 3,
         "payout": {
           "denominator": "1",
-          "numerator": "4"
+          "numerator": "30"
         },
         "symbolId": "high-4"
       },
       {
-        "basis": "bet",
-        "count": 5,
+        "basis": "line-bet",
+        "count": 4,
         "payout": {
           "denominator": "1",
-          "numerator": "15"
+          "numerator": "100"
         },
         "symbolId": "high-4"
       },
       {
-        "basis": "bet",
+        "basis": "line-bet",
+        "count": 5,
+        "payout": {
+          "denominator": "1",
+          "numerator": "750"
+        },
+        "symbolId": "high-4"
+      },
+      {
+        "basis": "line-bet",
         "count": 3,
         "payout": {
-          "denominator": "2",
-          "numerator": "1"
+          "denominator": "1",
+          "numerator": "5"
         },
         "symbolId": "low-1"
       },
       {
-        "basis": "bet",
+        "basis": "line-bet",
         "count": 4,
         "payout": {
           "denominator": "1",
-          "numerator": "1"
+          "numerator": "40"
         },
         "symbolId": "low-1"
       },
       {
-        "basis": "bet",
+        "basis": "line-bet",
         "count": 5,
         "payout": {
           "denominator": "1",
-          "numerator": "3"
+          "numerator": "150"
         },
         "symbolId": "low-1"
       },
       {
-        "basis": "bet",
+        "basis": "line-bet",
         "count": 3,
         "payout": {
-          "denominator": "2",
-          "numerator": "1"
+          "denominator": "1",
+          "numerator": "5"
         },
         "symbolId": "low-2"
       },
       {
-        "basis": "bet",
+        "basis": "line-bet",
         "count": 4,
         "payout": {
           "denominator": "1",
-          "numerator": "1"
+          "numerator": "40"
         },
         "symbolId": "low-2"
       },
       {
-        "basis": "bet",
+        "basis": "line-bet",
         "count": 5,
         "payout": {
           "denominator": "1",
-          "numerator": "3"
+          "numerator": "150"
         },
         "symbolId": "low-2"
       },
       {
-        "basis": "bet",
+        "basis": "line-bet",
         "count": 3,
         "payout": {
-          "denominator": "4",
-          "numerator": "1"
+          "denominator": "1",
+          "numerator": "5"
         },
         "symbolId": "low-3"
       },
       {
-        "basis": "bet",
+        "basis": "line-bet",
         "count": 4,
         "payout": {
-          "denominator": "5",
-          "numerator": "4"
+          "denominator": "1",
+          "numerator": "25"
         },
         "symbolId": "low-3"
       },
       {
-        "basis": "bet",
+        "basis": "line-bet",
         "count": 5,
         "payout": {
           "denominator": "1",
-          "numerator": "2"
+          "numerator": "100"
         },
         "symbolId": "low-3"
       },
       {
-        "basis": "bet",
+        "basis": "line-bet",
         "count": 3,
         "payout": {
-          "denominator": "4",
-          "numerator": "1"
+          "denominator": "1",
+          "numerator": "5"
         },
         "symbolId": "low-4"
       },
       {
-        "basis": "bet",
+        "basis": "line-bet",
         "count": 4,
         "payout": {
-          "denominator": "5",
-          "numerator": "4"
+          "denominator": "1",
+          "numerator": "25"
         },
         "symbolId": "low-4"
       },
       {
-        "basis": "bet",
+        "basis": "line-bet",
         "count": 5,
         "payout": {
           "denominator": "1",
-          "numerator": "2"
+          "numerator": "100"
         },
         "symbolId": "low-4"
       },
       {
-        "basis": "bet",
+        "basis": "line-bet",
         "count": 3,
         "payout": {
-          "denominator": "4",
-          "numerator": "1"
+          "denominator": "1",
+          "numerator": "5"
         },
         "symbolId": "low-5"
       },
       {
-        "basis": "bet",
+        "basis": "line-bet",
         "count": 4,
         "payout": {
-          "denominator": "5",
-          "numerator": "3"
+          "denominator": "1",
+          "numerator": "25"
         },
         "symbolId": "low-5"
       },
       {
-        "basis": "bet",
+        "basis": "line-bet",
         "count": 5,
         "payout": {
-          "denominator": "2",
-          "numerator": "3"
+          "denominator": "1",
+          "numerator": "100"
         },
         "symbolId": "low-5"
       },
@@ -494,15 +521,15 @@
       }
     ],
     "symbolWeights": {
-      "high-1": 5,
-      "high-2": 7,
-      "high-3": 9,
-      "high-4": 9,
-      "low-1": 14,
-      "low-2": 14,
-      "low-3": 16,
-      "low-4": 16,
-      "low-5": 18,
+      "high-1": 7,
+      "high-2": 9,
+      "high-3": 11,
+      "high-4": 11,
+      "low-1": 31,
+      "low-2": 31,
+      "low-3": 35,
+      "low-4": 35,
+      "low-5": 40,
       "scatter": 3
     },
     "targets": {
@@ -514,7 +541,7 @@
         "denominator": "1",
         "numerator": "5000"
       },
-      "rtpBps": 9600,
+      "rtpBps": 5000,
       "volatility": "high"
     }
   },
