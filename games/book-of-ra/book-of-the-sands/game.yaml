@@ -74,7 +74,8 @@ math:
   evaluator: paylines
   outcomeGenerator: weighted-grid
   targets:
-    rtpBps: 9600
+    # The published return of the frozen profile the backend serves.
+    rtpBps: 5000
     volatility: high
     hitRateBps: [2200, 3200]
     maxWinMultiplier:
@@ -119,15 +120,18 @@ math:
     - { symbolId: scatter, count: 5, payout: { numerator: "200", denominator: "1" }, basis: bet }
 
   symbolWeights:
-    high-1: 5
-    high-2: 7
-    high-3: 9
-    high-4: 9
-    low-1: 14
-    low-2: 14
-    low-3: 16
-    low-4: 16
-    low-5: 18
+    # Calibrated against the frozen paytable so the published return, free games
+    # included, lands on the profile's declared 5000bps. See
+    # scripts/calibrate-book-of-ra.mjs and docs/agent-work/book-backend/.
+    high-1: 7
+    high-2: 9
+    high-3: 11
+    high-4: 11
+    low-1: 31
+    low-2: 31
+    low-3: 35
+    low-4: 35
+    low-5: 40
     scatter: 3
 
   featureWeights:

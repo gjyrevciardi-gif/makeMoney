@@ -3,6 +3,23 @@ import type { FeatureSelection, GameConfig } from "@slot-skills/schema";
 import { canonicalJson } from "@slot-skills/schema";
 import { applyPostEvaluationFeatures, applyPreEvaluationFeatures, type FeatureContext, type FeatureEvent, type FeatureState } from "@slot-skills/features";
 import { evaluateGrid, evaluateBookOfRa, bookOfRaPayout, generateGrid, rowCounts, scatterWins, type Cell, type Grid, type RngDraw, type RngProvider, type Win } from "@slot-skills/math";
+import {
+  BOOK_OF_RA_LINES,
+  BOOK_OF_RA_MAX_GAMBLE_ATTEMPTS,
+  BOOK_OF_RA_PROFILE_FINGERPRINT,
+  BOOK_OF_RA_PROFILE_ID,
+} from "@slot-skills/math";
+import {
+  createBookOfRaState,
+  fromFeatureState,
+  hasPendingBookOfRaAction,
+  isBookOfRaFreeGameActive,
+  playBookOfRaRound,
+  resolveBookOfRaGamble,
+  toFeatureState,
+  type BookOfRaGambleChoice,
+  type BookOfRaGameState,
+} from "./book-of-ra-round.js";
 import type { GameEngine, GameEvent, GameEventType, GameRoundRequest, GameRoundResult, InternalContinuation, PendingAction, RoundComputation } from "./types.js";
 
 function selection(game: GameConfig, id: string): FeatureSelection | undefined {
@@ -45,92 +62,156 @@ function isBookOfRaDeluxe(game: GameConfig): boolean {
   return game.id === "book-of-the-sands" && game.layout.reels === 5 && rowCounts(game).every((rows) => rows === 3) && (game.math.paylines?.length ?? 0) === 10;
 }
 
-async function bookOfRaSpecialSymbol(game: GameConfig, rng: RngProvider, draws: RngDraw[]): Promise<string> {
-  const pool = game.symbols.filter((symbol) => symbol.kind === "normal").map((symbol) => symbol.id);
-  const draw = await rng.uniformInt(pool.length, "book-of-ra:special-symbol");
-  draws.push(draw);
-  return pool[draw.value] ?? pool[0]!;
-}
-
-function bookOfRaExpandingMinimum(symbolId: string): number {
-  return symbolId.startsWith("high-") ? 2 : 3;
-}
-
+/**
+ * Book of Ra Deluxe is served by the dedicated round engine in
+ * `book-of-ra-round.ts`. This adapter only maps the engine's authoritative
+ * round state onto the generic result contract, so the reference host, the
+ * simulation harness and the platform adapter all share one implementation.
+ */
 async function spinBookOfRaDeluxe(game: GameConfig, request: GameRoundRequest, rng: RngProvider): Promise<RoundComputation> {
-  const state = structuredClone(request.featureState ?? {});
+  const restored = fromFeatureState(request.featureState, { profileFingerprint: BOOK_OF_RA_PROFILE_FINGERPRINT });
+  if (restored && hasPendingBookOfRaAction(restored)) throw new Error("Resolve the pending gamble before another spin");
+  const state = restored && isBookOfRaFreeGameActive(restored) && !hasPendingBookOfRaAction(restored)
+    ? restored
+    : createBookOfRaState({
+      profileId: BOOK_OF_RA_PROFILE_ID,
+      profileFingerprint: BOOK_OF_RA_PROFILE_FINGERPRINT,
+      betPerLine: request.betUnits,
+      activeLines: BOOK_OF_RA_LINES,
+      maxGambleAttempts: BOOK_OF_RA_MAX_GAMBLE_ATTEMPTS,
+    });
+
+  const played = await playBookOfRaRound({
+    game,
+    state,
+    rng,
+    roundId: request.roundId,
+    betPerLine: BigInt(request.betUnits),
+    activeLines: BOOK_OF_RA_LINES,
+    autoplay: request.autoplay === true,
+  });
+  const { outcome } = played;
+  const total = BigInt(outcome.totalSpinWin);
+  const totalBet = BigInt(outcome.totalBet);
+
   const events: GameEvent[] = [];
-  const draws: RngDraw[] = [];
-  const activeLines = 10;
-  const existing = state.bookOfRa;
-  const inFreeGame = Boolean(existing && existing.freeSpinsRemaining > 0);
-  const betPerLine = inFreeGame ? BigInt(existing!.betPerLine) : BigInt(request.betUnits);
-  const totalBet = inFreeGame ? BigInt(existing!.totalBet) : betPerLine * BigInt(activeLines);
-  const generated = await generateGrid(game, rng, inFreeGame ? `book-of-ra:free:${existing!.freeSpinsPlayed}` : "book-of-ra:base");
-  draws.push(...generated.draws);
-  const grid = generated.grid;
-  const evaluated = evaluateBookOfRa(game, grid, betPerLine, activeLines);
-  const regularWins = evaluated.regularWins;
-  let total = evaluated.total;
-  const bookSymbol = game.symbols.find((symbol) => symbol.kind === "scatter")?.id ?? "scatter";
-  const resultEvents: GameEvent[] = [];
-  nextEvent(resultEvents, "round-start", { betUnits: betPerLine.toString(), totalBet: totalBet.toString(), activeLines, ...(inFreeGame ? { freeSpin: existing!.freeSpinsPlayed + 1 } : {}) });
-  nextEvent(resultEvents, "grid-reveal", { grid: structuredClone(grid) });
-  for (const win of regularWins) nextEvent(resultEvents, "win", { ...win, regular: true });
-  if (evaluated.scatterWin > 0n) nextEvent(resultEvents, "win", { symbolId: bookSymbol, scatterPay: true, bookCount: evaluated.bookCount, payoutUnits: evaluated.scatterWin.toString() });
-  let specialSymbol = existing?.specialSymbol;
-  let expandingReels: number[] = [];
-  let expandingWin = 0n;
-  if (inFreeGame && specialSymbol) {
-    expandingReels = grid.map((column, reel) => column.includes(specialSymbol!) ? reel : -1).filter((reel) => reel >= 0);
-    const minimum = bookOfRaExpandingMinimum(specialSymbol);
-    if (expandingReels.length >= minimum) {
-      const count = expandingReels.length;
-      const multiplier = bookOfRaPayout(specialSymbol, count);
-      if (multiplier > 0) {
-        expandingWin = betPerLine * BigInt(activeLines) * BigInt(multiplier);
-        total += expandingWin;
-        for (const reel of expandingReels) grid[reel] = grid[reel]!.map(() => specialSymbol!);
-        nextEvent(resultEvents, "reel-transform", { featureId: "book-of-ra-expanding-symbol", specialSymbol, expandingReels });
-        nextEvent(resultEvents, "win", { symbolId: specialSymbol, expanding: true, reels: expandingReels, payoutUnits: expandingWin.toString() });
-      } else expandingReels = [];
-    } else expandingReels = [];
+  nextEvent(events, "round-start", {
+    betUnits: outcome.betPerLine,
+    totalBet: outcome.totalBet,
+    activeLines: outcome.activeLines,
+    ...(outcome.freeSpin ? { freeSpin: outcome.freeSpinIndex } : {}),
+  });
+  nextEvent(events, "grid-reveal", { grid: structuredClone(outcome.board) });
+  for (const win of outcome.regularWins) nextEvent(events, "win", { ...win, regular: true });
+  if (BigInt(outcome.scatterWin) > 0n) {
+    nextEvent(events, "win", {
+      symbolId: game.symbols.find((symbol) => symbol.kind === "scatter")?.id ?? "scatter",
+      scatterPay: true,
+      bookCount: outcome.bookCount,
+      payoutUnits: outcome.scatterWin,
+    });
   }
-  if (!inFreeGame && evaluated.bookCount >= 3) {
-    specialSymbol = await bookOfRaSpecialSymbol(game, rng, draws);
-    state.bookOfRa = { phase: "FREE_GAME_INTRO", betPerLine: betPerLine.toString(), totalBet: totalBet.toString(), activeLines, specialSymbol, freeSpinsRemaining: 10, freeSpinsPlayed: 0, gambleAttempts: 0 };
-    nextEvent(resultEvents, "feature-start", { featureId: "free-spins", spins: 10, specialSymbol, lockedBetPerLine: betPerLine.toString(), lockedTotalBet: totalBet.toString() });
-  } else if (inFreeGame) {
-    const nextRemaining = existing!.freeSpinsRemaining - 1;
-    state.bookOfRa = { ...existing!, phase: nextRemaining > 0 ? "FREE_GAME_ACTIVE" : "FREE_GAME_COMPLETE", freeSpinsRemaining: nextRemaining, freeSpinsPlayed: existing!.freeSpinsPlayed + 1, featureWin: (BigInt(existing!.featureWin ?? "0") + total).toString() };
-    if (evaluated.bookCount >= 3) {
-      state.bookOfRa.freeSpinsRemaining += 10;
-      nextEvent(resultEvents, "feature-start", { featureId: "retriggering-free-spins", addedSpins: 10, remaining: state.bookOfRa.freeSpinsRemaining, bookCount: evaluated.bookCount });
+  if (outcome.expandingReels.length && BigInt(outcome.expandingWin) > 0n) {
+    nextEvent(events, "reel-transform", {
+      featureId: "book-of-ra-expanding-symbol",
+      specialSymbol: outcome.specialSymbol,
+      expandingReels: [...outcome.expandingReels],
+    });
+    nextEvent(events, "win", {
+      symbolId: outcome.specialSymbol,
+      expanding: true,
+      reels: [...outcome.expandingReels],
+      payoutUnits: outcome.expandingWin,
+    });
+  }
+  if (!outcome.freeSpin && outcome.phase === "FREE_GAME_INTRO") {
+    nextEvent(events, "feature-start", {
+      featureId: "free-spins",
+      spins: played.state.freeSpinsAwarded,
+      specialSymbol: outcome.specialSymbol,
+      lockedBetPerLine: outcome.betPerLine,
+      lockedTotalBet: outcome.totalBet,
+    });
+  }
+  if (outcome.freeSpin) {
+    if (outcome.retriggered > 0) {
+      nextEvent(events, "feature-start", {
+        featureId: "retriggering-free-spins",
+        addedSpins: outcome.retriggered,
+        remaining: outcome.freeSpinsRemaining,
+        bookCount: outcome.bookCount,
+      });
     }
-    nextEvent(resultEvents, state.bookOfRa.freeSpinsRemaining > 0 ? "free-spin" : "free-spins-end", { remaining: state.bookOfRa.freeSpinsRemaining, specialSymbol, ...(state.bookOfRa.freeSpinsRemaining === 0 ? { totalWinUnits: state.bookOfRa.featureWin } : {}) });
+    nextEvent(events, outcome.freeSpinsRemaining > 0 ? "free-spin" : "free-spins-end", {
+      remaining: outcome.freeSpinsRemaining,
+      specialSymbol: outcome.specialSymbol,
+      ...(outcome.freeSpinsRemaining === 0 ? { totalWinUnits: played.state.featureWin } : {}),
+    });
   }
-  const wins = [...regularWins];
-  if (evaluated.scatterWin > 0n) wins.push({ evaluator: "book-of-ra-scatter", symbolId: bookSymbol, count: evaluated.bookCount, ways: 1, cells: grid.flatMap((column, reel) => column.map((value, row) => value === bookSymbol ? { reel, row } : undefined).filter((cell): cell is Cell => Boolean(cell))), payoutUnits: evaluated.scatterWin.toString() });
-  if (expandingWin > 0n) wins.push({ evaluator: "book-of-ra-expanding", symbolId: specialSymbol!, count: expandingReels.length, ways: activeLines, cells: expandingReels.flatMap((reel) => [0, 1, 2].map((row) => ({ reel, row }))), payoutUnits: expandingWin.toString() });
-  const shouldGamble = !inFreeGame && total > 0n && !request.autoplay;
-  let gambleColor: "red" | "black" | undefined;
-  if (shouldGamble) {
-    const colorDraw = await rng.uniformInt(2, "book-of-ra:gamble-color");
-    draws.push(colorDraw);
-    gambleColor = colorDraw.value === 0 ? "red" : "black";
-    nextEvent(resultEvents, "choice-required", { featureId: "gamble-feature", choices: ["red", "black", "collect"], maxAttempts: 5 });
+  if (outcome.pendingAction) {
+    nextEvent(events, "choice-required", {
+      featureId: "gamble-feature",
+      choices: ["red", "black", "collect"],
+      maxAttempts: played.state.gambleMaxAttempts,
+      actionId: outcome.pendingAction.id,
+    });
   }
-  const roundState = shouldGamble ? "GAMBLE_PENDING" : (inFreeGame ? (state.bookOfRa!.freeSpinsRemaining > 0 ? "FREE_GAME_ACTIVE" : "FREE_GAME_COMPLETE") : (state.bookOfRa ? "FREE_GAME_INTRO" : "ROUND_COMPLETE"));
-  nextEvent(resultEvents, "round-complete", { totalSpinWin: total.toString(), roundState });
-  const baseResult = { roundId: request.roundId, gameId: game.id, gameVersion: game.version, playerId: request.playerId, betUnits: betPerLine.toString(), totalWinUnits: total.toString(), netUnits: (total - (inFreeGame ? 0n : totalBet)).toString(), finalGrid: grid, events: resultEvents, draws, featureState: state, complete: !shouldGamble, roundState, regularWins, scatterWin: evaluated.scatterWin.toString(), ...(specialSymbol ? { specialSymbol } : {}), expandingReels, expandingWin: expandingWin.toString(), totalSpinWin: total.toString(), wins } satisfies Omit<GameRoundResult, "outcomeHash">;
-  let result: GameRoundResult = { ...baseResult, outcomeHash: hashOutcome(baseResult) };
-  if (shouldGamble && gambleColor) {
-    const action: PendingAction = { id: `${request.roundId}:gamble-feature`, type: "gamble", featureId: "gamble-feature", choices: [{ id: "red", labelKey: "bonus.gamble.red" }, { id: "black", labelKey: "bonus.gamble.black" }, { id: "collect", labelKey: "bonus.gamble.collect" }] };
-    result = { ...result, pendingAction: action };
-    const { outcomeHash: _hash, ...withoutHash } = result;
-    result.outcomeHash = hashOutcome(withoutHash);
-    return { result, continuation: { action, awardsByChoice: { red: gambleColor === "red" ? total.toString() : (-total).toString(), black: gambleColor === "black" ? total.toString() : (-total).toString(), collect: "0" }, eventsByChoice: { red: [{ type: "choice-resolved", data: { color: "red", winningColor: gambleColor } }], black: [{ type: "choice-resolved", data: { color: "black", winningColor: gambleColor } }], collect: [{ type: "choice-resolved", data: { collected: true } }] }, baseResult: result } };
+  nextEvent(events, "round-complete", { totalSpinWin: outcome.totalSpinWin, roundState: outcome.phase });
+
+  const featureState = toFeatureState(played.state);
+  const baseResult = {
+    roundId: request.roundId,
+    gameId: game.id,
+    gameVersion: game.version,
+    playerId: request.playerId,
+    betUnits: outcome.betPerLine,
+    totalWinUnits: total.toString(),
+    netUnits: (total - (outcome.freeSpin ? 0n : totalBet)).toString(),
+    finalGrid: outcome.finalGrid,
+    board: outcome.board,
+    events,
+    draws: played.draws,
+    featureState,
+    complete: outcome.complete,
+    roundState: outcome.phase,
+    regularWins: outcome.regularWins,
+    wins: outcome.wins,
+    scatterWin: outcome.scatterWin,
+    ...(outcome.specialSymbol ? { specialSymbol: outcome.specialSymbol } : {}),
+    expandingReels: [...outcome.expandingReels],
+    expandingWin: outcome.expandingWin,
+    totalSpinWin: outcome.totalSpinWin,
+    ...(outcome.pendingAction ? { pendingAction: outcome.pendingAction } : {}),
+  } satisfies Omit<GameRoundResult, "outcomeHash">;
+  const result: GameRoundResult = { ...baseResult, outcomeHash: hashOutcome(baseResult) };
+  if (outcome.pendingAction) {
+    return {
+      result,
+      continuation: {
+        engine: "book-of-ra",
+        action: outcome.pendingAction,
+        awardsByChoice: bookOfRaGambleAwards(played.state),
+        baseResult: result,
+        bookOfRaState: played.state,
+      },
+    };
   }
   return { result };
+}
+
+/**
+ * Relative awards for the pending Book of Ra gamble. They are derived from the
+ * colours drawn when the ladder was offered; they are informative for generic
+ * consumers, while `book-of-ra-round.ts` remains the resolver of record.
+ */
+function bookOfRaGambleAwards(state: BookOfRaGameState): Record<string, string> {
+  const amount = BigInt(state.pendingWin);
+  const colour = state.gambleColours?.[state.gambleAttempts] ?? "red";
+  return {
+    red: colour === "red" ? amount.toString() : (-amount).toString(),
+    black: colour === "black" ? amount.toString() : (-amount).toString(),
+    collect: "0",
+  };
 }
 
 function symbolIdsOfKind(game: GameConfig, kind: string): Set<string> {
@@ -1009,7 +1090,87 @@ export class DefaultGameEngine implements GameEngine {
     return { result };
   }
 
+  /**
+   * Resolves one pending action and reports any continuation it leaves behind.
+   *
+   * The generic path resolves in a single step. Book of Ra's gamble ladder can
+   * leave a further pending action, which the caller persists before the next
+   * request, so a retry can never resolve the same attempt twice.
+   */
+  resolveActionStep(
+    continuation: InternalContinuation,
+    actionId: string,
+    choiceId: string,
+  ): { result: GameRoundResult; continuation?: InternalContinuation } {
+    if (continuation.engine === "book-of-ra" || continuation.bookOfRaState !== undefined) {
+      return this.resolveBookOfRaActionStep(continuation, actionId, choiceId);
+    }
+    return { result: this.resolveGenericAction(continuation, actionId, choiceId) };
+  }
+
   resolveAction(continuation: InternalContinuation, actionId: string, choiceId: string): GameRoundResult {
+    return this.resolveActionStep(continuation, actionId, choiceId).result;
+  }
+
+  /** Book of Ra's server-authoritative red/black ladder. */
+  private resolveBookOfRaActionStep(
+    continuation: InternalContinuation,
+    actionId: string,
+    choiceId: string,
+  ): { result: GameRoundResult; continuation?: InternalContinuation } {
+    const stored = continuation.bookOfRaState as BookOfRaGameState | undefined;
+    if (!stored) throw new Error("Pending action lost its authoritative Book of Ra state");
+    if (stored.pendingActionId !== actionId) throw new Error("Pending action ID does not match this round");
+    const { state, outcome } = resolveBookOfRaGamble(stored, choiceId as BookOfRaGambleChoice);
+    const total = BigInt(state.pendingWin);
+    const totalBet = BigInt(state.totalBet);
+    const events = [...continuation.baseResult.events];
+    nextEvent(events, "choice-resolved", {
+      actionId,
+      choiceId,
+      attempt: outcome.attempt,
+      winningColour: outcome.winningColour ?? null,
+      won: outcome.won ?? null,
+      pendingWinUnits: state.pendingWin,
+      settlementUnits: outcome.settlement,
+    });
+    if (!outcome.complete && outcome.pendingAction) {
+      nextEvent(events, "choice-required", {
+        featureId: "gamble-feature",
+        choices: ["red", "black", "collect"],
+        maxAttempts: state.gambleMaxAttempts,
+        actionId: outcome.pendingAction.id,
+      });
+    }
+    nextEvent(events, "round-complete", { totalWinUnits: total.toString(), roundState: state.phase });
+    const baseResult = {
+      ...continuation.baseResult,
+      totalWinUnits: total.toString(),
+      netUnits: (total - totalBet).toString(),
+      featureState: toFeatureState(state),
+      events,
+      complete: outcome.complete,
+      roundState: state.phase,
+      ...(outcome.pendingAction ? { pendingAction: outcome.pendingAction } : {}),
+    } satisfies Omit<GameRoundResult, "outcomeHash">;
+    if (!outcome.pendingAction) delete baseResult.pendingAction;
+    const result = { ...baseResult, outcomeHash: hashOutcome(baseResult) } as GameRoundResult;
+    if (outcome.pendingAction) {
+      return {
+        result,
+        continuation: {
+          engine: "book-of-ra",
+          action: outcome.pendingAction,
+          awardsByChoice: bookOfRaGambleAwards(state),
+          baseResult: result,
+          bookOfRaState: state,
+        },
+      };
+    }
+    return { result };
+  }
+
+  private resolveGenericAction(continuation: InternalContinuation, actionId: string, choiceId: string): GameRoundResult {
     if (continuation.action.id !== actionId) throw new Error("Pending action ID does not match this round");
     const award = continuation.awardsByChoice[choiceId];
     if (award === undefined) throw new Error("Unknown bonus choice");

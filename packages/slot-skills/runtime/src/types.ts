@@ -39,6 +39,14 @@ export interface InternalContinuation {
   awardsByChoice: Record<string, string>;
   eventsByChoice?: Record<string, Array<{ type: GameEventType; data: Record<string, unknown> }>>;
   baseResult: GameRoundResult;
+  /**
+   * Pending-action state that is resolved by a dedicated round engine rather
+   * than by the generic `awardsByChoice` table. Book of Ra's gamble ladder is
+   * resolved from the colours drawn when the ladder was offered, so it carries
+   * the authoritative round state instead of a single pre-computed award.
+   */
+  engine?: "generic" | "book-of-ra";
+  bookOfRaState?: unknown;
 }
 
 export interface GameRoundResult {
@@ -64,6 +72,8 @@ export interface GameRoundResult {
   expandingReels?: number[];
   expandingWin?: string;
   totalSpinWin?: string;
+  /** The reveal grid before any reel transformation. */
+  board?: Grid;
 }
 
 export interface RoundComputation {
@@ -74,4 +84,10 @@ export interface RoundComputation {
 export interface GameEngine {
   spin(game: GameConfig, request: GameRoundRequest, rng: RngProvider): Promise<RoundComputation>;
   resolveAction(continuation: InternalContinuation, actionId: string, choiceId: string): GameRoundResult;
+  /**
+   * Optional step form of `resolveAction` that also returns the continuation a
+   * multi-step action leaves behind (Book of Ra's gamble ladder). Engines that
+   * only ever resolve an action in one step may omit it.
+   */
+  resolveActionStep?(continuation: InternalContinuation, actionId: string, choiceId: string): { result: GameRoundResult; continuation?: InternalContinuation };
 }

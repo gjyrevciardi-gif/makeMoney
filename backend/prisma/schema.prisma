@@ -144,6 +144,8 @@ model User {
   bets                  Bet[]
   casinoRounds          CasinoRound[]             @relation("CasinoPlayer")
   casinoGameFavorites   CasinoGameFavorite[]
+  bookOfRaSession       BookOfRaSession?
+  bookOfRaRequests      CasinoRequestKey[]
   authoredCasinoConfigs CasinoGameConfigVersion[] @relation("CasinoConfigAuthor")
   acknowledgedConflicts SportsResultConflict[]
 }
@@ -448,4 +450,62 @@ model AuditLog {
   @@index([actorId, createdAt])
   @@index([action, createdAt])
   @@index([targetId, createdAt])
+}
+
+/// Authoritative Book of the Sands session state.
+///
+/// One row per player. It holds the frozen mathematics the session was opened
+/// under, the locked stake and line count for the free games, the free-spin
+/// counters, the persistent expanding symbol, any pending gamble, and the
+/// engine's own feature-state blob. A round's outcome never depends on a
+/// client, a history, or a prior result.
+model BookOfRaSession {
+  id                 String    @id @default(uuid()) @db.Uuid
+  userId             String    @unique @db.Uuid
+  gameId             String    @default("book-of-ra")
+  profileId          String
+  profileFingerprint String
+  phase              String    @default("IDLE")
+  activeLines        Int       @default(10)
+  betPerLine         BigInt    @default(0)
+  totalBet           BigInt    @default(0)
+  specialSymbol      String?
+  freeSpinsAwarded   Int       @default(0)
+  freeSpinsRemaining Int       @default(0)
+  freeSpinsPlayed    Int       @default(0)
+  retriggerCount     Int       @default(0)
+  featureWin         BigInt    @default(0)
+  pendingWin         BigInt    @default(0)
+  pendingActionId    String?
+  pendingRoundId     String?   @db.Uuid
+  /// Full engine feature state, so a restart resumes exactly where it stopped.
+  state              Json
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([gameId, phase])
+}
+
+/// Scoped, replayable request ledger for Book of the Sands.
+///
+/// The uniqueness is on (player, game, operation, key), so one player's key can
+/// never resolve another player's request; `fingerprint` binds the key to the
+/// exact body it was first used with, so a reused key with altered parameters
+/// is refused instead of being answered with the original response.
+model CasinoRequestKey {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @db.Uuid
+  gameId      String
+  operation   String
+  requestKey  String
+  fingerprint String
+  roundId     String?  @db.Uuid
+  response    Json
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, gameId, operation, requestKey])
+  @@index([userId, createdAt])
+  @@index([roundId])
 }

@@ -1,6 +1,6 @@
 {
-  "bundleHash": "3176025269ea783bd3c7fe144a9925127a54c950f30d46398fd3fa05aa5624b4",
-  "compiledAt": "2026-09-19T04:01:50.149Z",
+  "bundleHash": "36f6bb1dfa7488baee4be3ffe68bd613263389ba0257b99169fd36d69587efb1",
+  "compiledAt": "2026-09-23T20:18:59.887Z",
   "components": [
     {
       "id": "free-spins",
@@ -30,7 +30,7 @@
   ],
   "gameId": "book-of-the-sands",
   "gameVersion": "1.0.0",
-  "mathHash": "dee65e619e8aff0103b0063238628fbdfbee91a033b06c566a84350222f2751c",
+  "mathHash": "7fbc9da00d83eb21cd29c717978a6962a87ecbd55c414ba363f11038f7f25ff6",
   "schemaVersion": "2.0",
-  "source": "C:\\Users\\Admin\\Desktop\\book-of-ra-poc\\book-of-the-sands\\game.yaml"
+  "source": "C:\\Users\\Admin\\orca\\workspaces\\toto\\book-backend\\games\\book-of-ra\\book-of-the-sands\\game.yaml"
 }

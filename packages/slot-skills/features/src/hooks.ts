@@ -18,7 +18,10 @@ export interface FeatureState {
   upgrades?: Record<string, number>;
   /** Book of Ra Deluxe session data; persisted by the host between requests. */
   bookOfRa?: {
-    phase: "FREE_GAME_INTRO" | "FREE_GAME_ACTIVE" | "FREE_GAME_COMPLETE" | "GAMBLE_PENDING";
+    phase:
+      | "IDLE" | "SPIN_PENDING" | "SPIN_RESOLVED" | "WIN_PRESENTATION"
+      | "FREE_GAME_INTRO" | "FREE_GAME_ACTIVE" | "FREE_GAME_COMPLETE"
+      | "GAMBLE_PENDING" | "ROUND_COMPLETE";
     betPerLine: string;
     totalBet: string;
     activeLines: number;
@@ -29,6 +32,19 @@ export interface FeatureState {
     pendingWin?: string;
     gambleAttempts: number;
     gambleColor?: "red" | "black";
+    /** Frozen mathematics the session was opened under. */
+    profileId?: string;
+    profileFingerprint?: string;
+    freeSpinsAwarded?: number;
+    retriggerCount?: number;
+    spinIndex?: number;
+    gambleMaxAttempts?: number;
+    /** Colours for the whole gamble ladder, drawn once when it was offered. */
+    gambleColours?: Array<"red" | "black">;
+    gambleHistory?: Array<Record<string, unknown>>;
+    pendingActionId?: string;
+    pendingRoundId?: string;
+    lastOutcome?: Record<string, unknown>;
   };
 }
 
