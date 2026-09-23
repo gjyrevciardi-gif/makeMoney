@@ -1,0 +1,15 @@
+import { build } from '../slot-skills/node_modules/vite/dist/node/index.js';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { dirname, resolve, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
+await mkdir(join(root,'player/assets'),{recursive:true});
+// New original lettering SVGs. Existing placeholder illustrations are untouched.
+for(const [label,top,bottom] of [['A','#fff956','#f17b00'],['K','#ff692d','#c90608'],['Q','#a9fc3d','#168709'],['J','#50e6ff','#0875bc'],['10','#ee69ff','#7812b3']]){
+ const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 180 180"><defs><linearGradient id="fill" x2=".3" y2="1"><stop stop-color="${top}"/><stop offset="1" stop-color="${bottom}"/></linearGradient><linearGradient id="gold" x2="0" y2="1"><stop stop-color="#fff7a6"/><stop offset=".4" stop-color="#efbb27"/><stop offset="1" stop-color="#9a4906"/></linearGradient></defs><g font-family="Comic Sans MS,cursive" font-size="155" font-weight="normal" text-anchor="middle" stroke-linejoin="round"><text x="90" y="144" textLength="${label==='10'?154:130}" lengthAdjust="spacingAndGlyphs" fill="none" stroke="#642506" stroke-width="12">${label}</text><text x="90" y="144" textLength="${label==='10'?154:130}" lengthAdjust="spacingAndGlyphs" fill="none" stroke="url(#gold)" stroke-width="8">${label}</text><text x="90" y="144" textLength="${label==='10'?154:130}" lengthAdjust="spacingAndGlyphs" fill="url(#fill)" stroke="#ffe867" stroke-width="1.5">${label}</text></g></svg>`;
+ await writeFile(join(root,'player/assets',label+'.svg'),svg);
+}
+// Original curved Q glyph with a horizontal tail, independent of platform fonts.
+await writeFile(join(root,'player/assets/Q.svg'),`<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 180 180"><defs><linearGradient id="g" x2="0" y2="1"><stop stop-color="#89f136"/><stop offset="1" stop-color="#07880b"/></linearGradient></defs><path fill-rule="evenodd" d="M151 119 C180 64 145 14 92 14 C41 14 17 42 17 91 C17 138 42 160 89 160 C106 160 117 156 125 150 C140 160 152 159 169 154 L173 141 C155 145 148 141 141 137 Z M91 35 C125 35 141 55 141 88 C141 116 126 137 94 138 C56 137 38 120 38 90 C38 54 56 35 91 35 Z" fill="url(#g)" stroke="#783907" stroke-width="9" stroke-linejoin="round"/><path fill-rule="evenodd" d="M151 119 C180 64 145 14 92 14 C41 14 17 42 17 91 C17 138 42 160 89 160 C106 160 117 156 125 150 C140 160 152 159 169 154 L173 141 C155 145 148 141 141 137 Z M91 35 C125 35 141 55 141 88 C141 116 126 137 94 138 C56 137 38 120 38 90 C38 54 56 35 91 35 Z" fill="url(#g)" stroke="#ffdc54" stroke-width="4" stroke-linejoin="round"/></svg>`);
+await build({configFile:false,root:join(root,'slot-skills'),logLevel:'warn',build:{lib:{entry:join(root,'slot-skills/packages/slot-web-client/src/index.ts'),formats:['es'],fileName:()=> 'slot-client.js'},outDir:join(root,'player/build'),emptyOutDir:false,target:'es2022',sourcemap:true,minify:true}});
+console.log('Built frontend-only preview in player/build.');

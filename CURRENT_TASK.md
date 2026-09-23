@@ -2,7 +2,7 @@
 
 ## Priority
 
-Book of Ra completion -> Game Pipeline v1.
+Book of Ra completion -> Game Pipeline v1 -> Gates/Book integration validation.
 
 ## Do not
 

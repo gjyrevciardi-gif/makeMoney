@@ -10,6 +10,19 @@ A casino platform: NestJS backend (`backend/`), Next.js frontend (`frontend/`), 
 - `frontend/components/casino/` — game UI components (e.g. `casino-game-card.tsx`).
 - `tests/visual/` — visual QA assets. `references/` and `baselines/` are committed and reviewed; `output/` is gitignored, regenerated on demand.
 
+## Shared game architecture
+
+Standalone game workspaces are integrated into the platform in three layers:
+
+```
+Fool's Gold platform
+  -> launcher / platform bridge   (backend/src/casino registry + frontend/components/casino)
+  -> standalone game client        (games/<game-name>/ — frontend/player assets, own build)
+  -> authoritative backend         (games/<game-name>/backend, or a shared engine dependency)
+```
+
+`games/<game-name>/` holds each imported game's own source, tests, and approved visual references as delivered by its originating workspace — see `games/<game-name>/SPEC.md` for mechanics and integration status. A game living under `games/` is not yet wired into the platform's casino registry/launcher until that bridging work is done as its own task (see `CURRENT_TASK.md`).
+
 ## Invariants (never break these during unrelated work)
 
 - **RNG**: game outcome randomness must remain provably fair and untouched by unrelated refactors.

@@ -1,0 +1,36 @@
+{
+  "bundleHash": "3176025269ea783bd3c7fe144a9925127a54c950f30d46398fd3fa05aa5624b4",
+  "compiledAt": "2026-09-19T04:01:50.149Z",
+  "components": [
+    {
+      "id": "free-spins",
+      "status": "implemented",
+      "version": "1.0.0"
+    },
+    {
+      "id": "retriggering-free-spins",
+      "status": "implemented",
+      "version": "1.0.0"
+    },
+    {
+      "id": "symbol-expansion",
+      "status": "implemented",
+      "version": "1.0.0"
+    },
+    {
+      "id": "gamble-feature",
+      "status": "implemented",
+      "version": "1.0.0"
+    },
+    {
+      "id": "scatter-trigger",
+      "status": "implemented",
+      "version": "1.0.0"
+    }
+  ],
+  "gameId": "book-of-the-sands",
+  "gameVersion": "1.0.0",
+  "mathHash": "dee65e619e8aff0103b0063238628fbdfbee91a033b06c566a84350222f2751c",
+  "schemaVersion": "2.0",
+  "source": "C:\\Users\\Admin\\Desktop\\book-of-ra-poc\\book-of-the-sands\\game.yaml"
+}

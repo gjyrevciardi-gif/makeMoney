@@ -1,0 +1,12 @@
+{
+  "name": "book-of-ra-poc",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "visual:test": "node scripts/iteration/visual.mjs",
+    "visual:baseline": "node scripts/iteration/visual.mjs --update-baseline",
+    "backend:test": "node scripts/iteration/backend.mjs",
+    "acceptance": "node scripts/iteration/acceptance.mjs"
+  }
+}

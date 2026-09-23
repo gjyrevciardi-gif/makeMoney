@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Book of Ra — visual preview</title>
+<style>
+html,body{margin:0;min-height:100%;background:#000}body{min-height:100dvh;display:grid;place-items:center;overflow-x:hidden}
+slot-game{display:block;width:min(100vw,1120px);max-width:min(100vw,calc(100dvh / .703))!important}
+@media(max-width:600px){body{align-items:center}slot-game{width:100%;max-width:100vw!important}}
+slot-game[reference-state="02-paylines"]{width:800px!important}
+slot-game[reference-state="03-paytable"]{width:900px!important}
+slot-game[reference-state="04-win"]{width:1183px!important}
+slot-game[reference-state="05-free-games"]{width:1024px!important}
+@media(min-width:601px){slot-game[reference-state="06-gamble"]{width:calc(100vw - 64px)!important;max-width:calc((100dvh - 24px) / .563)!important}}
+slot-game[reference-state="07-autoplay"]{width:1446px!important}
+</style></head><body>
+<slot-game chrome="immersive" presentation="classic"></slot-game>
+<script type="module">
+import { defineSlotGame } from './build/slot-client.js';
+import { symbols, fixture } from './symbols.mjs';
+defineSlotGame();
+const game=await (await fetch('/game.json')).json();
+const element=document.querySelector('slot-game');
+const referenceState = new URLSearchParams(location.search).get('state') || '01-base';
+element.setAttribute('reference-state', referenceState);
+const referenceWidths = {'01-base':1120,'02-paylines':800,'03-paytable':900,'04-win':1183,'05-free-games':1024,'06-gamble':1716,'07-autoplay':1446};
+if (referenceWidths[referenceState]) { element.style.width = `${referenceWidths[referenceState]}px`; element.style.maxWidth = '100vw'; }
+element.assetBaseUrl=new URL('/',location.href).href;
+element.symbolPresentation=symbols;
+element.titleImageUrl='player/assets/title-original-v2.png';
+// Presentation-only copy. The compiled game, math and server remain untouched.
+element.game={...game,title:'Book of Ra',symbols:game.symbols.map(symbol=>({...symbol,name:symbol.id==='scatter'?'Book':symbol.name}))};
+const root=element.shadowRoot;
+for(const [selector,text] of Object.entries(fixture.meters)) root.querySelector(selector).textContent=text;
+try{const state=await (await fetch(`/v1/state/demo-player?gameId=${encodeURIComponent(game.id)}`)).json();if(state.pendingRound) await element.playResult(state.pendingRound);}catch(_error){/* first load may have no persisted round */}
+document.documentElement.dataset.ready='true';
+</script></body></html>

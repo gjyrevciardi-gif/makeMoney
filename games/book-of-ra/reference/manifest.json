@@ -1,0 +1,15 @@
+{
+  "references": [
+    { "id": "01-base", "state": "Base game", "path": "screenshots/reference/reference-01-base.png" },
+    { "id": "02-paylines", "state": "Payline presentation", "path": "screenshots/reference/reference-02-paylines.png" },
+    { "id": "03-paytable", "state": "Paytable/help", "path": "screenshots/reference/reference-03-paytable.png" },
+    { "id": "04-win", "state": "Win presentation", "path": "screenshots/reference/reference-04-win.png" },
+    { "id": "05-free-games", "state": "Free-games introduction", "path": "screenshots/reference/reference-05-free-games.png" },
+    { "id": "06-gamble", "state": "Red/Black gamble", "path": "screenshots/reference/reference-06-gamble.png" },
+    { "id": "07-autoplay", "state": "Deluxe base game/autoplay control", "path": "screenshots/reference/reference-07-autoplay.png" }
+  ],
+  "viewports": [[1440, 900], [430, 932], [390, 844]],
+  "referenceNormalization": "contain",
+  "portraitReferenceStatus": "No supplied portrait reference; normalized landscape comparisons are informational, not portrait parity.",
+  "regressionLimits": { "changedPixelPercentage": 0, "meanPixelError": 0 }
+}
