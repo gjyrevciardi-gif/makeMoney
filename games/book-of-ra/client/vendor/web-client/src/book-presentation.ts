@@ -1,4 +1,28 @@
 /** Original presentation artwork and measured cabinet geometry; no game rules. */
+/** Read the awarded count, never infer it from Books or the remaining counter. */
+export function bookFreeGamesAward(data: Record<string, unknown>): number {
+  const field = data.featureId === "retriggering-free-spins" ? "addedSpins" : "spins";
+  const count = data[field];
+  if (typeof count !== "number" || !Number.isSafeInteger(count) || count < 0) {
+    throw new Error(`Missing or invalid authoritative free-games ${field}`);
+  }
+  return count;
+}
+
+/** Match server win provenance before considering symbol/amount; never guess a tie. */
+export function bookWinForEvent<T extends { evaluator: string; symbolId: string; payoutUnits: string }>(
+  data: Record<string, unknown>, wins: readonly T[],
+): T | undefined {
+  const evaluator = data.expanding === true ? "book-of-ra-expanding"
+    : data.scatterPay === true ? "book-of-ra-scatter"
+    : typeof data.evaluator === "string" ? data.evaluator : undefined;
+  if (!evaluator || typeof data.symbolId !== "string") return undefined;
+  if (typeof data.evaluator === "string" && data.evaluator !== evaluator) return undefined;
+  const matches = wins.filter((win) => win.evaluator === evaluator && win.symbolId === data.symbolId &&
+    (typeof data.payoutUnits !== "string" || win.payoutUnits === data.payoutUnits));
+  return matches.length === 1 ? matches[0] : undefined;
+}
+
 export interface SymbolImagePresentation {
   src: string;
   width: number;
@@ -167,6 +191,18 @@ export const bookStyles = `
  :host([presentation="classic"][help-open]) dialog h2,
  :host([presentation="classic"][help-open]) dialog table {position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
  :host([presentation="classic"][help-open]) dialog .close {position:static;float:none}
+ /* Free-games presentation (reference 05): framed book intro carrying the server's spin
+    count and chosen expanding symbol, plus a persistent feature HUD. */
+ :host([presentation="classic"]) .free-intro {position:absolute;z-index:5;left:21.5%;top:31.6%;width:51.8%;height:63.3%;display:none;align-items:center;justify-content:center;pointer-events:none}
+ :host([presentation="classic"]) .free-intro.active {display:flex}
+ :host([presentation="classic"]) .free-panel {display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.7cqw;width:100%;height:100%;border:.5cqw ridge #c99a52;border-radius:.9cqw;background:linear-gradient(180deg,#e6c68b,#c1954f 55%,#9a6b28);box-shadow:0 0 0 .22cqw #6d4a16,0 1cqw 1.8cqw #000a;text-align:center}
+ :host([presentation="classic"]) .free-panel h4 {margin:0;font:bold 2.1cqw/1.05 Georgia,serif;color:#7c4a06;text-shadow:0 .12cqw #ffe9b0}
+ :host([presentation="classic"]) .free-panel small {padding:0 1cqw;font:bold 1.25cqw/1.1 Arial,sans-serif;color:#5a3607}
+ :host([presentation="classic"]) .free-symbol {width:8.5cqw;height:8cqw;background:#f7ecd2;border:.22cqw solid #8a5a1c;border-radius:.35cqw;box-shadow:inset 0 0 1cqw #b08b4a}
+ :host([presentation="classic"]) .free-hud {position:absolute;z-index:5;left:1.6%;top:1.4%;display:none;align-items:center;gap:.7cqw;padding:.45cqw .8cqw;border:.18cqw solid #e7b538;border-radius:.5cqw;background:#190f05e0;color:#ffe9a8;font:bold .95cqw/1.15 Arial,sans-serif;pointer-events:none}
+ :host([presentation="classic"]) .free-hud.active {display:flex}
+ :host([presentation="classic"]) .free-hud .free-symbol {width:2.8cqw;height:2.6cqw}
+ :host([presentation="classic"]) .free-hud strong {color:#fff;font-weight:900}
  }
 @media(max-width:600px) {
  :host([presentation="classic"]) .spin-icon {width:4.5cqw;height:4.5cqw}
