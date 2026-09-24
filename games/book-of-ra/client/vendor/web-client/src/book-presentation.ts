@@ -231,30 +231,7 @@ export const bookStyles = `
  :host([presentation="classic"][gamble-active]) .gamble-history .card-face {flex:1;min-width:0;font-size:1.8cqw}
  :host([presentation="classic"][gamble-active]) .gamble-card.card-face {font-size:7cqw}
 }
-@media(max-width:600px) {
- :host([presentation="classic"]) .spin-icon {width:4.5cqw;height:4.5cqw}
- :host([presentation="classic"]) .gamble-amount,:host([presentation="classic"]) .gamble-amount output {font-size:3.1cqw}
- :host([presentation="classic"]) .gamble-history {left:5%;font-size:2.45cqw}
- :host([presentation="classic"]) .gamble-history>strong {white-space:normal;width:30%}
- :host([presentation="classic"]) .gamble-screen .bonus-choice {font-size:4cqw}
- :host([presentation="classic"]) .gamble-screen .gamble-hint {font-size:2.25cqw}
- :host([presentation="classic"]) .game.immersive canvas.reel-canvas {aspect-ratio:1/.78}
- :host([presentation="classic"]) .game.immersive .console.cabinet {height:48cqw;border-top-width:.8cqw}
- :host([presentation="classic"]) .cab-message {left:3%;width:94%;top:2cqw;height:9cqw;font-size:4.3cqw;border-width:.5cqw}
- :host([presentation="classic"]) .cab-meters {left:3%;top:13cqw;width:94%;height:12cqw;gap:1.2cqw;grid-template-columns:1.12fr .8fr 1.05fr 1fr}
- :host([presentation="classic"]) .cab-meter small {font-size:2.3cqw;height:3.4cqw;border-width:.3cqw}
- :host([presentation="classic"]) .cab-meter strong {font-size:4.5cqw;height:7cqw;line-height:6cqw;margin-top:.7cqw;border-width:.6cqw}
- :host([presentation="classic"]) .cab-meter:nth-child(2) strong,:host([presentation="classic"]) .cab-meter:nth-child(3) strong {width:100%;margin-left:0}
- :host([presentation="classic"]) .cab-meter:nth-child(2) small,:host([presentation="classic"]) .cab-meter:nth-child(3) small {width:100%}
- :host([presentation="classic"]) .meter-adjust {display:none}
- :host([presentation="classic"]) .cab-meter.win-total {left:35%;top:28.5cqw;width:30%;justify-content:center;opacity:1;gap:1cqw}
- :host([presentation="classic"]) .cab-meter.win-total small,:host([presentation="classic"]) .cab-meter.win-total output {font-size:2.6cqw}
- :host([presentation="classic"]) .cab-key,:host([presentation="classic"]) .spin.cab-start {top:27cqw!important;height:12cqw!important;border-width:.7cqw;border-radius:1cqw;font-size:3.15cqw}
- :host([presentation="classic"]) .cab-key[data-key="autoplay"] {left:3%;width:22%}
- :host([presentation="classic"]) .cab-key.paytable {left:27%;width:22%}
- :host([presentation="classic"]) .cab-key[data-key="gamble"] {left:51%;width:22%}
- :host([presentation="classic"]) .spin.cab-start {left:75%;width:22%}
-}
+
 `;
 
 const gold = (ctx: CanvasRenderingContext2D, x: number, width: number) => {
@@ -263,7 +240,7 @@ const gold = (ctx: CanvasRenderingContext2D, x: number, width: number) => {
   return g;
 };
 
-export function drawBookCabinet(ctx: CanvasRenderingContext2D, width: number, height: number, overlay: boolean, referenceState = "", titleImage?: HTMLImageElement, paylineCount = 0): void {
+export function drawBookCabinet(ctx: CanvasRenderingContext2D, width: number, height: number, overlay: boolean, referenceState = "", titleImage?: HTMLImageElement, paylineCount = 0, portrait = false): void {
   // The canvas is the whole 1255-wide cabinet face; the frame itself measures
   // x 66..1193, y 0..630 of the approved 1255x761 base capture, so the cabinet
   // artwork keeps its original 1112-unit layout mapped onto that measured face.
@@ -303,7 +280,12 @@ export function drawBookCabinet(ctx: CanvasRenderingContext2D, width: number, he
   for(const [side,order] of [[34,left],[1018,right]] as const){for(let i=0;i<order.length;i++){const y=144+i*chipStep;ctx.shadowColor='#000';ctx.shadowBlur=3;ctx.shadowOffsetY=3;ctx.fillStyle=bookPaylineColors[i % bookPaylineColors.length]!;ctx.fillRect(side,y,48,39);ctx.shadowBlur=0;ctx.shadowOffsetY=0;ctx.strokeStyle='#674310';ctx.lineWidth=2;ctx.strokeRect(side,y,48,39);ctx.fillStyle='#080704';ctx.font='bold 27px Georgia';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(order[i]),side+24,y+20);}}
   // Original wing ornament and wordmark; no commercial image is embedded.
   if (titleImage) {
-    ctx.drawImage(titleImage,14,118,2144,423,364,2,385,76);
+    if (portrait) {
+      // Enlarge the title optically without stretching its original aspect ratio.
+      const titleWidth = 520;
+      const titleHeight = titleWidth * 423 / 2144 * (width / 1255 * 1127 / 1112) / (height / 630);
+      ctx.drawImage(titleImage,14,118,2144,423,557 - titleWidth / 2,(90 - titleHeight) / 2,titleWidth,titleHeight);
+    } else ctx.drawImage(titleImage,14,118,2144,423,364,2,385,76);
   } else {
   ctx.save();ctx.translate(557,40);ctx.scale(.66,.66);
   for(const side of [-1,1]){ctx.save();ctx.scale(side,1);for(let i=0;i<18;i++){const x=25+i*14;ctx.beginPath();ctx.moveTo(x,-27);ctx.quadraticCurveTo(x+13,38-i*.5,x+20,48-i*2);ctx.quadraticCurveTo(x+34,16-i,x+46,-39+i*.4);ctx.closePath();const g=ctx.createLinearGradient(0,-30,0,45);g.addColorStop(0,'#ffd55b');g.addColorStop(.5,'#9b570a');g.addColorStop(.7,'#e6a629');g.addColorStop(1,'#492709');ctx.fillStyle=g;ctx.strokeStyle='#1a0c04';ctx.lineWidth=3;ctx.fill();ctx.stroke();}ctx.restore();}
