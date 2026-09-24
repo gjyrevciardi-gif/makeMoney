@@ -11,6 +11,35 @@ export interface SymbolImagePresentation {
   crop?: { x: number; y: number; width: number; height: number };
 }
 
+/** One colour per configured payline, shared by the rail chips and the 02 overlay. */
+export const bookPaylineColors: readonly string[] = [
+  "#f5e04a", "#e8574f", "#a9d8f0", "#9ede5a", "#6fa8f5",
+  "#f7b0a8", "#f5c98a", "#7ed957", "#f2a8d0", "#c9a8f0",
+];
+
+/** Rail chip step, shared by the chip drawing and the 02 line endpoints. */
+export const bookChipStep = (count: number): number => Math.min(48.5, 478 / Math.max(1, count));
+
+/**
+ * Centre of the payline chip for `index` on a rail, in the 1255x630 canvas space.
+ * Lines that terminate here read as integrated with the marker rails (reference 02).
+ */
+export function bookRailChipCentre(index: number, count: number, side: "left" | "right"): { x: number; y: number } {
+  const x = side === "left" ? 34 : 1018;
+  return { x: 66 + (x + 24) * (1127 / 1112), y: 144 + index * bookChipStep(count) + 19.5 };
+}
+
+export interface BookBox { x: number; y: number; width: number; height: number; }
+
+/** Paytable presentation models, assembled from the game's own paytable config. */
+export interface BookPaytableEntry { count: number; value: string; }
+export interface BookPaytableCard {
+  symbolIds: readonly string[];
+  names: readonly string[];
+  basis: string;
+  entries: readonly BookPaytableEntry[];
+}
+
 export const bookStyles = `
 :host([presentation="classic"]) {container-type:inline-size;font-family:Arial,sans-serif;width:100%}
 :host([presentation="classic"]) .game.immersive {width:100%;height:auto;margin:0;background:#000;color:#fff;overflow:hidden}
@@ -126,6 +155,14 @@ export const bookStyles = `
  :host([presentation="classic"]) .cab-key[data-key="autoplay"] {left:73.4%;top:2.39cqw;width:4.4%;height:5.5cqw;font-size:.72cqw}
  :host([presentation="classic"]) .spin.cab-start {left:78.3%;top:2.39cqw;width:8.6%;min-width:0;height:5.5cqw;font-size:1.05cqw}
  :host([presentation="classic"]) .spin-icon {width:1.5cqw;height:1.5cqw}
+ /* Real help state: the cabinet paints the symbol/pay cards in the reel window, so
+    the dialog keeps its accessible table as off-screen text and shrinks to its
+    close key. Close and Esc still end the help state. */
+ :host([presentation="classic"][help-open]) dialog {position:fixed;top:1%;right:1%;left:auto;width:auto;max-width:none;max-height:none;padding:0;border:0;background:none;box-shadow:none}
+ :host([presentation="classic"][help-open]) dialog::backdrop {background:transparent}
+ :host([presentation="classic"][help-open]) dialog h2,
+ :host([presentation="classic"][help-open]) dialog table {position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+ :host([presentation="classic"][help-open]) dialog .close {position:static;float:none}
  }
 @media(max-width:600px) {
  :host([presentation="classic"]) .spin-icon {width:4.5cqw;height:4.5cqw}
@@ -159,7 +196,7 @@ const gold = (ctx: CanvasRenderingContext2D, x: number, width: number) => {
   return g;
 };
 
-export function drawBookCabinet(ctx: CanvasRenderingContext2D, width: number, height: number, overlay: boolean, referenceState = "", titleImage?: HTMLImageElement): void {
+export function drawBookCabinet(ctx: CanvasRenderingContext2D, width: number, height: number, overlay: boolean, referenceState = "", titleImage?: HTMLImageElement, paylineCount = 0): void {
   // The canvas is the whole 1255-wide cabinet face; the frame itself measures
   // x 66..1193, y 0..630 of the approved 1255x761 base capture, so the cabinet
   // artwork keeps its original 1112-unit layout mapped onto that measured face.
@@ -189,9 +226,14 @@ export function drawBookCabinet(ctx: CanvasRenderingContext2D, width: number, he
   }
   // Narrow red/blue inlays on the five reel boundaries.
   for(let i=0;i<=5;i++){const x=95+i*184;ctx.fillStyle='#d49913';ctx.fillRect(x-5,106,11,516);ctx.fillStyle='#b52813';ctx.fillRect(x-2,106,5,516);for(let y=132;y<618;y+=47){ctx.fillStyle='#2a9dc0';ctx.fillRect(x-2,y,5,20);}ctx.fillStyle='#f8e466';ctx.fillRect(x+4,106,1.5,516);}
-  const colors=['#fbed53','#f04f4b','#f7c77a','#c4ed61','#54ade9','#edb69c','#9bd0df','#5bbb4c','#f08bd3'];
-  const left=[4,2,9,6,1,7,8,3,5],right=[4,2,8,6,1,7,9,3,5];
-  for(const [side,order] of [[34,left],[1018,right]] as const){for(let i=0;i<9;i++){const y=144+i*48.5;ctx.shadowColor='#000';ctx.shadowBlur=3;ctx.shadowOffsetY=3;ctx.fillStyle=colors[i]!;ctx.fillRect(side,y,48,39);ctx.shadowBlur=0;ctx.shadowOffsetY=0;ctx.strokeStyle='#674310';ctx.lineWidth=2;ctx.strokeRect(side,y,48,39);ctx.fillStyle='#080704';ctx.font='bold 27px Georgia';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(order[i]),side+24,y+20);}}
+  // Rail chips mirror the configured payline count so the ten-line contract is not
+  // shown as the Classic capture's nine chips. The capture's scrambled orders are
+  // kept only when the contract itself carries nine lines.
+  const referenceNine = !paylineCount || paylineCount === 9;
+  const left = referenceNine ? [4,2,9,6,1,7,8,3,5] : Array.from({ length: paylineCount }, (_, index) => index + 1);
+  const right = referenceNine ? [4,2,8,6,1,7,9,3,5] : left;
+  const chipStep = bookChipStep(Math.max(left.length, right.length));
+  for(const [side,order] of [[34,left],[1018,right]] as const){for(let i=0;i<order.length;i++){const y=144+i*chipStep;ctx.shadowColor='#000';ctx.shadowBlur=3;ctx.shadowOffsetY=3;ctx.fillStyle=bookPaylineColors[i % bookPaylineColors.length]!;ctx.fillRect(side,y,48,39);ctx.shadowBlur=0;ctx.shadowOffsetY=0;ctx.strokeStyle='#674310';ctx.lineWidth=2;ctx.strokeRect(side,y,48,39);ctx.fillStyle='#080704';ctx.font='bold 27px Georgia';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(order[i]),side+24,y+20);}}
   // Original wing ornament and wordmark; no commercial image is embedded.
   if (titleImage) {
     ctx.drawImage(titleImage,14,118,2144,423,364,2,385,76);
@@ -206,5 +248,72 @@ export function drawBookCabinet(ctx: CanvasRenderingContext2D, width: number, he
     ctx.font='16px Arial';ctx.fillText('♪  ◀  ↕  ⛶',962,39);
   }
   ctx.restore();
+  ctx.restore();
+}
+
+/**
+ * Paytable presentation for the 03 reference state: symbol/pay cards filling the
+ * reel window below the title and inside the rails, matching the approved capture.
+ * Every number comes from the caller's paytable rows; nothing is invented here.
+ */
+export function drawBookPaytable(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  layout: { left: readonly BookPaytableCard[]; right: readonly BookPaytableCard[]; center?: BookPaytableCard },
+  drawArt: (symbolId: string, box: BookBox) => void,
+): void {
+  ctx.save(); ctx.scale(width / 1255, height / 630);
+  const colX = [178, 483, 788]; const colW = 291;
+  const top = 118, bottom = 614, gap = 12;
+  // Every card the config produces gets its own slot: a column grows rows instead of
+  // stacking a fourth card on the third, so nothing is silently dropped or hidden.
+  const rows = Math.max(1, layout.left.length, layout.right.length);
+  const cardH = (bottom - top - gap * (rows - 1)) / rows;
+  const rowY = (index: number): number => top + index * (cardH + gap);
+  ctx.fillStyle = "#000"; ctx.fillRect(168, 112, 921, 508);
+  const paint = (card: BookPaytableCard, x: number, y: number, w: number, h: number, tall = false): void => {
+    const face = ctx.createLinearGradient(x, y, x, y + h);
+    face.addColorStop(0, "#120c07"); face.addColorStop(1, "#040302");
+    ctx.beginPath(); ctx.roundRect(x, y, w, h, 14); ctx.fillStyle = face; ctx.fill();
+    ctx.lineWidth = 5; ctx.strokeStyle = "#c9932f"; ctx.stroke();
+    ctx.beginPath(); ctx.roundRect(x + 5, y + 5, w - 10, h - 10, 10); ctx.lineWidth = 1.5; ctx.strokeStyle = "#f6dd93"; ctx.stroke();
+    let cursor = y + 14;
+    if (tall) {
+      ctx.fillStyle = "#7ed957"; ctx.font = "bold 32px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "top";
+      ctx.fillText("SCATTER", x + w / 2, cursor); cursor += 42;
+    }
+    const artBox: BookBox = tall
+      ? { x: x + w / 2 - 66, y: cursor, width: 132, height: 152 }
+      : { x: x + 12, y: y + 16, width: w * 0.44, height: h - 32 };
+    const slot = artBox.width / Math.max(1, card.symbolIds.length);
+    card.symbolIds.forEach((symbolId, index) => {
+      drawArt(symbolId, { x: artBox.x + index * slot, y: artBox.y, width: slot - 2, height: artBox.height });
+    });
+    const rows: BookBox = tall
+      ? { x: x + 18, y: cursor + 158, width: w - 36, height: Math.max(30, h - 300) }
+      : { x: x + w * 0.44 + 8, y: y + 16, width: w * 0.5 - 14, height: h - 40 };
+    const rowH = Math.min(34, rows.height / Math.max(1, card.entries.length));
+    card.entries.forEach((entry, index) => {
+      const cy = rows.y + index * rowH + rowH / 2;
+      ctx.fillStyle = bookPaylineColors[index % bookPaylineColors.length]!;
+      ctx.beginPath(); ctx.arc(rows.x + 7, cy, 6, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#ffe9a8"; ctx.font = "bold 24px Arial"; ctx.textAlign = "left"; ctx.textBaseline = "middle";
+      ctx.fillText(String(entry.count), rows.x + 22, cy);
+      ctx.fillStyle = "#ffd24a"; ctx.font = "bold 26px Arial"; ctx.textAlign = "right";
+      ctx.fillText(entry.value, rows.x + rows.width, cy);
+    });
+    if (tall) {
+      const captionY = rows.y + rowH * card.entries.length + 32;
+      ctx.fillStyle = "#efe0b4"; ctx.font = "bold 18px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText("WILD SUBSTITUTES IN", x + w / 2, captionY, w - 36);
+      ctx.fillText("REGULAR LINE WINS", x + w / 2, captionY + 22, w - 36);
+    }
+    ctx.fillStyle = "#9a8a63"; ctx.font = "bold 15px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
+    ctx.fillText(`x ${card.basis}`, x + w / 2, y + h - 10);
+  };
+  layout.left.forEach((card, index) => paint(card, colX[0]!, rowY(index), colW, cardH));
+  layout.right.forEach((card, index) => paint(card, colX[2]!, rowY(index), colW, cardH));
+  if (layout.center) paint(layout.center, colX[1]!, top, colW, bottom - top, true);
   ctx.restore();
 }
