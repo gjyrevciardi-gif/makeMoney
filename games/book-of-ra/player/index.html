@@ -4,6 +4,7 @@
 <style>
 html,body{margin:0;min-height:100%;background:#000}body{min-height:100dvh;display:grid;place-items:center;overflow-x:hidden}
 slot-game{display:block;width:min(100vw,var(--preview-width,1120px));max-width:min(100vw,var(--preview-width,1120px))!important;max-height:var(--preview-height,100dvh)!important;overflow:hidden}
+@media(min-width:601px){body:has(slot-game[base-desktop]){align-items:start;padding-top:1.5vh;box-sizing:border-box}}
 @media(max-width:600px){body{display:block}slot-game{width:100%;max-width:100%!important;max-height:none!important;overflow:visible}}
 
 /* Reference-matched preview sizing.
@@ -28,9 +29,17 @@ element.setAttribute('reference-state', referenceState);
 // contain-normalised reference comparison about presentation, not scale.
 const referenceAspect = {'01-base':1.64915,'02-paylines':1.33333,'03-paytable':1.77866,'04-win':1.86006,'05-free-games':1.79649,'06-gamble':1.77640,'07-autoplay':1.78298};
 const applyPreviewSizing = () => {
+  element.toggleAttribute('base-desktop', referenceState === '01-base' && innerWidth > 600);
   if (matchMedia('(max-width:600px)').matches) {
     document.documentElement.style.removeProperty('--preview-width');
     document.documentElement.style.removeProperty('--preview-height');
+    return;
+  }
+  if (element.hasAttribute('base-desktop')) {
+    // Normalized human-review targets: 1.5% top, 86% cabinet face, 12.5% controls.
+    document.documentElement.style.setProperty('--preview-width', `${innerWidth}px`);
+    document.documentElement.style.setProperty('--preview-height', `${innerHeight * .985}px`);
+    window.__previewSizing = { width: innerWidth, height: innerHeight * .985, innerWidth, innerHeight };
     return;
   }
   const aspect = referenceAspect[referenceState] ?? 1.6823;

@@ -841,7 +841,7 @@ export class SlotGameElement extends HTMLElement {
    * Called twice per frame: the black reel bed first, then all the furniture.
    */
   #drawCabinetFrame(context: CanvasRenderingContext2D, width: number, height: number, overlay = false): void {
-    if (this.classicPresentation) { drawBookCabinet(context, width, height, overlay, this.hasAttribute("gamble-active") ? "06-gamble" : this.getAttribute("reference-state") ?? "", this.#images.get("$book-title"), this.#game?.math.paylines?.length ?? 0, window.innerWidth <= portraitLayout.breakpoint); return; }
+    if (this.classicPresentation) { drawBookCabinet(context, width, height, overlay, this.hasAttribute("gamble-active") ? "06-gamble" : this.getAttribute("reference-state") ?? "", this.#images.get("$book-title"), this.#game?.math.paylines?.length ?? 0, window.innerWidth <= portraitLayout.breakpoint, this.hasAttribute("base-desktop") && !this.hasAttribute("gamble-active") && !this.hasAttribute("help-open")); return; }
     const palette = this.#game?.theme.palette ?? [];
     const accent = palette[2] ?? "#ffd34f";
     const area = this.#reelArea(width, height);
@@ -1003,6 +1003,9 @@ export class SlotGameElement extends HTMLElement {
       // Measured against the 1255x761 approved base capture: the dark reel window
       // spans x 162..1095, y 110..627, i.e. three 172-unit rows filling the frame's
       // 106..622 face opening. The gamble reference keeps its existing grid.
+      if (this.hasAttribute("base-desktop") && !gambleReference && !this.hasAttribute("help-open")) {
+        return { x: width * .0925, y: height * .135, width: width * .815, height: height * .85 };
+      }
       if (gambleReference) return { x: width * 279 / 1255, y: height * 113 / 630, width: width * 718 / 1255, height: height * 429 / 630 };
       return { x: width * 162 / 1255, y: height * 106 / 630, width: width * 933 / 1255, height: height * 516 / 630 };
     }
@@ -1064,7 +1067,13 @@ export class SlotGameElement extends HTMLElement {
     const art = this.symbolPresentation[symbolId], replacement = this.#presentationImages.get(symbolId);
     if (art && replacement) {
       context.save(); context.beginPath(); context.rect(box.x, box.y, box.width, box.height); context.clip();
-      const unit = Math.min(box.width / 180, box.height / 166);
+      let unit = Math.min(box.width / 180, box.height / 166);
+      if (this.hasAttribute("base-desktop") && !this.hasAttribute("gamble-active") && !this.hasAttribute("help-open")) {
+        // Keep the existing optical offsets while fitting both sides of each anchor.
+        const halfWidth = Math.max(art.width * art.scale * art.anchorX - art.offsetX, art.width * art.scale * (1 - art.anchorX) + art.offsetX);
+        const halfHeight = Math.max(art.height * art.scale * art.anchorY - art.offsetY, art.height * art.scale * (1 - art.anchorY) + art.offsetY);
+        unit = Math.min(unit, box.width / (2 * halfWidth), box.height / (2 * halfHeight));
+      }
       const w = art.width * unit * art.scale, h = art.height * unit * art.scale;
       const x = box.x + box.width / 2 - w * art.anchorX + art.offsetX * unit;
       const y = box.y + box.height / 2 - h * art.anchorY + art.offsetY * unit;
