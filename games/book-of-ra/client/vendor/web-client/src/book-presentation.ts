@@ -204,6 +204,33 @@ export const bookStyles = `
  :host([presentation="classic"]) .free-hud .free-symbol {width:2.8cqw;height:2.6cqw}
  :host([presentation="classic"]) .free-hud strong {color:#fff;font-weight:900}
  }
+/* Gamble-only desktop composition; the original reference places the orange panel
+   inside the cabinet rails and a wide status strip above the lower Collect key. */
+@media(min-width:601px) {
+ :host([presentation="classic"][gamble-active]) .game.immersive canvas.reel-canvas {aspect-ratio:1/.423}
+ :host([presentation="classic"][gamble-active]) .bonus.gamble-screen {inset:18.5% 20.6% 2.2% 22%;z-index:6}
+ :host([presentation="classic"][gamble-active]) .console.cabinet {height:14cqw}
+ :host([presentation="classic"][gamble-active]) .cab-message {left:13.2%;top:3.7cqw;width:62%;height:4.4cqw;font-size:1.6cqw}
+ :host([presentation="classic"][gamble-active]) .cab-meters {left:13.2%;top:9.2cqw;width:42%;height:3.4cqw;gap:.8cqw}
+ :host([presentation="classic"][gamble-active]) .cab-meter small {font-size:.8cqw}
+ :host([presentation="classic"][gamble-active]) .cab-meter strong {width:100%;margin-left:0;font-size:1.2cqw;height:2.3cqw}
+ :host([presentation="classic"][gamble-active]) .meter-adjust,
+ :host([presentation="classic"][gamble-active]) .win-total,
+ :host([presentation="classic"][gamble-active]) .cab-key {display:none}
+ :host([presentation="classic"][gamble-active]) .spin.cab-start {left:76%;top:9.2cqw;width:9.2%;height:3.4cqw;font-size:1.4cqw}
+ :host([presentation="classic"][gamble-active]) .gamble-amount {font-size:1.55cqw}
+ :host([presentation="classic"][gamble-active]) .gamble-value {display:block;color:#fff279;text-align:center}
+ :host([presentation="classic"][gamble-active]) .gamble-attempt {position:absolute;right:5%;top:3%;color:#fff;font:bold 1.55cqw/1.4 Arial;text-align:center;text-shadow:.1cqw .1cqw #966622}
+ :host([presentation="classic"][gamble-active]) .gamble-attempt span {display:block;color:#fff279}
+ :host([presentation="classic"][gamble-active]) .gamble-history {left:18%;font-size:1.25cqw}
+ :host([presentation="classic"][gamble-active]) .gamble-screen .bonus-choice {font-size:1.8cqw}
+ :host([presentation="classic"][gamble-active]) .gamble-result {position:absolute;top:36%;left:4%;right:4%;margin:0;color:#fff;font:bold 1.2cqw Arial;text-align:center}
+ :host([presentation="classic"][gamble-active]) .gamble-hint {font-size:1.05cqw}
+ :host([presentation="classic"][gamble-active]) .card-face {display:flex;align-items:center;justify-content:center;box-sizing:border-box;background:#fff5df;border:.45cqw ridge #e8e7dd;color:#151515;font:normal 3cqw Georgia}
+ :host([presentation="classic"][gamble-active]) .card-face.red {color:#bd121e}
+ :host([presentation="classic"][gamble-active]) .gamble-history .card-face {flex:1;min-width:0;font-size:1.8cqw}
+ :host([presentation="classic"][gamble-active]) .gamble-card.card-face {font-size:7cqw}
+}
 @media(max-width:600px) {
  :host([presentation="classic"]) .spin-icon {width:4.5cqw;height:4.5cqw}
  :host([presentation="classic"]) .gamble-amount,:host([presentation="classic"]) .gamble-amount output {font-size:3.1cqw}

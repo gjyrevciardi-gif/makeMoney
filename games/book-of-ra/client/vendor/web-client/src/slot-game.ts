@@ -9,6 +9,7 @@ import { AmbientEffectRenderer } from "./ambient-effects.js";
 import { installCharacterSpine } from "@slot-skills/spine/browser";
 import { configuredEventEffect } from "./effect-config.js";
 import { heldCellTransition, parseHeldCells } from "./hold-and-win.js";
+import { bookGambleView, bookGambleResolution, bookGambleMarkup, bookGambleStatus } from "./book-gamble-presentation.js";
 import { bookStyles, bookFreeGamesAward, bookWinForEvent, bookPaylineColors, bookRailChipCentre, drawBookCabinet, drawBookPaytable, type BookPaytableCard, type BookPaytableEntry, type SymbolImagePresentation } from "./book-presentation.js";
 
 export interface SlotRoundResultEventDetail { result: GameRoundResult; }
@@ -269,6 +270,8 @@ export class SlotGameElement extends HTMLElement {
   #catalog = new MessageCatalog("en", { spin: "Spin", balance: "Balance", win: "Win", paytable: "Paytable" });
   #busy = false;
   #autoplay = false;
+  #gambleSuppressed = false;
+  #gambleRequestAutoplay = false;
   #collectPending: (() => void) | undefined;
   #choiceBusy = false;
   #manager?: EffectManager;
@@ -810,7 +813,7 @@ export class SlotGameElement extends HTMLElement {
    * Called twice per frame: the black reel bed first, then all the furniture.
    */
   #drawCabinetFrame(context: CanvasRenderingContext2D, width: number, height: number, overlay = false): void {
-    if (this.classicPresentation) { drawBookCabinet(context, width, height, overlay, this.getAttribute("reference-state") ?? "", this.#images.get("$book-title"), this.#game?.math.paylines?.length ?? 0); return; }
+    if (this.classicPresentation) { drawBookCabinet(context, width, height, overlay, this.hasAttribute("gamble-active") ? "06-gamble" : this.getAttribute("reference-state") ?? "", this.#images.get("$book-title"), this.#game?.math.paylines?.length ?? 0); return; }
     const palette = this.#game?.theme.palette ?? [];
     const accent = palette[2] ?? "#ffd34f";
     const area = this.#reelArea(width, height);
@@ -968,7 +971,7 @@ export class SlotGameElement extends HTMLElement {
 
   #reelArea(width: number, height: number): CellBox {
     if (this.classicPresentation) {
-      const gambleReference = this.getAttribute("reference-state") === "06-gamble";
+      const gambleReference = this.hasAttribute("gamble-active") || this.getAttribute("reference-state") === "06-gamble";
       // Measured against the 1255x761 approved base capture: the dark reel window
       // spans x 162..1095, y 110..627, i.e. three 172-unit rows filling the frame's
       // 106..622 face opening. The gamble reference keeps its existing grid.
@@ -1408,23 +1411,37 @@ export class SlotGameElement extends HTMLElement {
   }
 
   async #spin(purchasedFeatureId?: string): Promise<void> {
-    if (!this.#game || this.#busy || this.#collectPending || this.#choiceBusy) return;
+    if (!this.#game || this.#busy || this.#collectPending || this.#choiceBusy || this.#gambleSuppressed) return;
     if (purchasedFeatureId && this.#anteBet) return;
     this.#busy = true; const button = this.shadowRoot!.querySelector<HTMLButtonElement>(".spin")!; button.disabled = true; this.#clearChips(); this.#clearPaylines(); this.#updateExtras(); this.#playMusic("base"); this.#roundWinUnits = 0n; this.#orbValues = []; this.#startReelSpin();
+    // Keep the wager's autoplay flag until its presentation completes, even if Stop
+    // is clicked while the server request is in flight. This is only a UI guard.
+    this.#gambleRequestAutoplay = this.#autoplay;
     try {
       const result = await this.#transport.spin({
-        gameId: this.#game.id, playerId: this.#playerId, betUnits: this.#betUnits, idempotencyKey: crypto.randomUUID(), autoplay: this.#autoplay,
+        gameId: this.#game.id, playerId: this.#playerId, betUnits: this.#betUnits, idempotencyKey: crypto.randomUUID(), autoplay: this.#gambleRequestAutoplay,
         ...(purchasedFeatureId ? { purchasedFeatureId } : {}),
         ...(this.#anteBet ? { anteBet: true } : {}),
       });
       await this.playResult(result);
     }
     catch (error) { this.#cancelSpin(); this.#reportError(error, "spin"); }
-    finally { this.#busy = false; button.disabled = this.#choiceBusy; this.#updateExtras(); if (this.#autoplay && !this.#collectPending && this.isConnected) setTimeout(() => { if (this.#autoplay && !this.#busy) void this.#spin(); }, 650); }
+    finally { this.#gambleRequestAutoplay = false; this.#busy = false; button.disabled = this.#choiceBusy || this.#gambleSuppressed; this.#updateExtras(); if (this.#autoplay && !this.#collectPending && this.isConnected) setTimeout(() => { if (this.#autoplay && !this.#busy) void this.#spin(); }, 650); }
   }
 
   async playResult(result: GameRoundResult): Promise<void> {
     if (!this.#game) throw new Error("A game must be assigned before playing a result");
+    const bookGamble = result.gameId === "book-of-the-sands" &&
+      (result.pendingAction?.type === "gamble" || Boolean(bookGambleResolution(result)));
+    if (bookGamble && (this.#autoplay || this.#gambleRequestAutoplay)) { this.#suppressGamble(result); return; }
+    this.#gambleSuppressed = false;
+    if (bookGamble && this.classicPresentation && bookGambleResolution(result)) {
+      // The server repeats prior spin/choice events. Present the current choice once,
+      // without re-spinning or replaying earlier gamble outcomes.
+      await this.#presentGambleResult(result);
+      this.dispatchEvent(new CustomEvent<SlotRoundResultEventDetail>("slot-round-result", { detail: { result }, bubbles: true, composed: true }));
+      return;
+    }
     // Snapshot recovery: a refreshed session shows the chosen expanding symbol and spin
     // counts without replaying the intro event.
     this.#applyFreeFeature(result);
@@ -1859,6 +1876,7 @@ export class SlotGameElement extends HTMLElement {
   #openBonus(result: GameRoundResult): void {
     const overlay = this.shadowRoot!.querySelector<HTMLElement>(".bonus")!;
     const action = result.pendingAction!;
+    if (action.type === "gamble" && (this.#autoplay || this.#gambleRequestAutoplay)) { this.#suppressGamble(result); return; }
     const { title, hint } = this.#bonusTitle(action);
     const panel = document.createElement("div");
     panel.className = "bonus-panel";
@@ -1912,16 +1930,18 @@ export class SlotGameElement extends HTMLElement {
       }
       panel.append(row);
     } else if (action.type === "gamble") {
+      const view = classicGamble ? bookGambleView(result, this.#autoplay, this.#gambleRequestAutoplay) : undefined;
       if (classicGamble) {
-        this.#autoplay = false; autoplay.textContent = "Autoplay"; autoplay.disabled = true;
+        this.#hideWin(); this.#clearPaylines(); autoplay.disabled = true;
         this.setAttribute("gamble-active", "");
-        const amount = formatMinorUnits(result.totalWinUnits);
-        panel.innerHTML = `<div class="gamble-amount"><strong>GAMBLE AMOUNT</strong><output>${amount}</output></div><div class="gamble-history"><strong>PREVIOUS CARDS</strong><div>${'<i class="card-back" aria-hidden="true"></i>'.repeat(6)}</div></div><div class="gamble-card card-back" aria-label="Face-down gamble card"></div><p class="gamble-hint">Choose Red or Black to gamble, or take the win!</p>`;
+        const amount = formatMinorUnits(view!.amountUnits);
+        panel.innerHTML = bookGambleMarkup(view!, formatMinorUnits);
         if (message) message.textContent = `${amount} won`;
       }
       const row = document.createElement("div");
       row.className = "gamble-row";
       for (const [index, choice] of action.choices.entries()) {
+        if (classicGamble && !view!.choices.includes(choice.id as "red" | "black" | "collect")) continue;
         if (classicGamble && choice.id === "collect") { this.#collectPending = () => void resolveChoice(choice.id); startLabel.textContent = "Collect"; start.disabled = false; continue; }
         const button = document.createElement("button");
         button.className = "bonus-choice";
@@ -1949,6 +1969,51 @@ export class SlotGameElement extends HTMLElement {
     }
     overlay.replaceChildren(panel);
     overlay.classList.add("active");
+  }
+
+  /** Fail closed on an unexpected server gamble during autoplay; never auto-collect. */
+  #suppressGamble(result: GameRoundResult): void {
+    this.#gambleSuppressed = true; this.#autoplay = false;
+    this.#cancelSpin(); this.#hideWin(); this.#clearPaylines();
+    this.#displayGrid = result.finalGrid.map((column) => [...column]);
+    this.#updateAccessibleGrid();
+    this.#collectPending = undefined;
+    this.shadowRoot!.querySelector(".bonus")!.classList.remove("active");
+    this.shadowRoot!.querySelector(".bonus")!.replaceChildren();
+    this.removeAttribute("gamble-active");
+    this.shadowRoot!.querySelector<HTMLElement>(".spin-label")!.textContent = "Start";
+    this.shadowRoot!.querySelector<HTMLElement>('[data-key="autoplay"]')!.textContent = "Autoplay";
+    for (const button of this.shadowRoot!.querySelectorAll<HTMLButtonElement>('.spin,[data-key="gamble"],[data-key="autoplay"]')) button.disabled = true;
+    this.#setCabinetStatus("Round awaiting recovery. Reload to continue.", false);
+  }
+
+  async #presentGambleResult(result: GameRoundResult): Promise<void> {
+    const view = bookGambleView(result, this.#autoplay, this.#gambleRequestAutoplay);
+    if (!view) return;
+    this.#hideWin(); this.#clearPaylines(); this.#winningCells.clear();
+    this.#displayGrid = result.finalGrid.map((column) => [...column]);
+    this.#updateAccessibleGrid();
+    const overlay = this.shadowRoot!.querySelector<HTMLElement>(".bonus")!;
+    const start = this.shadowRoot!.querySelector<HTMLButtonElement>(".spin")!;
+    const autoplay = this.shadowRoot!.querySelector<HTMLButtonElement>('[data-key="autoplay"]')!;
+    this.#collectPending = undefined; this.#choiceBusy = true;
+    start.disabled = true; autoplay.disabled = true;
+    this.setAttribute("gamble-active", "");
+    overlay.classList.add("gamble-screen", "active");
+    const panel = document.createElement("div"); panel.className = "bonus-panel";
+    panel.innerHTML = bookGambleMarkup(view, formatMinorUnits); overlay.replaceChildren(panel);
+    const amount = view.complete ? view.settlementUnits! : view.amountUnits;
+    this.#setCabinetStatus(`${bookGambleStatus(view)}: ${formatMinorUnits(amount)}`, false);
+    this.shadowRoot!.querySelector<HTMLOutputElement>(".win-total output")!.value = formatMinorUnits(view.amountUnits);
+    this.#playSound(view.status === "lost" ? "gamble-lost" : "choice-resolved", .85);
+    await this.#pause(this.#reducedMotion ? 0 : 1100);
+    this.#choiceBusy = false;
+    if (!view.complete && result.pendingAction) { this.#openBonus(result); return; }
+    overlay.classList.remove("active", "gamble-screen"); overlay.replaceChildren();
+    this.removeAttribute("gamble-active");
+    start.querySelector<HTMLElement>(".spin-label")!.textContent = "Start";
+    start.disabled = false; autoplay.disabled = false;
+    this.#setState("READY"); this.#playMusic("base");
   }
 
   #reportError(value: unknown, operation: SlotErrorEventDetail["operation"]): void {
