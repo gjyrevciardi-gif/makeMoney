@@ -9,7 +9,7 @@ import { AmbientEffectRenderer } from "./ambient-effects.js";
 import { installCharacterSpine } from "@slot-skills/spine/browser";
 import { configuredEventEffect } from "./effect-config.js";
 import { heldCellTransition, parseHeldCells } from "./hold-and-win.js";
-import { bookStyles, drawBookCabinet, type SymbolImagePresentation } from "./book-presentation.js";
+import { bookStyles, bookPaylineColors, bookRailChipCentre, drawBookCabinet, drawBookPaytable, type BookPaytableCard, type BookPaytableEntry, type SymbolImagePresentation } from "./book-presentation.js";
 
 export interface SlotRoundResultEventDetail { result: GameRoundResult; }
 export interface SlotEventPlayedEventDetail { event: GameEvent; result: GameRoundResult; }
@@ -444,6 +444,7 @@ export class SlotGameElement extends HTMLElement {
     // feet, not the padded edge, sit on the reel-area bottom line.
     const characterBottomShift = Math.round(clamp(game.presentation.characterBottomMargin ?? 0, 0, 0.2) * characterHeight);
     const characterOverflow = this.#immersive && game.presentation.characterOverflow ? " character-overflow" : "";
+    this.removeAttribute("help-open");
     this.shadowRoot.innerHTML = `<style>${stylesheet}${bookStyles}</style><section class="game${this.#immersive ? " immersive" : ""}${characterOverflow}" style="--panel:${game.theme.palette[0]};--accent:${game.theme.palette[2] ?? game.theme.palette[1]};--character-height:${characterHeight}px;--character-bottom-shift:${characterBottomShift}px;--character-scale:${characterScale};--character-offset-x:${characterOffsetX * 100}%;--character-offset-y:${characterOffsetY * 100}%;--frame-scale:${frameScale}">
       <div class="marquee"><div class="brand"><small>Server-authoritative slot</small><h1 class="title">${game.title}</h1></div><div class="state" data-state="READY">READY</div></div>
       <div class="feature-strip" data-chips></div>
@@ -507,6 +508,11 @@ export class SlotGameElement extends HTMLElement {
     this.shadowRoot.querySelector<HTMLButtonElement>(".close")!.addEventListener("click", () => dialog.close());
     // Classic cabinet: MENU opens the same help/paytable surface as the paytable key.
     this.shadowRoot.querySelector<HTMLButtonElement>('[data-key="menu"]')?.addEventListener("click", () => dialog.showModal());
+    // Help state follows the real dialog: opening it paints the pay cards inside the
+    // cabinet, and closing it (button or Esc) clears them again.
+    const syncHelpState = () => this.toggleAttribute("help-open", dialog.open);
+    dialog.addEventListener("toggle", syncHelpState);
+    dialog.addEventListener("close", syncHelpState);
     const reelCanvas = this.shadowRoot.querySelector<HTMLCanvasElement>(".reel-canvas")!;
     const effectCanvas = this.shadowRoot.querySelector<HTMLCanvasElement>(".effect-canvas")!;
     const ambientCanvas = this.#ambientCanvas;
@@ -594,6 +600,8 @@ export class SlotGameElement extends HTMLElement {
     this.#drawCabinetFrame(context, width, height);
     for (let reel = 0; reel < reels; reel += 1) this.#drawReel(context, reel, now, spin);
     this.#drawCabinetFrame(context, width, height, true);
+    if (this.classicPresentation && (this.hasAttribute("help-open") || this.getAttribute("reference-state") === "03-paytable")) this.#drawReferencePaytable(context, width, height, now);
+    this.#syncReferencePaylines(canvas);
     if (spin?.target && spin.motions?.length) {
       const completedAt = Math.max(...spin.motions.map((motion) => motion.startTime + motion.duration));
       if (now >= completedAt) {
@@ -633,7 +641,7 @@ export class SlotGameElement extends HTMLElement {
    * Called twice per frame: the black reel bed first, then all the furniture.
    */
   #drawCabinetFrame(context: CanvasRenderingContext2D, width: number, height: number, overlay = false): void {
-    if (this.classicPresentation) { drawBookCabinet(context, width, height, overlay, this.getAttribute("reference-state") ?? "", this.#images.get("$book-title")); return; }
+    if (this.classicPresentation) { drawBookCabinet(context, width, height, overlay, this.getAttribute("reference-state") ?? "", this.#images.get("$book-title"), this.#game?.math.paylines?.length ?? 0); return; }
     const palette = this.#game?.theme.palette ?? [];
     const accent = palette[2] ?? "#ffd34f";
     const area = this.#reelArea(width, height);
@@ -1105,7 +1113,9 @@ export class SlotGameElement extends HTMLElement {
 
   #clearChips(): void { this.shadowRoot?.querySelector("[data-chips]")?.replaceChildren(); }
 
-  #clearPaylines(): void { const overlay = this.shadowRoot?.querySelector<SVGElement>(".payline-overlay"); if (overlay) { overlay.replaceChildren(); overlay.classList.remove("active"); } }
+  // Dropping the sync key lets the 02 reference routes be repainted after a win
+  // fixture or a new spin clears the overlay, instead of leaving it overwritten.
+  #clearPaylines(): void { const overlay = this.shadowRoot?.querySelector<SVGSVGElement>(".payline-overlay"); if (overlay) { overlay.replaceChildren(); overlay.classList.remove("active"); delete overlay.dataset.sync; delete overlay.dataset.lines; } }
 
   #showPayline(cells: Array<{ reel: number; row: number }>): void {
     const overlay = this.shadowRoot?.querySelector<SVGSVGElement>(".payline-overlay");
@@ -1113,6 +1123,93 @@ export class SlotGameElement extends HTMLElement {
     const points = cells.map((cell) => { const box = this.#cellBox(cell.reel, cell.row); const stage = this.shadowRoot!.querySelector<HTMLElement>(".stage")!.getBoundingClientRect(); return `${((box.x + box.width / 2) / stage.width) * 100},${((box.y + box.height / 2) / stage.height) * 100}`; }).join(" ");
     const line = document.createElementNS("http://www.w3.org/2000/svg", "polyline"); line.setAttribute("points", points); overlay.append(line); overlay.classList.add("active");
     setTimeout(() => overlay.classList.remove("active"), 1300);
+  }
+
+  /**
+   * Reference-state presentation: the 02 capture draws every configured payline over
+   * the reels with the rail chip colours. Routes come from game.math.paylines, so the
+   * drawing can never disagree with the ten-line contract, and the overlay is keyed by
+   * state + canvas size so the base cabinet geometry stays untouched.
+   */
+  #syncReferencePaylines(canvas: HTMLCanvasElement): void {
+    const overlay = this.shadowRoot?.querySelector<SVGSVGElement>(".payline-overlay");
+    if (!overlay) return;
+    const state = this.getAttribute("reference-state") ?? "";
+    const key = `${state}:${canvas.width}x${canvas.height}`;
+    if (overlay.dataset.sync === key) return;
+    if (state !== "02-paylines") {
+      if (overlay.dataset.lines === "reference") { overlay.replaceChildren(); overlay.classList.remove("active"); delete overlay.dataset.lines; }
+      overlay.dataset.sync = key;
+      return;
+    }
+    const lines = this.#game?.math.paylines ?? [];
+    const stage = this.shadowRoot!.querySelector<HTMLElement>(".stage")?.getBoundingClientRect();
+    const rect = canvas.getBoundingClientRect();
+    if (!lines.length || !stage?.width || !stage.height || !rect.width || !rect.height) return;
+    // Canvas geometry is in backing pixels while the overlay is laid out in CSS
+    // pixels, so project through the canvas rect before normalising to the stage;
+    // dividing backing pixels by the stage size is wrong at any devicePixelRatio
+    // other than 1.
+    const project = (x: number, y: number): string => `${((rect.x - stage.x + x * rect.width / canvas.width) / stage.width) * 100},${((rect.y - stage.y + y * rect.height / canvas.height) / stage.height) * 100}`;
+    const count = lines.length;
+    const drawn = lines.map((rows, index) => {
+      // Lines terminate on the rail chips for the same line number, so the routes read
+      // as integrated with the marker rails (reference 02) rather than floating.
+      const from = bookRailChipCentre(index, count, "left");
+      const to = bookRailChipCentre(index, count, "right");
+      const points = [
+        project(from.x * canvas.width / 1255, from.y * canvas.height / 630),
+        ...rows.map((row, reel) => { const box = this.#cellBox(reel, row, canvas); return project(box.x + box.width / 2, box.y + box.height / 2); }),
+        project(to.x * canvas.width / 1255, to.y * canvas.height / 630),
+      ].join(" ");
+      const line = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+      line.setAttribute("points", points);
+      line.style.stroke = bookPaylineColors[index % bookPaylineColors.length]!;
+      line.style.strokeWidth = "1.5";
+      return line;
+    });
+    overlay.replaceChildren(...drawn);
+    overlay.classList.add("active");
+    overlay.dataset.lines = "reference";
+    overlay.dataset.sync = key;
+  }
+
+  /**
+   * Pay cards for the 03 capture, grouped the way the reference groups them: symbols
+   * with an identical payout shape share a card. Every count and value is read from
+   * the game's own paytable rows - no reference payout is hardcoded and no payout
+   * maths is added here.
+   */
+  #paytableCards(): { left: BookPaytableCard[]; right: BookPaytableCard[]; center?: BookPaytableCard } | undefined {
+    const game = this.#game; if (!game) return undefined;
+    const rows = paytableRows(game); if (!rows.length) return undefined;
+    const perSymbol = new Map<string, BookPaytableEntry[]>();
+    for (const row of rows) {
+      const list = perSymbol.get(row.symbolId) ?? [];
+      const value = row.payout.denominator === "1" ? row.payout.numerator : `${row.payout.numerator}/${row.payout.denominator}`;
+      list.push({ count: row.count, value });
+      perSymbol.set(row.symbolId, list);
+    }
+    for (const list of perSymbol.values()) list.sort((a, b) => b.count - a.count);
+    const cards = new Map<string, { symbolIds: string[]; names: string[]; basis: string; entries: BookPaytableEntry[] }>();
+    for (const symbol of game.symbols) {
+      const entries = perSymbol.get(symbol.id); if (!entries) continue;
+      const basis = rows.find((row) => row.symbolId === symbol.id)?.basis ?? "";
+      const signature = `${basis}|${entries.map((entry) => `${entry.count}:${entry.value}`).join(",")}`;
+      const existing = cards.get(signature);
+      if (existing) { existing.symbolIds.push(symbol.id); existing.names.push(symbol.name); continue; }
+      cards.set(signature, { symbolIds: [symbol.id], names: [symbol.name], basis, entries });
+    }
+    const drafts = [...cards.values()];
+    const scatter = drafts.findIndex((card) => card.symbolIds.includes("scatter"));
+    const center = scatter >= 0 ? drafts.splice(scatter, 1)[0] : undefined;
+    const half = Math.ceil(drafts.length / 2);
+    return { left: drafts.slice(0, half), right: drafts.slice(half), center };
+  }
+
+  #drawReferencePaytable(context: CanvasRenderingContext2D, width: number, height: number, now: number): void {
+    const layout = this.#paytableCards(); if (!layout) return;
+    drawBookPaytable(context, width, height, layout, (symbolId, box) => this.#drawSymbol(context, symbolId, box, false, now));
   }
 
   #flushCellEffects(): void {
