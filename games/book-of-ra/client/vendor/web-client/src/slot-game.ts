@@ -8,6 +8,7 @@ import { HttpSlotTransport, type SlotTransport } from "./transport.js";
 import { AmbientEffectRenderer } from "./ambient-effects.js";
 import { installCharacterSpine } from "@slot-skills/spine/browser";
 import { configuredEventEffect } from "./effect-config.js";
+import { BookAutoplay, autoplayStatus, autoplayStyles, type AutoplayCompletion } from "./book-autoplay.js";
 import { heldCellTransition, parseHeldCells } from "./hold-and-win.js";
 import { bookGambleView, bookGambleResolution, bookGambleMarkup, bookGambleStatus } from "./book-gamble-presentation.js";
 import { bookStyles, bookFreeGamesAward, bookWinForEvent, bookPaylineColors, bookRailChipCentre, drawBookCabinet, drawBookPaytable, type BookPaytableCard, type BookPaytableEntry, type SymbolImagePresentation } from "./book-presentation.js";
@@ -269,7 +270,14 @@ export class SlotGameElement extends HTMLElement {
   #betUnits = "100";
   #catalog = new MessageCatalog("en", { spin: "Spin", balance: "Balance", win: "Win", paytable: "Paytable" });
   #busy = false;
-  #autoplay = false;
+  #autoplayRun = new BookAutoplay({
+    spin: () => this.#spin(undefined, true),
+    canStart: () => this.isConnected && !this.#busy && !this.#choiceBusy && !this.#collectPending &&
+      !this.#gambleSuppressed && !this.hasAttribute("help-open") && !this.hasAttribute("visual-preview"),
+    changed: () => this.#syncAutoplay(),
+  });
+  get #autoplay(): boolean { return this.#autoplayRun.state.active; }
+  #renderGeneration = 0;
   #gambleSuppressed = false;
   #gambleRequestAutoplay = false;
   #collectPending: (() => void) | undefined;
@@ -367,7 +375,7 @@ export class SlotGameElement extends HTMLElement {
   /** Quick-spin mode: reels settle with the same shortened timings free spins use. */
   turbo = false;
   /** Programmatic spin for host-page autoplay. Resolves when the round presentation completes; no-op while a spin is in flight. */
-  spin(): Promise<void> { return this.#spin(); }
+  async spin(): Promise<void> { await this.#spin(); }
   set messages(value: MessageCatalog) { this.#catalog = value; this.render(); }
   set assetBaseUrl(value: string) { this.#assetBaseUrl = new URL(value, document.baseURI).href; if (this.#game) this.render(); }
   get assetBaseUrl(): string { return this.#assetBaseUrl; }
@@ -399,7 +407,7 @@ export class SlotGameElement extends HTMLElement {
     if (this.#game) this.render();
   }
 
-  disconnectedCallback(): void { this.#manager?.destroy(); this.#ambient?.destroy(); this.#resize?.disconnect(); cancelAnimationFrame(this.#frame); this.#spinState?.resolve?.(); this.#removalState?.resolve?.(); this.#dropState?.resolve?.(); this.#heldCells = undefined; this.#music?.pause(); if (this.#characterTimer) clearTimeout(this.#characterTimer); if (this.#fitListener) { window.removeEventListener("resize", this.#fitListener); this.#fitListener = undefined; } }
+  disconnectedCallback(): void { ++this.#renderGeneration; this.#autoplayRun.dispose(); this.#manager?.destroy(); this.#ambient?.destroy(); this.#resize?.disconnect(); cancelAnimationFrame(this.#frame); this.#spinState?.resolve?.(); this.#removalState?.resolve?.(); this.#dropState?.resolve?.(); this.#heldCells = undefined; this.#music?.pause(); if (this.#characterTimer) clearTimeout(this.#characterTimer); if (this.#fitListener) { window.removeEventListener("resize", this.#fitListener); this.#fitListener = undefined; } }
 
   /**
    * Letterbox scaling: the component is laid out at FIT_DESIGN_WIDTH and transform-scaled so the
@@ -439,6 +447,7 @@ export class SlotGameElement extends HTMLElement {
   #assetUrl(value: string | undefined): string { return value ? new URL(value, this.#assetBaseUrl).href : ""; }
 
   render(): void {
+    ++this.#renderGeneration; this.#autoplayRun.stop();
     if (!this.#game || !this.shadowRoot) return;
     const game = this.#game;
     this.#spinState?.resolve?.(); this.#removalState?.resolve?.(); this.#dropState?.resolve?.(); this.#spinState = undefined; this.#removalState = undefined; this.#dropState = undefined; this.#heldCells = undefined; this.#winningCells.clear(); this.#pendingCellEffects = [];
@@ -458,7 +467,7 @@ export class SlotGameElement extends HTMLElement {
     const characterBottomShift = Math.round(clamp(game.presentation.characterBottomMargin ?? 0, 0, 0.2) * characterHeight);
     const characterOverflow = this.#immersive && game.presentation.characterOverflow ? " character-overflow" : "";
     this.removeAttribute("help-open");
-    this.shadowRoot.innerHTML = `<style>${stylesheet}${bookStyles}</style><section class="game${this.#immersive ? " immersive" : ""}${characterOverflow}" style="--panel:${game.theme.palette[0]};--accent:${game.theme.palette[2] ?? game.theme.palette[1]};--character-height:${characterHeight}px;--character-bottom-shift:${characterBottomShift}px;--character-scale:${characterScale};--character-offset-x:${characterOffsetX * 100}%;--character-offset-y:${characterOffsetY * 100}%;--frame-scale:${frameScale}">
+    this.shadowRoot.innerHTML = `<style>${stylesheet}${bookStyles}${autoplayStyles}</style><section class="game${this.#immersive ? " immersive" : ""}${characterOverflow}" style="--panel:${game.theme.palette[0]};--accent:${game.theme.palette[2] ?? game.theme.palette[1]};--character-height:${characterHeight}px;--character-bottom-shift:${characterBottomShift}px;--character-scale:${characterScale};--character-offset-x:${characterOffsetX * 100}%;--character-offset-y:${characterOffsetY * 100}%;--frame-scale:${frameScale}">
       <div class="marquee"><div class="brand"><small>Server-authoritative slot</small><h1 class="title">${game.title}</h1></div><div class="state" data-state="READY">READY</div></div>
       <div class="feature-strip" data-chips></div>
       <div class="error" role="alert" hidden></div><div class="stage-row"><div class="stage"${this.#immersive ? "" : backgroundStyle}><canvas class="reel-canvas" aria-label="${game.title} animated reels"></canvas><canvas class="effect-canvas"></canvas><svg class="payline-overlay" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>${this.#reelFrameMarkup()}<div class="float-layer"></div><div class="announce" role="status"><h3></h3><p hidden></p></div><div class="win-message" aria-live="polite"></div><div class="bonus" aria-live="polite"></div><div class="sr-grid" aria-live="polite"></div></div>${this.#characterMarkup()}</div>
@@ -471,6 +480,7 @@ export class SlotGameElement extends HTMLElement {
           <div class="cab-meter"><small>Bet</small><strong data-bet>${formatMinorUnits(this.#betUnits)}</strong></div>
           <div class="cab-meter win-total"><small>${this.#catalog.format("win")}</small><output>0.00</output></div>
         </div>
+        <div class="autoplay-status" role="status" hidden></div>
         <div class="cab-deck">
           ${this.classicPresentation ? '<button class="cab-key" data-key="menu" type="button">Menu</button>' : ''}
           <button class="cab-key" data-key="autoplay" type="button">Autoplay</button>
@@ -481,11 +491,28 @@ export class SlotGameElement extends HTMLElement {
       </div>
       <div class="extras">${this.#featureEnabled("ante-bet") ? `<button class="toggle" data-ante aria-pressed="${this.#anteBet}">ANTE BET ×${this.#anteMultiplierLabel()}</button>` : ""}${this.#featureEnabled("bonus-buy") ? `<button class="buy" data-buy>BUY BONUS ×${this.#buyCostMultiplier()}</button>` : ""}<div class="audio"><button class="toggle" data-mute aria-pressed="${this.#audio.muted}">${this.#audio.muted ? "SOUND OFF" : "SOUND ON"}</button><label class="vol">Music<input type="range" data-music-vol min="0" max="100" value="${Math.round(this.#audio.music * 100)}" aria-label="Music volume"></label><label class="vol">Effects<input type="range" data-sfx-vol min="0" max="100" value="${Math.round(this.#audio.effects * 100)}" aria-label="Effects volume"></label></div></div>
       <dialog><button class="close" aria-label="Close paytable">×</button><h2>${game.title} paytable</h2><table><thead><tr><th>Symbol</th><th>Count</th><th>Payout</th></tr></thead><tbody>${paytableRows(game).map((entry) => `<tr><td>${entry.symbolName}</td><td>${entry.count}</td><td>${entry.payout.numerator}/${entry.payout.denominator} × ${entry.basis}</td></tr>`).join("")}</tbody></table></dialog>
+      <dialog class="autoplay-dialog" aria-labelledby="autoplay-title">
+        <button class="autoplay-close" type="button" aria-label="Close autoplay">&times;</button>
+        <h2 id="autoplay-title">AUTOPLAY</h2><p>Select number of spins</p>
+        <div class="autoplay-options" role="group" aria-label="Number of spins">${this.#autoplayRun.counts.map(count => `<button type="button" data-auto-count="${count}" aria-pressed="false">${count}</button>`).join("")}</div>
+        <button type="button" data-auto-start>START AUTO</button>
+      </dialog>
     </section>`;
     this.#orbValues = []; this.#roundWinUnits = 0n;
     this.#updateAccessibleGrid(); this.#preloadAssets(); this.#preloadSounds();
-    this.shadowRoot.querySelector<HTMLButtonElement>(".spin")!.addEventListener("click", () => { if (this.#collectPending) this.#collectPending(); else void this.#spin(); });
-    this.shadowRoot.querySelector<HTMLButtonElement>('[data-key="autoplay"]')?.addEventListener("click", () => { this.#autoplay = !this.#autoplay; const button = this.shadowRoot!.querySelector<HTMLButtonElement>('[data-key="autoplay"]')!; button.textContent = this.#autoplay ? "Stop" : "Autoplay"; if (this.#autoplay && !this.#busy) void this.#spin(); });
+    this.shadowRoot.querySelector<HTMLButtonElement>(".spin")!.addEventListener("click", () => { if (this.#autoplay || this.#autoplayRun.state.inFlight) this.#autoplayRun.stop(); else if (this.#collectPending) this.#collectPending(); else void this.#spin(); });
+    this.shadowRoot.querySelector<HTMLButtonElement>('[data-key="autoplay"]')?.addEventListener("click", () => {
+      if (this.#autoplay || this.#autoplayRun.state.inFlight) this.#autoplayRun.stop();
+      else this.#autoplayRun.open();
+    });
+    const autoplayDialog = this.shadowRoot.querySelector<HTMLDialogElement>(".autoplay-dialog")!;
+    autoplayDialog.querySelector(".autoplay-close")!.addEventListener("click", () => this.#autoplayRun.close());
+    autoplayDialog.addEventListener("cancel", event => { event.preventDefault(); this.#autoplayRun.close(); });
+    autoplayDialog.querySelector("[data-auto-start]")!.addEventListener("click", () => this.#autoplayRun.start());
+    for (const option of autoplayDialog.querySelectorAll<HTMLButtonElement>("[data-auto-count]")) {
+      option.addEventListener("click", () => this.#autoplayRun.select(Number(option.dataset.autoCount)));
+    }
+    this.#syncAutoplay();
     this.shadowRoot.querySelector<HTMLButtonElement>("[data-ante]")?.addEventListener("click", () => this.#toggleAnte());
     this.shadowRoot.querySelector<HTMLButtonElement>("[data-buy]")?.addEventListener("click", () => void this.#spin("bonus-buy"));
     const character = this.shadowRoot.querySelector<HTMLImageElement>(".character");
@@ -1410,27 +1437,66 @@ export class SlotGameElement extends HTMLElement {
     if (pending.length) this.#playSound("symbol-transform", 0.6);
   }
 
-  async #spin(purchasedFeatureId?: string): Promise<void> {
-    if (!this.#game || this.#busy || this.#collectPending || this.#choiceBusy || this.#gambleSuppressed) return;
-    if (purchasedFeatureId && this.#anteBet) return;
-    this.#busy = true; const button = this.shadowRoot!.querySelector<HTMLButtonElement>(".spin")!; button.disabled = true; this.#clearChips(); this.#clearPaylines(); this.#updateExtras(); this.#playMusic("base"); this.#roundWinUnits = 0n; this.#orbValues = []; this.#startReelSpin();
-    // Keep the wager's autoplay flag until its presentation completes, even if Stop
-    // is clicked while the server request is in flight. This is only a UI guard.
-    this.#gambleRequestAutoplay = this.#autoplay;
+  #syncAutoplay(): void {
+    const state = this.#autoplayRun.state;
+    const stoppingOrActive = state.active || state.inFlight;
+    this.toggleAttribute("autoplay-active", stoppingOrActive);
+    const root = this.shadowRoot;
+    if (!root) return;
+    const dialog = root.querySelector<HTMLDialogElement>(".autoplay-dialog");
+    if (dialog) {
+      if (state.panelOpen && !dialog.open && this.isConnected) dialog.showModal();
+      else if (!state.panelOpen && dialog.open) dialog.close();
+      for (const option of dialog.querySelectorAll<HTMLButtonElement>("[data-auto-count]")) {
+        option.setAttribute("aria-pressed", String(Number(option.dataset.autoCount) === state.selected));
+      }
+    }
+    const unavailable = this.#busy || this.#choiceBusy || Boolean(this.#collectPending) || this.#gambleSuppressed || this.hasAttribute("visual-preview");
+    const auto = root.querySelector<HTMLButtonElement>('[data-key="autoplay"]');
+    if (auto) {
+      auto.textContent = stoppingOrActive ? "STOP AUTO" : "Autoplay";
+      auto.setAttribute("aria-pressed", String(stoppingOrActive));
+      auto.disabled = this.#gambleSuppressed || (!stoppingOrActive && unavailable);
+    }
+    const spin = root.querySelector<HTMLButtonElement>(".spin");
+    if (spin) {
+      spin.disabled = this.#gambleSuppressed || this.#choiceBusy || (!stoppingOrActive && this.#busy) || this.hasAttribute("visual-preview");
+      const label = spin.querySelector(".spin-label");
+      if (label && !this.#collectPending) label.textContent = stoppingOrActive ? "STOP" : "Start";
+    }
+    const status = root.querySelector<HTMLElement>(".autoplay-status");
+    if (status) { status.hidden = state.phase === "idle"; status.textContent = autoplayStatus(state); }
+  }
+
+  async #spin(purchasedFeatureId?: string, autoplayRequest = false): Promise<AutoplayCompletion> {
+    const skipped = { accepted: false, canContinue: false };
+    if (!this.#game || !this.isConnected || this.#busy || this.#collectPending || this.#choiceBusy || this.#gambleSuppressed ||
+      (this.#autoplay && !autoplayRequest) || (this.#autoplayRun.state.panelOpen && !autoplayRequest)) return skipped;
+    if (purchasedFeatureId && this.#anteBet) return skipped;
+    const generation = this.#renderGeneration;
+    let accepted = false;
+    this.#busy = true; this.#syncAutoplay(); this.#clearChips(); this.#clearPaylines(); this.#updateExtras(); this.#playMusic("base"); this.#roundWinUnits = 0n; this.#orbValues = []; this.#startReelSpin();
+    // Preserve this wager's origin through Stop and its complete authoritative playback.
+    this.#gambleRequestAutoplay = autoplayRequest;
     try {
       const result = await this.#transport.spin({
         gameId: this.#game.id, playerId: this.#playerId, betUnits: this.#betUnits, idempotencyKey: crypto.randomUUID(), autoplay: this.#gambleRequestAutoplay,
         ...(purchasedFeatureId ? { purchasedFeatureId } : {}),
         ...(this.#anteBet ? { anteBet: true } : {}),
       });
+      accepted = true;
+      // A detached/re-rendered component must not restart animation or scheduling.
+      if (!this.isConnected || generation !== this.#renderGeneration) return { accepted, canContinue: false };
       await this.playResult(result);
+      return { accepted, canContinue: !result.pendingAction && !this.#gambleSuppressed && this.isConnected && generation === this.#renderGeneration };
     }
-    catch (error) { this.#cancelSpin(); this.#reportError(error, "spin"); }
-    finally { this.#gambleRequestAutoplay = false; this.#busy = false; button.disabled = this.#choiceBusy || this.#gambleSuppressed; this.#updateExtras(); if (this.#autoplay && !this.#collectPending && this.isConnected) setTimeout(() => { if (this.#autoplay && !this.#busy) void this.#spin(); }, 650); }
+    catch (error) { this.#cancelSpin(); this.#reportError(error, "spin"); return { accepted, canContinue: false }; }
+    finally { this.#gambleRequestAutoplay = false; this.#busy = false; this.#updateExtras(); this.#syncAutoplay(); }
   }
 
   async playResult(result: GameRoundResult): Promise<void> {
     if (!this.#game) throw new Error("A game must be assigned before playing a result");
+    const generation = this.#renderGeneration;
     const bookGamble = result.gameId === "book-of-the-sands" &&
       (result.pendingAction?.type === "gamble" || Boolean(bookGambleResolution(result)));
     if (bookGamble && (this.#autoplay || this.#gambleRequestAutoplay)) { this.#suppressGamble(result); return; }
@@ -1453,7 +1519,12 @@ export class SlotGameElement extends HTMLElement {
     }
     if (!this.#spinState && result.events.some((event) => event.type === "grid-reveal")) this.#startReelSpin();
     try {
-      for (const event of result.events) { await this.#playEvent(event, result); this.dispatchEvent(new CustomEvent<SlotEventPlayedEventDetail>("slot-event-played", { detail: { event, result }, bubbles: true, composed: true })); }
+      for (const event of result.events) {
+        if (!this.isConnected || generation !== this.#renderGeneration) return;
+        await this.#playEvent(event, result);
+        if (!this.isConnected || generation !== this.#renderGeneration) return;
+        this.dispatchEvent(new CustomEvent<SlotEventPlayedEventDetail>("slot-event-played", { detail: { event, result }, bubbles: true, composed: true }));
+      }
       this.shadowRoot!.querySelector<HTMLOutputElement>("output")!.value = formatMinorUnits(result.totalWinUnits);
       // Reconcile last so the authoritative counters and feature win are not left at the
       // intro's spin count when the events have already advanced the feature.
@@ -1973,7 +2044,7 @@ export class SlotGameElement extends HTMLElement {
 
   /** Fail closed on an unexpected server gamble during autoplay; never auto-collect. */
   #suppressGamble(result: GameRoundResult): void {
-    this.#gambleSuppressed = true; this.#autoplay = false;
+    this.#gambleSuppressed = true; this.#autoplayRun.stop();
     this.#cancelSpin(); this.#hideWin(); this.#clearPaylines();
     this.#displayGrid = result.finalGrid.map((column) => [...column]);
     this.#updateAccessibleGrid();
