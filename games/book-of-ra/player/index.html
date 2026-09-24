@@ -3,14 +3,16 @@
 <title>Book of Ra — visual preview</title>
 <style>
 html,body{margin:0;min-height:100%;background:#000}body{min-height:100dvh;display:grid;place-items:center;overflow-x:hidden}
-slot-game{display:block;width:min(100vw,1120px);max-width:min(100vw,calc(100dvh / .703))!important}
-@media(max-width:600px){body{align-items:center}slot-game{width:100%;max-width:100vw!important}}
-slot-game[reference-state="02-paylines"]{width:800px!important}
-slot-game[reference-state="03-paytable"]{width:900px!important}
-slot-game[reference-state="04-win"]{width:1183px!important}
-slot-game[reference-state="05-free-games"]{width:1024px!important}
-@media(min-width:601px){slot-game[reference-state="06-gamble"]{width:calc(100vw - 64px)!important;max-width:calc((100dvh - 24px) / .563)!important}}
-slot-game[reference-state="07-autoplay"]{width:1446px!important}
+slot-game{display:block;width:min(100vw,var(--preview-width,1120px));max-width:min(100vw,var(--preview-width,1120px))!important;max-height:var(--preview-height,100dvh)!important;overflow:hidden}
+@media(max-width:700px){body{align-items:center}slot-game{width:100%;max-width:100vw!important}}
+
+/* Reference-matched preview sizing.
+
+   Each approved capture has its own aspect ratio (--ref-ar = capture width /
+   height). The player sizes the cabinet to that shape at up to 1120px of
+   cabinet width and caps it so the page never gains document overflow.
+   The player sets --preview-width on :root so the component's own inline-style
+   reset cannot clear it. Portrait viewports (<=700px) keep the plain reflow. */
 </style></head><body>
 <slot-game chrome="immersive" presentation="classic"></slot-game>
 <script type="module">
@@ -21,8 +23,24 @@ const game=await (await fetch('/game.json')).json();
 const element=document.querySelector('slot-game');
 const referenceState = new URLSearchParams(location.search).get('state') || '01-base';
 element.setAttribute('reference-state', referenceState);
-const referenceWidths = {'01-base':1120,'02-paylines':800,'03-paytable':900,'04-win':1183,'05-free-games':1024,'06-gamble':1716,'07-autoplay':1446};
-if (referenceWidths[referenceState]) { element.style.width = `${referenceWidths[referenceState]}px`; element.style.maxWidth = '100vw'; }
+// Presentation-only preview sizing. Each approved capture has its own aspect
+// ratio; sizing the cabinet to that shape at a capped width keeps the
+// contain-normalised reference comparison about presentation, not scale.
+const referenceAspect = {'01-base':1.64915,'02-paylines':1.33333,'03-paytable':1.77866,'04-win':1.86006,'05-free-games':1.79649,'06-gamble':1.77640,'07-autoplay':1.78298};
+const applyPreviewSizing = () => {
+  if (matchMedia('(max-width:700px)').matches) return;
+  const aspect = referenceAspect[referenceState] ?? 1.6823;
+  const wideLimit = Math.min(innerWidth, innerHeight * aspect, 1255);
+  const tallLimit = Math.min(wideLimit / aspect, innerHeight, innerWidth / aspect);
+  // The component clears its own inline width/height; a root custom property is
+  // the one sizing channel it never resets.
+  const style = document.documentElement.style;
+  style.setProperty('--preview-width', `${Math.round(wideLimit)}px`);
+  style.setProperty('--preview-height', `${Math.round(tallLimit)}px`);
+  window.__previewSizing = { aspect, width: Math.round(wideLimit), height: Math.round(tallLimit), innerWidth, innerHeight };
+};
+applyPreviewSizing();
+addEventListener('resize', applyPreviewSizing); addEventListener('orientationchange', applyPreviewSizing);
 element.assetBaseUrl=new URL('/',location.href).href;
 element.symbolPresentation=symbols;
 element.titleImageUrl='player/assets/title-original-v2.png';

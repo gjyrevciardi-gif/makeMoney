@@ -1,0 +1,14 @@
+# Local read-only junction to an installed slot-skills toolkit checkout.
+slot-skills/
+
+# Local build/test cache (regenerated on demand).
+.cache/
+
+# Generated presentation outputs. Original reference screenshots remain source.
+/screenshots/*
+!/screenshots/reference/
+/player/build/slot-client.js
+/player/build/slot-client.js.map
+/client/**/*.orig
+# Unused upstream server-side asset generator, not part of the browser client.
+/client/vendor/spine/src/node.ts

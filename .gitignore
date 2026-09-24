@@ -39,3 +39,7 @@ graphify-out/
 tests/visual/output/*
 !tests/visual/output/.gitkeep
 screenshots/
+
+# Book specifications are source references, not generated captures.
+!games/book-of-ra/screenshots/
+/docs/agent-work/book-ui/reference-parity.*

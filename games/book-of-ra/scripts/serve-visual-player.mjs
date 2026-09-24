@@ -26,4 +26,4 @@ createServer(async(req,res)=>{
   if(!(await stat(file)).isFile())throw new Error('Not a file');
   res.writeHead(200,{'content-type':types[extname(file)],'cache-control':'no-store'});res.end(req.method==='HEAD'?undefined:await readFile(file));
  }catch{res.writeHead(404);res.end('Not found');}
-}).listen(4175,'127.0.0.1',()=>console.log('Visual player http://127.0.0.1:4175/'));
+}).listen(Number(process.env.SLOT_PREVIEW_PORT??4275),'127.0.0.1',()=>console.log(`Visual player http://127.0.0.1:${Number(process.env.SLOT_PREVIEW_PORT??4275)}/`));
