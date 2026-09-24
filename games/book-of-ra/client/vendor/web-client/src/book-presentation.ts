@@ -232,6 +232,16 @@ export const bookStyles = `
  :host([presentation="classic"][gamble-active]) .gamble-card.card-face {font-size:7cqw}
 }
 
+/* Human-reviewed desktop base proportions only; other references and portrait retain
+   their accepted geometry. The face and control band consume 98.5vh together. */
+@media(min-width:601px) {
+ :host([base-desktop]:not([gamble-active]):not([help-open])) .game.immersive canvas.reel-canvas {height:86vh;aspect-ratio:auto}
+ :host([base-desktop]:not([gamble-active]):not([help-open])) .game.immersive .console.cabinet {height:12.5vh}
+ :host([base-desktop]:not([gamble-active]):not([help-open])) .cab-message,
+ :host([base-desktop]:not([gamble-active]):not([help-open])) .cab-meters,
+ :host([base-desktop]:not([gamble-active]):not([help-open])) .cab-key,
+ :host([base-desktop]:not([gamble-active]):not([help-open])) .spin.cab-start {top:2vh;height:8vh}
+}
 `;
 
 const gold = (ctx: CanvasRenderingContext2D, x: number, width: number) => {
@@ -240,11 +250,20 @@ const gold = (ctx: CanvasRenderingContext2D, x: number, width: number) => {
   return g;
 };
 
-export function drawBookCabinet(ctx: CanvasRenderingContext2D, width: number, height: number, overlay: boolean, referenceState = "", titleImage?: HTMLImageElement, paylineCount = 0, portrait = false): void {
+export function drawBookCabinet(ctx: CanvasRenderingContext2D, width: number, height: number, overlay: boolean, referenceState = "", titleImage?: HTMLImageElement, paylineCount = 0, portrait = false, desktopBase = false): void {
   // The canvas is the whole 1255-wide cabinet face; the frame itself measures
   // x 66..1193, y 0..630 of the approved 1255x761 base capture, so the cabinet
   // artwork keeps its original 1112-unit layout mapped onto that measured face.
   ctx.save(); ctx.scale(width / 1255, height / 630);
+  // Map the original frame and rails onto the same normalized bounds as #reelArea.
+  // Coordinates stay in the original artwork space; no outcome or motion changes.
+  const baseScaleX = .815 * 1255 / 933;
+  const baseOffsetX = .0925 * 1255 - 162 * baseScaleX;
+  const baseScaleY = .85 * 630 / 516;
+  const baseOffsetY = .135 * 630 - 106 * baseScaleY;
+  if (desktopBase) {
+    ctx.translate(baseOffsetX, baseOffsetY); ctx.scale(baseScaleX, baseScaleY);
+  }
   if (!overlay) {
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 1255, 630);
     const sky = ctx.createLinearGradient(0, 0, 0, 92);
@@ -263,10 +282,14 @@ export function drawBookCabinet(ctx: CanvasRenderingContext2D, width: number, he
   }
   for (const x of [0, 1024]) {
     const w = x === 0 ? 92 : 88;
+    ctx.save();
+    // Tighter capitals keep the outward-shifted architecture within the viewport.
+    if (desktopBase) { ctx.translate(x + w / 2, 0); ctx.scale(.75, 1); ctx.translate(-x - w / 2, 0); }
     ctx.fillStyle = gold(ctx,x,w);ctx.fillRect(x,72,w,550);
     for(let i=0;i<7;i++){ctx.fillStyle='#ffcc4788';ctx.fillRect(x+7+i*9,80,2,542);ctx.fillStyle='#492808aa';ctx.fillRect(x+10+i*9,80,2,542);}
     ctx.fillStyle=gold(ctx,x-8,w+16);ctx.beginPath();ctx.moveTo(x-15,21);ctx.bezierCurveTo(x+6,-6,x+70,-6,x+94,21);ctx.lineTo(x+78,41);ctx.lineTo(x+66,91);ctx.lineTo(x+4,91);ctx.lineTo(x-3,41);ctx.closePath();ctx.fill();ctx.strokeStyle='#b08b28';ctx.lineWidth=3;ctx.stroke();
     for(const y of [21,49,91,622]){ctx.fillStyle=gold(ctx,x-10,w+30);ctx.fillRect(x-10,y,w+30,5);ctx.strokeStyle='#4c2b0e';ctx.strokeRect(x-10,y,w+30,5);}
+    ctx.restore();
   }
   // Narrow red/blue inlays on the five reel boundaries.
   for(let i=0;i<=5;i++){const x=95+i*184;ctx.fillStyle='#d49913';ctx.fillRect(x-5,106,11,516);ctx.fillStyle='#b52813';ctx.fillRect(x-2,106,5,516);for(let y=132;y<618;y+=47){ctx.fillStyle='#2a9dc0';ctx.fillRect(x-2,y,5,20);}ctx.fillStyle='#f8e466';ctx.fillRect(x+4,106,1.5,516);}
@@ -280,7 +303,15 @@ export function drawBookCabinet(ctx: CanvasRenderingContext2D, width: number, he
   for(const [side,order] of [[34,left],[1018,right]] as const){for(let i=0;i<order.length;i++){const y=144+i*chipStep;ctx.shadowColor='#000';ctx.shadowBlur=3;ctx.shadowOffsetY=3;ctx.fillStyle=bookPaylineColors[i % bookPaylineColors.length]!;ctx.fillRect(side,y,48,39);ctx.shadowBlur=0;ctx.shadowOffsetY=0;ctx.strokeStyle='#674310';ctx.lineWidth=2;ctx.strokeRect(side,y,48,39);ctx.fillStyle='#080704';ctx.font='bold 27px Georgia';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(order[i]),side+24,y+20);}}
   // Original wing ornament and wordmark; no commercial image is embedded.
   if (titleImage) {
-    if (portrait) {
+    if (desktopBase) {
+      // Up to +18% normalized width, uniformly scaled to fit above the gold bar.
+      const titleTop = -baseOffsetY / baseScaleY;
+      const aspectCorrection = 423 / 2144 * (width / 1255 * 1127 / 1112 * baseScaleX) / (height / 630 * baseScaleY);
+      const titleWidth = Math.min(385 * 1.18 / baseScaleX, (92 - titleTop - 1) / aspectCorrection);
+      const titleHeight = titleWidth * aspectCorrection;
+      const centre = ((1255 / 2 - baseOffsetX) / baseScaleX - 66) / (1127 / 1112);
+      ctx.drawImage(titleImage,14,118,2144,423,centre - titleWidth / 2,titleTop,titleWidth,titleHeight);
+    } else if (portrait) {
       // Enlarge the title optically without stretching its original aspect ratio.
       const titleWidth = 520;
       const titleHeight = titleWidth * 423 / 2144 * (width / 1255 * 1127 / 1112) / (height / 630);
