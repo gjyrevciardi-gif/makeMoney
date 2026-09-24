@@ -8,6 +8,7 @@ import { HttpSlotTransport, type SlotTransport } from "./transport.js";
 import { AmbientEffectRenderer } from "./ambient-effects.js";
 import { installCharacterSpine } from "@slot-skills/spine/browser";
 import { configuredEventEffect } from "./effect-config.js";
+import { portraitStyles, portraitLayout } from "./book-portrait.js";
 import { BookAutoplay, autoplayStatus, autoplayStyles, type AutoplayCompletion } from "./book-autoplay.js";
 import { heldCellTransition, parseHeldCells } from "./hold-and-win.js";
 import { bookGambleView, bookGambleResolution, bookGambleMarkup, bookGambleStatus } from "./book-gamble-presentation.js";
@@ -467,7 +468,7 @@ export class SlotGameElement extends HTMLElement {
     const characterBottomShift = Math.round(clamp(game.presentation.characterBottomMargin ?? 0, 0, 0.2) * characterHeight);
     const characterOverflow = this.#immersive && game.presentation.characterOverflow ? " character-overflow" : "";
     this.removeAttribute("help-open");
-    this.shadowRoot.innerHTML = `<style>${stylesheet}${bookStyles}${autoplayStyles}</style><section class="game${this.#immersive ? " immersive" : ""}${characterOverflow}" style="--panel:${game.theme.palette[0]};--accent:${game.theme.palette[2] ?? game.theme.palette[1]};--character-height:${characterHeight}px;--character-bottom-shift:${characterBottomShift}px;--character-scale:${characterScale};--character-offset-x:${characterOffsetX * 100}%;--character-offset-y:${characterOffsetY * 100}%;--frame-scale:${frameScale}">
+    this.shadowRoot.innerHTML = `<style>${stylesheet}${bookStyles}${autoplayStyles}${portraitStyles}</style><section class="game${this.#immersive ? " immersive" : ""}${characterOverflow}" style="--panel:${game.theme.palette[0]};--accent:${game.theme.palette[2] ?? game.theme.palette[1]};--character-height:${characterHeight}px;--character-bottom-shift:${characterBottomShift}px;--character-scale:${characterScale};--character-offset-x:${characterOffsetX * 100}%;--character-offset-y:${characterOffsetY * 100}%;--frame-scale:${frameScale}">
       <div class="marquee"><div class="brand"><small>Server-authoritative slot</small><h1 class="title">${game.title}</h1></div><div class="state" data-state="READY">READY</div></div>
       <div class="feature-strip" data-chips></div>
       <div class="error" role="alert" hidden></div><div class="stage-row"><div class="stage"${this.#immersive ? "" : backgroundStyle}><canvas class="reel-canvas" aria-label="${game.title} animated reels"></canvas><canvas class="effect-canvas"></canvas><svg class="payline-overlay" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>${this.#reelFrameMarkup()}<div class="float-layer"></div><div class="announce" role="status"><h3></h3><p hidden></p></div><div class="win-message" aria-live="polite"></div><div class="bonus" aria-live="polite"></div><div class="sr-grid" aria-live="polite"></div></div>${this.#characterMarkup()}</div>
@@ -840,7 +841,7 @@ export class SlotGameElement extends HTMLElement {
    * Called twice per frame: the black reel bed first, then all the furniture.
    */
   #drawCabinetFrame(context: CanvasRenderingContext2D, width: number, height: number, overlay = false): void {
-    if (this.classicPresentation) { drawBookCabinet(context, width, height, overlay, this.hasAttribute("gamble-active") ? "06-gamble" : this.getAttribute("reference-state") ?? "", this.#images.get("$book-title"), this.#game?.math.paylines?.length ?? 0); return; }
+    if (this.classicPresentation) { drawBookCabinet(context, width, height, overlay, this.hasAttribute("gamble-active") ? "06-gamble" : this.getAttribute("reference-state") ?? "", this.#images.get("$book-title"), this.#game?.math.paylines?.length ?? 0, window.innerWidth <= portraitLayout.breakpoint); return; }
     const palette = this.#game?.theme.palette ?? [];
     const accent = palette[2] ?? "#ffd34f";
     const area = this.#reelArea(width, height);
