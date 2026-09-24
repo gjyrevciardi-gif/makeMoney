@@ -93,36 +93,39 @@ export const bookStyles = `
 @media(prefers-reduced-motion:reduce){:host([presentation="classic"]) .spin-icon{animation:none!important}}
 @media(min-width:601px) {
  :host([presentation="classic"][reference-state="06-gamble"]) .game.immersive canvas.reel-canvas {aspect-ratio:1/.423}
- /* Landscape cabinet. 1cqw equals 1% of cabinet width; the canvas keeps the
-    measured 1112x630 reel-frame face and the lower control band sits directly
-    beneath it, sized to the reference's 111..131 band of a 761-tall cabinet. */
- :host([presentation="classic"]) .game.immersive canvas.reel-canvas {aspect-ratio:1/.5671}
- /* Landscape cabinet. The reel frame keeps its measured 1112x630 face; the
-    lower control band is sized so the panel occupies the reference's
-    82.5%..97.9% share of cabinet height. All offsets are quoted against
-    cqw = 1% of cabinet width because container queries only expose inline size. */
- :host([presentation="classic"]) .game.immersive .console.cabinet {position:relative;height:10.0cqw;margin:0;border:0;background:linear-gradient(#7a3210,#8f3d12 40%,#54230c);box-shadow:inset 0 0 0 .3cqw #b4731c,inset 0 .5cqw .7cqw #2a0f05,inset 0 -.4cqw .6cqw #230d04}
- :host([presentation="classic"]) .cab-meter small {height:.85cqw;border:.07cqw solid #6d4a1c;border-radius:.3cqw;background:linear-gradient(#6d3a12,#4a2509);color:#f4e6c6;font:bold .75cqw/.85cqw Arial,sans-serif}
- :host([presentation="classic"]) .cab-meter strong {margin-top:.08cqw;height:1.75cqw;border:.1cqw ridge #6f6a60;border-radius:.28cqw;background:linear-gradient(#060504,#150f0b);color:#ffe14a;font:bold 1.25cqw/1.7cqw Arial,sans-serif}
- :host([presentation="classic"]) .cab-meter:first-child small {width:88%;margin:auto}
- :host([presentation="classic"]) .cab-meter:nth-child(4) small {width:85%;margin:auto}
- :host([presentation="classic"]) .meter-adjust {top:.85cqw;width:2.3cqw;height:1.75cqw;border:.1cqw ridge #6f6a60;border-radius:.28cqw;background:linear-gradient(#9a9b93,#4d4e46);color:#2b2c26;font:bold 1.25cqw Arial,sans-serif}
- /* Bottom control bar: MENU, payline buttons, credit/bet meters, MAX BET, AUTO and START,
-    laid out left-to-right on the reference's single control row. */
- :host([presentation="classic"]) .cab-key.paytable,:host([presentation="classic"]) .cab-key[data-key="gamble"] {top:7.0cqw;height:2.4cqw;font-size:1.05cqw}
- :host([presentation="classic"]) .cab-key[data-key="lines"],:host([presentation="classic"]) .cab-key[data-key="betline"],:host([presentation="classic"]) .cab-key[data-key="bet"] {top:7.0cqw;height:2.4cqw;font-size:1.0cqw}
- :host([presentation="classic"]) .cab-key[data-key="menu"] {left:2.16cqw;top:7.0cqw;width:6.2cqw;height:2.4cqw;font-size:1.0cqw}
- :host([presentation="classic"]) .cab-key[data-key="lines"] {left:8.99cqw;width:5.6cqw}
- :host([presentation="classic"]) .cab-key[data-key="betline"] {left:15.31cqw;width:8.6cqw}
- :host([presentation="classic"]) .cab-key[data-key="bet"] {left:24.51cqw;width:6.2cqw}
- :host([presentation="classic"]) .cab-key[data-key="max"] {left:51.71cqw;top:7.0cqw;width:6.4cqw;height:2.4cqw;font-size:1.05cqw}
- :host([presentation="classic"]) .cab-key[data-key="autoplay"] {left:62.05cqw;top:7.0cqw;width:6.6cqw;height:2.0cqw;font-size:1.1cqw}
- :host([presentation="classic"]) .cab-key.paytable {left:29.2%;width:9.6%;background:linear-gradient(#f2e6c8,#c99a52 45%,#8a5a1c)}
- :host([presentation="classic"]) .cab-key[data-key="gamble"] {left:39.2%;width:9.6%}
- :host([presentation="classic"]) .spin.cab-start {left:72.57cqw;top:7.0cqw;width:9.17cqw;height:2.4cqw;font-size:1.05cqw}
- :host([presentation="classic"]) .spin-icon {width:1.3cqw;height:1.3cqw}
- :host([presentation="classic"]) .cab-meter.win-total {left:auto;right:31.2%;top:4.7cqw;width:9cqw}
- :host([presentation="classic"]) .cab-key[data-key="menu"] {background:linear-gradient(#c9c6b6,#8d8a7c 45%,#5c5a50)}
+ /* Landscape cabinet, measured against the 1255x761 approved base capture.
+    The canvas is the full cabinet face: 1255 wide (native capture width) by the
+    630-unit frame height, so the lower control band is the capture's remaining
+    131/1255 = 10.44cqw. 1cqw equals 1% of cabinet width because container
+    queries only expose inline size. */
+ :host([presentation="classic"]) .game.immersive canvas.reel-canvas {aspect-ratio:1/.502}
+ /* Control band: the reference's y 630..761 strip below the frame. */
+ :host([presentation="classic"]) .game.immersive .console.cabinet {position:relative;height:10.44cqw;margin:0;border:0;background:linear-gradient(#7a3210,#8f3d12 40%,#54230c);box-shadow:inset 0 0 0 .3cqw #b4731c,inset 0 .5cqw .7cqw #2a0f05,inset 0 -.4cqw .6cqw #230d04}
+ /* Every control sits on the reference's single row: measured capture y 660..729
+    is 2.39..7.89cqw inside the band. */
+ :host([presentation="classic"]) .cab-message {left:37.3%;top:2.39cqw;width:25.7%;height:5.5cqw;border-width:.16cqw;border-radius:.5cqw;font:bold 1.12cqw/1 Arial,sans-serif;letter-spacing:.02cqw;text-transform:uppercase}
+ :host([presentation="classic"]) .cab-meters {left:20.1%;top:2.39cqw;width:16.2%;height:5.5cqw;grid-template-columns:repeat(4,minmax(0,1fr));gap:.3cqw;border-width:.16cqw;border-radius:.5cqw}
+ :host([presentation="classic"]) .cab-meter {padding:0 .25cqw;border-radius:.35cqw}
+ :host([presentation="classic"]) .cab-meter small {height:.95cqw;border-width:.06cqw;border-radius:.25cqw;font:bold .6cqw/.95cqw Arial,sans-serif;letter-spacing:0;text-transform:none}
+ :host([presentation="classic"]) .cab-meter strong {margin-top:.2cqw;height:2.5cqw;border-width:.08cqw;border-radius:.25cqw;font:bold .95cqw/2.4cqw Arial,sans-serif;text-shadow:none}
+ :host([presentation="classic"]) .cab-meter:first-child small,:host([presentation="classic"]) .cab-meter:nth-child(4) small {width:100%;margin:auto}
+ :host([presentation="classic"]) .meter-adjust {top:1.35cqw;width:.9cqw;height:2.5cqw;border-width:.08cqw;border-radius:.25cqw;font:bold .8cqw/2.4cqw Arial,sans-serif}
+ /* The reference shows the plus/minus affordances beside a single meter, not every cell. */
+ :host([presentation="classic"]) .cab-meter:nth-child(2) .meter-adjust {display:none}
+ :host([presentation="classic"]) .cab-meter:nth-child(3) strong {width:44%;margin-left:28%;font-size:.8cqw}
+ /* Win total sits under the bet panel, mirroring the capture's credits line. */
+ :host([presentation="classic"]) .cab-meter.win-total {left:147.5%;right:auto;top:3.81cqw;width:98%;height:1.2cqw;gap:.3cqw;justify-content:center}
+ :host([presentation="classic"]) .cab-meter.win-total small {background:none;border:0;font-size:.6cqw}
+ :host([presentation="classic"]) .cab-meter.win-total output {font:bold .8cqw Arial,sans-serif;color:#fff279}
+ /* Control row on the measured x positions: MENU 13.4%, meters 20.1%..36.3%,
+    bet panel 37.3%..63%, then the four right-hand keys finishing on the
+    reference's 86.9% right edge. */
+ :host([presentation="classic"]) .cab-key[data-key="menu"] {left:13.4%;top:2.39cqw;width:5.7%;height:5.5cqw;font-size:.9cqw;background:linear-gradient(#c9c6b6,#8d8a7c 45%,#5c5a50)}
+ :host([presentation="classic"]) .cab-key.paytable {left:63.6%;top:2.39cqw;width:4.4%;height:5.5cqw;font-size:.72cqw;background:linear-gradient(#f2e6c8,#c99a52 45%,#8a5a1c)}
+ :host([presentation="classic"]) .cab-key[data-key="gamble"] {left:68.5%;top:2.39cqw;width:4.4%;height:5.5cqw;font-size:.72cqw}
+ :host([presentation="classic"]) .cab-key[data-key="autoplay"] {left:73.4%;top:2.39cqw;width:4.4%;height:5.5cqw;font-size:.72cqw}
+ :host([presentation="classic"]) .spin.cab-start {left:78.3%;top:2.39cqw;width:8.6%;min-width:0;height:5.5cqw;font-size:1.05cqw}
+ :host([presentation="classic"]) .spin-icon {width:1.5cqw;height:1.5cqw}
  }
 @media(max-width:600px) {
  :host([presentation="classic"]) .spin-icon {width:4.5cqw;height:4.5cqw}
@@ -157,39 +160,43 @@ const gold = (ctx: CanvasRenderingContext2D, x: number, width: number) => {
 };
 
 export function drawBookCabinet(ctx: CanvasRenderingContext2D, width: number, height: number, overlay: boolean, referenceState = "", titleImage?: HTMLImageElement): void {
-  ctx.save(); ctx.scale(width / 1112, height / 630);
+  // The canvas is the whole 1255-wide cabinet face; the frame itself measures
+  // x 66..1193, y 0..630 of the approved 1255x761 base capture, so the cabinet
+  // artwork keeps its original 1112-unit layout mapped onto that measured face.
+  ctx.save(); ctx.scale(width / 1255, height / 630);
   if (!overlay) {
-    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 1112, 630);
-    const sky = ctx.createLinearGradient(0, 0, 0, 88);
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 1255, 630);
+    const sky = ctx.createLinearGradient(0, 0, 0, 92);
     for (const [offset, color] of [[0, '#260c29'], [.35, '#7e294c'], [.72, '#d06b83'], [1, '#f6d89a']] as const) sky.addColorStop(offset, color);
-    ctx.fillStyle = sky; ctx.fillRect(0, 0, 1112, 90);
-    ctx.fillStyle = '#fff5b9'; ctx.beginPath(); ctx.arc(885, 53, 12, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#000'; ctx.beginPath(); ctx.moveTo(0, 80); ctx.bezierCurveTo(320, 10, 550, 115, 855, 85);
-    ctx.lineTo(900, 33);ctx.lineTo(931, 66);ctx.lineTo(965, 20);ctx.lineTo(1029, 85);ctx.lineTo(1112, 72);ctx.lineTo(1112, 110);ctx.lineTo(0,110);ctx.fill();
+    ctx.fillStyle = sky; ctx.fillRect(0, 0, 1255, 92);
+    ctx.fillStyle = '#fff5b9'; ctx.beginPath(); ctx.arc(999, 53, 13, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#000'; ctx.beginPath(); ctx.moveTo(0, 82); ctx.bezierCurveTo(361, 10, 621, 115, 965, 87);
+    ctx.lineTo(1016, 33);ctx.lineTo(1051, 66);ctx.lineTo(1089, 20);ctx.lineTo(1161, 87);ctx.lineTo(1255, 74);ctx.lineTo(1255, 112);ctx.lineTo(0,112);ctx.fill();
     ctx.restore(); return;
   }
+  ctx.save(); ctx.translate(66, 0); ctx.scale(1127 / 1112, 1);
   // Beveled horizontal frame at measured y=92..107 and y=622..630.
   if (referenceState === "06-gamble") { ctx.translate(137,0); ctx.scale(.754,1); }
   for (const [y, h] of [[92, 15], [622, 8]]) {
-    const g = ctx.createLinearGradient(0, y!, 0, y! + h!);g.addColorStop(0,'#6b2507');g.addColorStop(.25,'#e7b538');g.addColorStop(.5,'#ffdb58');g.addColorStop(.75,'#8d3902');g.addColorStop(1,'#251704');ctx.fillStyle=g;ctx.fillRect(88,y!,960,h!);
+    const g = ctx.createLinearGradient(0, y!, 0, y! + h!);g.addColorStop(0,'#6b2507');g.addColorStop(.25,'#e7b538');g.addColorStop(.5,'#ffdb58');g.addColorStop(.75,'#8d3902');g.addColorStop(1,'#251704');ctx.fillStyle=g;ctx.fillRect(90,y!,933,h!);
   }
-  for (const x of [0, 1038]) {
-    const w = x === 0 ? 92 : 74;
+  for (const x of [0, 1024]) {
+    const w = x === 0 ? 92 : 88;
     ctx.fillStyle = gold(ctx,x,w);ctx.fillRect(x,72,w,550);
     for(let i=0;i<7;i++){ctx.fillStyle='#ffcc4788';ctx.fillRect(x+7+i*9,80,2,542);ctx.fillStyle='#492808aa';ctx.fillRect(x+10+i*9,80,2,542);}
     ctx.fillStyle=gold(ctx,x-8,w+16);ctx.beginPath();ctx.moveTo(x-15,21);ctx.bezierCurveTo(x+6,-6,x+70,-6,x+94,21);ctx.lineTo(x+78,41);ctx.lineTo(x+66,91);ctx.lineTo(x+4,91);ctx.lineTo(x-3,41);ctx.closePath();ctx.fill();ctx.strokeStyle='#b08b28';ctx.lineWidth=3;ctx.stroke();
     for(const y of [21,49,91,622]){ctx.fillStyle=gold(ctx,x-10,w+30);ctx.fillRect(x-10,y,w+30,5);ctx.strokeStyle='#4c2b0e';ctx.strokeRect(x-10,y,w+30,5);}
   }
   // Narrow red/blue inlays on the five reel boundaries.
-  for(let i=0;i<=5;i++){const x=97+i*188;ctx.fillStyle='#d49913';ctx.fillRect(x-5,106,11,516);ctx.fillStyle='#b52813';ctx.fillRect(x-2,106,5,516);for(let y=132;y<618;y+=47){ctx.fillStyle='#2a9dc0';ctx.fillRect(x-2,y,5,20);}ctx.fillStyle='#f8e466';ctx.fillRect(x+4,106,1.5,516);}
+  for(let i=0;i<=5;i++){const x=95+i*184;ctx.fillStyle='#d49913';ctx.fillRect(x-5,106,11,516);ctx.fillStyle='#b52813';ctx.fillRect(x-2,106,5,516);for(let y=132;y<618;y+=47){ctx.fillStyle='#2a9dc0';ctx.fillRect(x-2,y,5,20);}ctx.fillStyle='#f8e466';ctx.fillRect(x+4,106,1.5,516);}
   const colors=['#fbed53','#f04f4b','#f7c77a','#c4ed61','#54ade9','#edb69c','#9bd0df','#5bbb4c','#f08bd3'];
   const left=[4,2,9,6,1,7,8,3,5],right=[4,2,8,6,1,7,9,3,5];
-  for(const [side,order] of [[30,left],[1051,right]] as const){for(let i=0;i<9;i++){const y=149+i*48.5;ctx.shadowColor='#000';ctx.shadowBlur=3;ctx.shadowOffsetY=3;ctx.fillStyle=colors[i]!;ctx.fillRect(side,y,55,39);ctx.shadowBlur=0;ctx.shadowOffsetY=0;ctx.strokeStyle='#674310';ctx.lineWidth=2;ctx.strokeRect(side,y,55,39);ctx.fillStyle='#080704';ctx.font='bold 28px Georgia';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(order[i]),side+27.5,y+20);}}
+  for(const [side,order] of [[34,left],[1018,right]] as const){for(let i=0;i<9;i++){const y=144+i*48.5;ctx.shadowColor='#000';ctx.shadowBlur=3;ctx.shadowOffsetY=3;ctx.fillStyle=colors[i]!;ctx.fillRect(side,y,48,39);ctx.shadowBlur=0;ctx.shadowOffsetY=0;ctx.strokeStyle='#674310';ctx.lineWidth=2;ctx.strokeRect(side,y,48,39);ctx.fillStyle='#080704';ctx.font='bold 27px Georgia';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(order[i]),side+24,y+20);}}
   // Original wing ornament and wordmark; no commercial image is embedded.
   if (titleImage) {
-    ctx.drawImage(titleImage,14,118,2144,423,346,7,420,83);
+    ctx.drawImage(titleImage,14,118,2144,423,364,2,385,76);
   } else {
-  ctx.save();ctx.translate(556,48);ctx.scale(.72,.72);
+  ctx.save();ctx.translate(557,40);ctx.scale(.66,.66);
   for(const side of [-1,1]){ctx.save();ctx.scale(side,1);for(let i=0;i<18;i++){const x=25+i*14;ctx.beginPath();ctx.moveTo(x,-27);ctx.quadraticCurveTo(x+13,38-i*.5,x+20,48-i*2);ctx.quadraticCurveTo(x+34,16-i,x+46,-39+i*.4);ctx.closePath();const g=ctx.createLinearGradient(0,-30,0,45);g.addColorStop(0,'#ffd55b');g.addColorStop(.5,'#9b570a');g.addColorStop(.7,'#e6a629');g.addColorStop(1,'#492709');ctx.fillStyle=g;ctx.strokeStyle='#1a0c04';ctx.lineWidth=3;ctx.fill();ctx.stroke();}ctx.restore();}
   ctx.font='bold 80px "Comic Sans MS"';ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';ctx.lineWidth=12;ctx.strokeStyle='#0b0304';ctx.strokeText('BOOK OF RA',0,-4,580);ctx.lineWidth=8;ctx.strokeStyle='#eac35a';ctx.strokeText('BOOK OF RA',0,-4,580);ctx.lineWidth=3;ctx.strokeStyle='#432706';ctx.strokeText('BOOK OF RA',0,-4,580);const blue=ctx.createLinearGradient(0,-40,0,30);blue.addColorStop(0,'#b3f2f9');blue.addColorStop(.45,'#0c94d8');blue.addColorStop(1,'#083974');ctx.fillStyle=blue;ctx.fillText('BOOK OF RA',0,-4,580);ctx.restore();
   }
@@ -198,5 +205,6 @@ export function drawBookCabinet(ctx: CanvasRenderingContext2D, width: number, he
     for(const [label,x,y] of [['Account',92,15],['Pay in',190,15],['0.00',91,41],['#2',103,74],['Help',903,15],['Exit',992,15],['14:34',1010,72]] as const) ctx.fillText(label,x,y);
     ctx.font='16px Arial';ctx.fillText('♪  ◀  ↕  ⛶',962,39);
   }
+  ctx.restore();
   ctx.restore();
 }
