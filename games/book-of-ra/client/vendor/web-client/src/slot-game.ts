@@ -9,7 +9,7 @@ import { AmbientEffectRenderer } from "./ambient-effects.js";
 import { installCharacterSpine } from "@slot-skills/spine/browser";
 import { configuredEventEffect } from "./effect-config.js";
 import { heldCellTransition, parseHeldCells } from "./hold-and-win.js";
-import { bookStyles, bookPaylineColors, bookRailChipCentre, drawBookCabinet, drawBookPaytable, type BookPaytableCard, type BookPaytableEntry, type SymbolImagePresentation } from "./book-presentation.js";
+import { bookStyles, bookFreeGamesAward, bookWinForEvent, bookPaylineColors, bookRailChipCentre, drawBookCabinet, drawBookPaytable, type BookPaytableCard, type BookPaytableEntry, type SymbolImagePresentation } from "./book-presentation.js";
 
 export interface SlotRoundResultEventDetail { result: GameRoundResult; }
 export interface SlotEventPlayedEventDetail { event: GameEvent; result: GameRoundResult; }
@@ -81,6 +81,7 @@ const stylesheet = `
   .float-layer { position:absolute; z-index:4; inset:0; overflow:hidden; pointer-events:none; }
   .payline-overlay { position:absolute; z-index:3; inset:0; width:100%; height:100%; pointer-events:none; opacity:0; transition:opacity .15s; }
   .payline-overlay.active { opacity:.92; }
+  .free-hud,.free-intro { display:none; }
   .payline-overlay polyline { fill:none; stroke:#d7ff4a; stroke-width:1.2; stroke-linejoin:round; stroke-linecap:round; filter:drop-shadow(0 0 2px #000); }
   .float-prize { position:absolute; left:50%; top:58%; transform:translate(-50%,0); color:#9dffc2; font:950 clamp(1rem,2.6vw,1.6rem)/1 ui-rounded,system-ui; letter-spacing:.04em; text-shadow:0 0 14px #37ff8f88,0 2px 0 #0008; animation:prize-float 1.15s cubic-bezier(.2,.7,.3,1) forwards; }
   @keyframes prize-float { 12% { opacity:1; transform:translate(-50%,-8px) scale(1.08); } 100% { opacity:0; transform:translate(-50%,-74px) scale(.94); } }
@@ -285,6 +286,11 @@ export class SlotGameElement extends HTMLElement {
   #winUntil = 0;
   /** Server-provided payout for the win currently being presented (badge copy only). */
   #winBadgeUnits: string | undefined;
+  /**
+   * Free-games presentation state. Every field is copied from a server event or the
+   * round snapshot - the client never picks the expanding symbol or spin counts.
+   */
+  #freeFeature: { specialSymbol?: string; remaining?: number; played?: number; total?: string; added?: number; intro?: { spins: number; retrigger: boolean }; active: boolean } | undefined;
   #winMessageTimer: ReturnType<typeof setTimeout> | undefined;
   #frame = 0;
   #reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -560,7 +566,7 @@ export class SlotGameElement extends HTMLElement {
     this.#presentationImages.clear();
     for (const [id, art] of Object.entries(this.symbolPresentation)) {
       const image = new Image(); image.src = this.#assetUrl(art.src);
-      image.addEventListener("load", () => this.#presentationImages.set(id, image));
+      image.addEventListener("load", () => { this.#presentationImages.set(id, image); if (this.#freeFeature) this.#renderFreeFeature(); });
     }
     for (const asset of this.#game?.assets ?? []) {
       if (!asset.mediaType?.startsWith("image/")) continue;
@@ -686,6 +692,99 @@ export class SlotGameElement extends HTMLElement {
       }
     }
     context.restore();
+  }
+
+  /** Lazily created free-games surfaces inside the stage; keeps the markup template untouched. */
+  #freeSurface(className: "free-hud" | "free-intro"): HTMLElement | undefined {
+    const stage = this.shadowRoot?.querySelector<HTMLElement>(".stage");
+    if (!stage) return undefined;
+    let node = stage.querySelector<HTMLElement>(`.${className}`);
+    if (!node) { node = document.createElement("div"); node.className = className; node.setAttribute("aria-live", "polite"); stage.append(node); }
+    return node;
+  }
+
+  /**
+   * Free-games presentation (reference 05): the framed book intro carries the server's
+   * spin count and chosen expanding symbol, and a persistent HUD tracks remaining,
+   * played, retrigger and feature win. The expanding symbol is copied from the payload;
+   * it is never selected here.
+   */
+  #renderFreeFeature(): void {
+    const hud = this.#freeSurface("free-hud"); const intro = this.#freeSurface("free-intro");
+    if (!hud || !intro) return;
+    const state = this.#freeFeature;
+    const symbolId = state?.specialSymbol;
+    const symbolMarkup = symbolId ? '<canvas class="free-symbol" width="198" height="186"></canvas>' : "";
+    hud.classList.toggle("active", Boolean(state?.active));
+    hud.innerHTML = state?.active ? [
+      symbolMarkup,
+      state.remaining !== undefined ? `<span>Spins left <strong>${state.remaining}</strong></span>` : "",
+      state.played !== undefined ? `<span>Played <strong>${state.played}</strong></span>` : "",
+      state.added !== undefined ? `<span>Retrigger <strong>+${state.added}</strong></span>` : "",
+      state.total !== undefined ? `<span>Feature win <strong>${formatMinorUnits(state.total)}</strong></span>` : "",
+    ].join("") : "";
+    const introState = state?.intro;
+    intro.classList.toggle("active", Boolean(introState));
+    intro.innerHTML = introState ? `<div class="free-panel"><h4>${introState.retrigger ? "+" : ""}${introState.spins} Free Games</h4>${symbolMarkup}<small>${introState.retrigger ? `${state?.remaining ?? introState.spins} spins remaining` : "Special Expanding Symbol"}</small></div>` : "";
+    if (symbolId) for (const canvas of [...hud.querySelectorAll<HTMLCanvasElement>(".free-symbol"), ...intro.querySelectorAll<HTMLCanvasElement>(".free-symbol")]) {
+      const context = canvas.getContext("2d"); if (!context) continue;
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      this.#drawSymbol(context, symbolId, { x: 0, y: 0, width: canvas.width, height: canvas.height }, false, performance.now());
+    }
+  }
+
+  /**
+   * Shared free-games intro for both the real feature-start (`free-spins`,
+   * `retriggering-free-spins`) and the generic `free-spins-start` fixture. Classic
+   * cabinets paint the framed book panel; any other presentation keeps the existing
+   * announcement so no generic path loses its banner.
+   */
+  async #presentFreeIntro(intro: { spins: number; retrigger: boolean; specialSymbol?: string; remaining?: number; added?: number; subtitle: string }): Promise<void> {
+    const previous = this.#freeFeature;
+    this.#freeFeature = {
+      specialSymbol: intro.specialSymbol ?? previous?.specialSymbol,
+      remaining: intro.remaining ?? intro.spins,
+      played: previous?.played ?? 0,
+      added: intro.added ?? previous?.added,
+      total: previous?.total,
+      active: true,
+      intro: { spins: intro.spins, retrigger: intro.retrigger },
+    };
+    if (!this.classicPresentation) { await this.#announce(`${intro.spins} FREE SPINS`, intro.subtitle); return; }
+    this.#renderFreeFeature();
+    await this.#pause(this.#reducedMotion ? 350 : 1800);
+    if (this.#freeFeature?.intro) { this.#freeFeature = { ...this.#freeFeature, intro: undefined }; this.#renderFreeFeature(); }
+  }
+
+  /**
+   * Mirror the round snapshot into the free-games presentation. `reconcile` runs after the
+   * events so the authoritative counters and feature win land last; the intro is restored
+   * from the snapshot only when no intro event ran.
+   */
+  #applyFreeFeature(result: GameRoundResult, reconcile = false): void {
+    const payload = result as unknown as { featureState?: { bookOfRa?: Record<string, unknown> }; specialSymbol?: unknown };
+    const feature = payload.featureState?.bookOfRa;
+    const phase = typeof feature?.phase === "string" ? feature.phase : undefined;
+    const previous = this.#freeFeature;
+    if (phase !== "FREE_GAME_INTRO" && phase !== "FREE_GAME_ACTIVE") {
+      // A resolved, non-feature snapshot must not leave a stale free-games HUD behind.
+      if (previous) { this.#freeFeature = undefined; this.#renderFreeFeature(); }
+      return;
+    }
+    const special = typeof payload.specialSymbol === "string" ? payload.specialSymbol : typeof feature?.specialSymbol === "string" ? feature.specialSymbol : previous?.specialSymbol;
+    const remaining = Number(feature?.freeSpinsRemaining);
+    const played = Number(feature?.freeSpinsPlayed);
+    const spins = Number.isFinite(remaining) ? remaining : previous?.remaining ?? 0;
+    this.#freeFeature = {
+      specialSymbol: special,
+      remaining: spins,
+      played: Number.isFinite(played) ? played : previous?.played,
+      total: feature?.featureWin !== undefined ? String(feature.featureWin) : previous?.total,
+      added: previous?.added,
+      intro: previous?.intro ?? (phase === "FREE_GAME_INTRO" && !reconcile ? { spins, retrigger: false } : undefined),
+      active: true,
+    };
+    this.#renderFreeFeature();
   }
 
   #drawBackground(context: CanvasRenderingContext2D, width: number, height: number): void {
@@ -1326,10 +1425,22 @@ export class SlotGameElement extends HTMLElement {
 
   async playResult(result: GameRoundResult): Promise<void> {
     if (!this.#game) throw new Error("A game must be assigned before playing a result");
+    // Snapshot recovery: a refreshed session shows the chosen expanding symbol and spin
+    // counts without replaying the intro event.
+    this.#applyFreeFeature(result);
+    // Snapshot with no events (refresh recovery) still has to present the resolved board.
+    const recoveredGrid = (result as unknown as { finalGrid?: string[][] }).finalGrid;
+    if (!result.events.length && Array.isArray(recoveredGrid) && recoveredGrid.length) {
+      this.#displayGrid = recoveredGrid.map((column) => [...column]);
+      this.#updateAccessibleGrid();
+    }
     if (!this.#spinState && result.events.some((event) => event.type === "grid-reveal")) this.#startReelSpin();
     try {
       for (const event of result.events) { await this.#playEvent(event, result); this.dispatchEvent(new CustomEvent<SlotEventPlayedEventDetail>("slot-event-played", { detail: { event, result }, bubbles: true, composed: true })); }
       this.shadowRoot!.querySelector<HTMLOutputElement>("output")!.value = formatMinorUnits(result.totalWinUnits);
+      // Reconcile last so the authoritative counters and feature win are not left at the
+      // intro's spin count when the events have already advanced the feature.
+      this.#applyFreeFeature(result, true);
       if (result.roundState === "FREE_GAME_INTRO" || result.roundState === "FREE_GAME_ACTIVE") this.#setState("FEATURE");
       else if (result.roundState === "GAMBLE_PENDING") this.#setState("FEATURE");
       if (BigInt(result.totalWinUnits) > 0n && result.complete) this.#showWin(result.totalWinUnits);
@@ -1369,14 +1480,26 @@ export class SlotGameElement extends HTMLElement {
       }
       case "reel-transform": {
         const reel = Number(data.reel);
-        if (Array.isArray(data.expandingReels) && typeof data.specialSymbol === "string") {
+        const expanding = Array.isArray(data.expandingReels) ? data.expandingReels.map(Number).filter((value) => Number.isFinite(value)) : [];
+        const finalGrid = (result as unknown as { finalGrid?: string[][] }).finalGrid;
+        // Present the selected symbol before replacing the authoritative columns.
+        if (expanding.length && typeof data.specialSymbol === "string") {
           this.#chip("special-symbol", "Expanding symbol", titleCase(data.specialSymbol));
-          this.#announce("EXPANDING SYMBOL", `${data.expandingReels.length} reels`, "", 900);
+          await this.#announce("EXPANDING SYMBOL", titleCase(data.specialSymbol), "", 900);
         }
-        if (Number.isFinite(reel)) {
-          const play = () => { this.#playEffect(this.#eventEffect(event), this.#reelBox(reel), { durationMs: 800 }); this.#playSound("reel-transform", 0.65); };
+        // Authoritative expansion: copy only the provided finalGrid columns for the
+        // provided expanding reels so the resolved board is presented, never derived.
+        if (expanding.length && Array.isArray(finalGrid)) {
+          const next = this.#displayGrid.map((column) => [...column]);
+          for (const index of expanding) { const column = finalGrid[index]; if (Array.isArray(column)) next[index] = [...column]; }
+          this.#displayGrid = next; this.#updateAccessibleGrid();
+        }
+        for (const target of expanding.length ? expanding : Number.isFinite(reel) ? [reel] : []) {
+          const play = () => { this.#playEffect(this.#eventEffect(event), this.#reelBox(target), { durationMs: 800 }); this.#playSound("reel-transform", 0.65); };
           if (this.#spinState) setTimeout(play, 0); else play();
         }
+        // Finish the expansion beat before the next server win event is presented.
+        if (expanding.length) await this.#pause(this.#reducedMotion ? 0 : 800);
         break;
       }
       case "colossal-transform": {
@@ -1387,13 +1510,19 @@ export class SlotGameElement extends HTMLElement {
         break;
       }
       case "win": {
-        const cells = (data.cells ?? []) as Array<{ reel: number; row: number }>; const celebrate = mayCelebrate(result.betUnits, result.totalWinUnits, this.#game!);
+        // An expanding win event may omit its cells; the round's own `wins` entry carries
+        // them. Match the actual server entry on evaluator (book-of-ra-expanding), symbolId
+        // and payoutUnits, and show nothing rather than guessing when no entry matches.
+        const winEntry = bookWinForEvent(data, result.wins);
+        const cells = (data.cells ?? winEntry?.cells ?? []) as Array<{ reel: number; row: number }>;
+        const payoutUnits = typeof data.payoutUnits === "string" ? data.payoutUnits : typeof winEntry?.payoutUnits === "string" ? winEntry.payoutUnits : undefined;
+        const celebrate = mayCelebrate(result.betUnits, result.totalWinUnits, this.#game!);
         if (data.regular === true || data.expanding === true) this.#showPayline(cells);
         this.#winningCells = new Set(cells.map((cell) => `${cell.reel}:${cell.row}`)); this.#winUntil = performance.now() + (this.#reducedMotion ? 0 : 850);
-        this.#winBadgeUnits = typeof data.payoutUnits === "string" ? data.payoutUnits : undefined;
+        this.#winBadgeUnits = payoutUnits;
         if (celebrate) { for (const cell of cells) this.#playEffect(this.#eventEffect(event), this.#cellBox(cell.reel, cell.row), { durationMs: 750, intensity: .9 }); this.#playSound("win", 0.75); }
-        if (typeof data.payoutUnits === "string") {
-          this.#roundWinUnits += BigInt(data.payoutUnits);
+        if (typeof payoutUnits === "string") {
+          this.#roundWinUnits += BigInt(payoutUnits);
           this.shadowRoot!.querySelector<HTMLOutputElement>("output")!.value = formatMinorUnits(this.#roundWinUnits.toString());
         }
         await this.#pause(inFreeSpins ? 220 : 360);
@@ -1463,14 +1592,32 @@ export class SlotGameElement extends HTMLElement {
         this.#setState("FEATURE");
         this.#playMusic("bonus");
         if (!this.#setMappedCharacterPose({ type: "feature-start", featureId: "free-spins" }, 8200)) this.#setCharacterPose("cast", 8200);
-        const spins = Number(data.spins) || 0;
+        const spins = bookFreeGamesAward(data);
         this.#chip("free-spins", "Free spins", String(spins));
         this.#playEffect(this.#eventEffect(event), undefined, { durationMs: 1400 });
         this.#playSound("free-spins-start", 0.85);
-        await this.#announce(`${spins} FREE SPINS`, "All wins from the feature are added to your total");
+        await this.#presentFreeIntro({
+          spins,
+          retrigger: featureId === "retriggering-free-spins",
+          specialSymbol: typeof data.specialSymbol === "string" ? data.specialSymbol : undefined,
+          remaining: Number.isFinite(Number(data.remaining)) ? Number(data.remaining) : undefined,
+          added: Number.isFinite(Number(data.addedSpins)) ? Number(data.addedSpins) : undefined,
+          subtitle: "All wins from the feature are added to your total",
+        });
         break;
       }
       case "free-spin": {
+        const remaining = Number(data.remaining); const played = Number(data.played);
+        this.#freeFeature = {
+          specialSymbol: typeof data.specialSymbol === "string" ? data.specialSymbol : this.#freeFeature?.specialSymbol,
+          remaining: Number.isFinite(remaining) ? remaining : this.#freeFeature?.remaining,
+          played: Number.isFinite(played) ? played : this.#freeFeature?.played,
+          total: data.featureWin !== undefined ? String(data.featureWin) : this.#freeFeature?.total,
+          added: this.#freeFeature?.added,
+          active: true,
+          intro: undefined,
+        };
+        this.#renderFreeFeature();
         this.#chip("free-spins", "Free spins", String(Number(data.remaining) || 0));
         const multiplier = Number(data.multiplier) || 1;
         if (multiplier > 1) this.#chip("free-spin-multiplier", "Multiplier", `×${multiplier}`);
@@ -1478,6 +1625,8 @@ export class SlotGameElement extends HTMLElement {
       }
       case "free-spins-end": {
         const total = String(data.totalWinUnits ?? "0");
+        this.#freeFeature = { ...(this.#freeFeature ?? { active: false }), total, active: false, intro: undefined };
+        this.#renderFreeFeature();
         this.#playMusic("base");
         this.#playSound("free-spins-end", 0.85);
         if (BigInt(total) > 0n) { this.#playEffect(this.#eventEffect(event), undefined, { durationMs: 1600 }); await this.#announce("FEATURE COMPLETE", `Feature win ${formatMinorUnits(total)}`); }
@@ -1585,6 +1734,19 @@ export class SlotGameElement extends HTMLElement {
           this.#setMappedCharacterPose({ type: "feature-start", featureId });
           this.#playEffect(this.#eventEffect(event), undefined, { durationMs: 900 });
           this.#playSound("feature-start", 0.7);
+          // Book of Ra's real intro and retrigger both arrive as feature-start; the classic
+          // cabinet paints the book panel while other presentations keep the banner.
+          if (featureId === "free-spins" || featureId === "retriggering-free-spins") {
+            await this.#presentFreeIntro({
+              spins: bookFreeGamesAward(data),
+              retrigger: featureId === "retriggering-free-spins",
+              specialSymbol: typeof data.specialSymbol === "string" ? data.specialSymbol : undefined,
+              remaining: Number.isFinite(Number(data.remaining)) ? Number(data.remaining) : undefined,
+              added: Number.isFinite(Number(data.addedSpins)) ? Number(data.addedSpins) : undefined,
+              subtitle: this.#featureDetail(featureId, data),
+            });
+            break;
+          }
           await this.#announce(titleCase(featureId), this.#featureDetail(featureId, data), "", 1000);
         }
         break;
@@ -1653,7 +1815,7 @@ export class SlotGameElement extends HTMLElement {
     }
     if (this.#winMessageTimer) clearTimeout(this.#winMessageTimer);
     this.#setCabinetStatus(`WIN: ${formatMinorUnits(units)}`, true);
-    message.classList.add("active"); this.#setState("WIN"); this.#winMessageTimer = setTimeout(() => { message.classList.remove("active"); this.#winMessageTimer = undefined; if (!this.#spinState && !this.#collectPending) this.#setState("READY"); }, this.#reducedMotion ? 0 : tier ? 2200 : 1400);
+    message.classList.add("active"); this.#setState("WIN"); this.#winMessageTimer = setTimeout(() => { message.classList.remove("active"); this.#winMessageTimer = undefined; this.#setCabinetStatus(undefined, false); if (!this.#spinState && !this.#collectPending) this.#setState("READY"); }, this.#reducedMotion ? 0 : tier ? 2200 : 1400);
   }
   #hideWin(): void { if (this.#winMessageTimer) clearTimeout(this.#winMessageTimer); this.#winMessageTimer = undefined; this.#winBadgeUnits = undefined; this.shadowRoot?.querySelector(".win-message")?.classList.remove("active"); this.#setCabinetStatus(undefined, false); }
 
