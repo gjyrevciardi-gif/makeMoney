@@ -50,6 +50,8 @@ interface CellBox { x: number; y: number; width: number; height: number; }
 // border, which sits between the reel canvas and the stage-row edge.
 const IMMERSIVE_REEL_INSET = 0.015;
 const CARD_REEL_INSET = 0.075;
+/** Classic cabinet status copy when no win is being presented. */
+const CLASSIC_BET_PROMPT = "Please place your bet";
 
 const stylesheet = `
   :host { display:block; --panel:#080c18; --ink:#f7f8ff; --accent:#ffd34f; color:var(--ink); font:650 16px/1.3 Inter,ui-sans-serif,system-ui,sans-serif; }
@@ -281,6 +283,8 @@ export class SlotGameElement extends HTMLElement {
   #dropState: DropAnimation | undefined;
   #winningCells = new Set<string>();
   #winUntil = 0;
+  /** Server-provided payout for the win currently being presented (badge copy only). */
+  #winBadgeUnits: string | undefined;
   #winMessageTimer: ReturnType<typeof setTimeout> | undefined;
   #frame = 0;
   #reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -450,7 +454,7 @@ export class SlotGameElement extends HTMLElement {
       <div class="feature-strip" data-chips></div>
       <div class="error" role="alert" hidden></div><div class="stage-row"><div class="stage"${this.#immersive ? "" : backgroundStyle}><canvas class="reel-canvas" aria-label="${game.title} animated reels"></canvas><canvas class="effect-canvas"></canvas><svg class="payline-overlay" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>${this.#reelFrameMarkup()}<div class="float-layer"></div><div class="announce" role="status"><h3></h3><p hidden></p></div><div class="win-message" aria-live="polite"></div><div class="bonus" aria-live="polite"></div><div class="sr-grid" aria-live="polite"></div></div>${this.#characterMarkup()}</div>
       <div class="console cabinet">
-        ${this.classicPresentation ? '<div class="cab-message">Please place your bet</div>' : ''}
+        ${this.classicPresentation ? `<div class="cab-message">${CLASSIC_BET_PROMPT}</div>` : ''}
         <div class="cab-meters">
           <div class="cab-meter"><small>Credit</small><strong data-credit>0.00</strong></div>
           <div class="cab-meter"><small>Lines</small><strong data-lines>${game.math.paylines?.length ?? 0}</strong></div>
@@ -599,6 +603,7 @@ export class SlotGameElement extends HTMLElement {
     const reels = this.#gridShape().length;
     this.#drawCabinetFrame(context, width, height);
     for (let reel = 0; reel < reels; reel += 1) this.#drawReel(context, reel, now, spin);
+    if (!spin) this.#drawWinPresentation(context, width, height, now);
     this.#drawCabinetFrame(context, width, height, true);
     if (this.classicPresentation && (this.hasAttribute("help-open") || this.getAttribute("reference-state") === "03-paytable")) this.#drawReferencePaytable(context, width, height, now);
     this.#syncReferencePaylines(canvas);
@@ -615,7 +620,72 @@ export class SlotGameElement extends HTMLElement {
     if (removal && !removal.resolved && now >= removal.startedAt + removal.duration) { removal.resolved = true; removal.resolve?.(); }
     const drop = this.#dropState;
     if (drop && now >= drop.startedAt + drop.duration) { this.#displayGrid = drop.toGrid.map((column) => [...column]); this.#dropState = undefined; this.#updateAccessibleGrid(); drop.resolve?.(); }
-    if (this.#winningCells.size && now >= this.#winUntil) this.#winningCells.clear();
+    if (this.#winningCells.size && now >= this.#winUntil) { this.#winningCells.clear(); this.#winBadgeUnits = undefined; }
+  }
+
+  /** Leftmost paid cell, used to anchor the win amount badge. */
+  #firstWinCell(): { reel: number; row: number } | undefined {
+    let best: { reel: number; row: number } | undefined;
+    for (const key of this.#winningCells) {
+      const [reel, row] = key.split(":").map(Number);
+      if (reel === undefined || row === undefined || Number.isNaN(reel) || Number.isNaN(row)) continue;
+      if (!best || reel < best.reel || (reel === best.reel && row < best.row)) best = { reel, row };
+    }
+    return best;
+  }
+
+  /**
+   * Win presentation (reference 04): non-paid cells dim, every server-provided paid
+   * cell gets a thin blue frame, and the server's own payout for the win sits in a
+   * badge beside the first paid cell. Both regular and expanding wins arrive here as
+   * `cells` + `payoutUnits`; nothing about the outcome is evaluated locally.
+   */
+  #drawWinPresentation(context: CanvasRenderingContext2D, width: number, height: number, now: number): void {
+    if (!this.#winningCells.size) return;
+    const rows = this.#gridShape();
+    const stroke = Math.max(2, width * .0022);
+    const pulse = .55 + .45 * Math.sin(now / 220);
+    context.save();
+    for (let reel = 0; reel < rows.length; reel += 1) {
+      const count = rows[reel] ?? 0;
+      for (let row = 0; row < count; row += 1) {
+        if (this.#winningCells.has(`${reel}:${row}`)) continue;
+        const box = this.#cellBox(reel, row);
+        context.fillStyle = "rgba(0,0,0,.45)";
+        context.fillRect(box.x, box.y, box.width, box.height);
+      }
+    }
+    for (const key of this.#winningCells) {
+      const [reel, row] = key.split(":").map(Number);
+      if (reel === undefined || row === undefined) continue;
+      const box = this.#cellBox(reel, row);
+      context.fillStyle = `rgba(63,155,255,${.1 + .07 * pulse})`;
+      context.fillRect(box.x, box.y, box.width, box.height);
+      context.globalAlpha = .72 + .28 * pulse;
+      context.strokeStyle = "#3f9bff"; context.lineWidth = stroke;
+      context.shadowColor = "#9ed2ff"; context.shadowBlur = 10 * pulse;
+      context.strokeRect(box.x + stroke / 2, box.y + stroke / 2, box.width - stroke, box.height - stroke);
+      context.shadowBlur = 0;
+    }
+    context.globalAlpha = 1;
+    if (this.#winBadgeUnits !== undefined) {
+      const first = this.#firstWinCell();
+      if (first) {
+        const box = this.#cellBox(first.reel, first.row);
+        const label = formatMinorUnits(this.#winBadgeUnits);
+        const fontSize = Math.max(9, height * .038);
+        context.font = `bold ${fontSize}px Arial`;
+        const badgeH = fontSize * 1.5;
+        const badgeW = context.measureText(label).width + fontSize;
+        const badgeX = box.x + 2; const badgeY = Math.max(1, box.y - badgeH - 2);
+        context.fillStyle = "#1b6ad4";
+        context.beginPath(); context.roundRect(badgeX, badgeY, badgeW, badgeH, 3); context.fill();
+        context.strokeStyle = "#bfe0ff"; context.lineWidth = Math.max(1, stroke * .5); context.stroke();
+        context.fillStyle = "#fff"; context.textAlign = "center"; context.textBaseline = "middle";
+        context.fillText(label, badgeX + badgeW / 2, badgeY + badgeH / 2);
+      }
+    }
+    context.restore();
   }
 
   #drawBackground(context: CanvasRenderingContext2D, width: number, height: number): void {
@@ -1120,9 +1190,26 @@ export class SlotGameElement extends HTMLElement {
   #showPayline(cells: Array<{ reel: number; row: number }>): void {
     const overlay = this.shadowRoot?.querySelector<SVGSVGElement>(".payline-overlay");
     if (!overlay || cells.length < 2) return;
-    const points = cells.map((cell) => { const box = this.#cellBox(cell.reel, cell.row); const stage = this.shadowRoot!.querySelector<HTMLElement>(".stage")!.getBoundingClientRect(); return `${((box.x + box.width / 2) / stage.width) * 100},${((box.y + box.height / 2) / stage.height) * 100}`; }).join(" ");
-    const line = document.createElementNS("http://www.w3.org/2000/svg", "polyline"); line.setAttribute("points", points); overlay.append(line); overlay.classList.add("active");
-    setTimeout(() => overlay.classList.remove("active"), 1300);
+    const canvas = this.shadowRoot!.querySelector<HTMLCanvasElement>(".reel-canvas")!;
+    const stage = this.shadowRoot!.querySelector<HTMLElement>(".stage")!.getBoundingClientRect();
+    const rect = canvas.getBoundingClientRect();
+    if (!rect.width || !rect.height || !stage.width || !stage.height) return;
+    // Same projection as the 02 reference routes: canvas geometry is in backing
+    // pixels, so read it through the canvas rect rather than dividing by the stage's
+    // CSS size, which is only correct at a devicePixelRatio of 1.
+    const project = (box: { x: number; y: number; width: number; height: number }): string => `${((rect.x - stage.x + (box.x + box.width / 2) * rect.width / canvas.width) / stage.width) * 100},${((rect.y - stage.y + (box.y + box.height / 2) * rect.height / canvas.height) / stage.height) * 100}`;
+    const points = cells.map((cell) => project(this.#cellBox(cell.reel, cell.row, canvas))).join(" ");
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+    line.setAttribute("points", points);
+    line.style.stroke = "#3f9bff"; line.style.strokeWidth = "2";
+    overlay.append(line); overlay.classList.add("active");
+    setTimeout(() => {
+      line.remove();
+      // Never leave the 02 reference routes hidden behind a finished win: dropping the
+      // sync key lets the next frame repaint them, otherwise hide the overlay again.
+      if (overlay.dataset.lines === "reference") delete overlay.dataset.sync;
+      else overlay.classList.remove("active");
+    }, 1300);
   }
 
   /**
@@ -1303,6 +1390,7 @@ export class SlotGameElement extends HTMLElement {
         const cells = (data.cells ?? []) as Array<{ reel: number; row: number }>; const celebrate = mayCelebrate(result.betUnits, result.totalWinUnits, this.#game!);
         if (data.regular === true || data.expanding === true) this.#showPayline(cells);
         this.#winningCells = new Set(cells.map((cell) => `${cell.reel}:${cell.row}`)); this.#winUntil = performance.now() + (this.#reducedMotion ? 0 : 850);
+        this.#winBadgeUnits = typeof data.payoutUnits === "string" ? data.payoutUnits : undefined;
         if (celebrate) { for (const cell of cells) this.#playEffect(this.#eventEffect(event), this.#cellBox(cell.reel, cell.row), { durationMs: 750, intensity: .9 }); this.#playSound("win", 0.75); }
         if (typeof data.payoutUnits === "string") {
           this.#roundWinUnits += BigInt(data.payoutUnits);
@@ -1564,9 +1652,21 @@ export class SlotGameElement extends HTMLElement {
       message.textContent = `WIN ${formatMinorUnits(units)}`;
     }
     if (this.#winMessageTimer) clearTimeout(this.#winMessageTimer);
+    this.#setCabinetStatus(`WIN: ${formatMinorUnits(units)}`, true);
     message.classList.add("active"); this.#setState("WIN"); this.#winMessageTimer = setTimeout(() => { message.classList.remove("active"); this.#winMessageTimer = undefined; if (!this.#spinState && !this.#collectPending) this.#setState("READY"); }, this.#reducedMotion ? 0 : tier ? 2200 : 1400);
   }
-  #hideWin(): void { if (this.#winMessageTimer) clearTimeout(this.#winMessageTimer); this.#winMessageTimer = undefined; this.shadowRoot?.querySelector(".win-message")?.classList.remove("active"); }
+  #hideWin(): void { if (this.#winMessageTimer) clearTimeout(this.#winMessageTimer); this.#winMessageTimer = undefined; this.#winBadgeUnits = undefined; this.shadowRoot?.querySelector(".win-message")?.classList.remove("active"); this.#setCabinetStatus(undefined, false); }
+
+  /**
+   * Classic cabinet status line. Shows the server's win total in green while a win is
+   * being presented (reference 04) and returns to the bet prompt otherwise.
+   */
+  #setCabinetStatus(text: string | undefined, active: boolean): void {
+    const message = this.shadowRoot?.querySelector<HTMLElement>(".cab-message");
+    if (!message) return;
+    message.textContent = text ?? CLASSIC_BET_PROMPT;
+    message.classList.toggle("win-active", active);
+  }
 
   #choiceLabel(choice: { id: string; labelKey: string }, index: number, type: PendingAction["type"]): string {
     const known = this.#catalog.format(choice.labelKey);

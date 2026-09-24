@@ -84,6 +84,10 @@ export const bookStyles = `
 :host([presentation="classic"]) .cab-meter.win-total {position:absolute;left:133%;top:-2.2cqw;width:17%;height:1cqw;display:flex;align-items:center;gap:.3cqw;opacity:.65}
 :host([presentation="classic"]) .cab-meter.win-total small {background:none;border:0;font-size:.8cqw}
 :host([presentation="classic"]) .cab-meter.win-total output {font:bold .9cqw Arial,sans-serif;color:#ffee42}
+ /* Win presentation: the status panel reports the server's win total in green and the
+    duplicate win meter yields to it (reference 04). */
+ :host([presentation="classic"]) .cab-message.win-active {color:#4dff6a;text-shadow:0 0 .45cqw #0a4d16}
+ :host([presentation="classic"]) .cab-message.win-active~.cab-meters .cab-meter.win-total {display:none}
 :host([presentation="classic"]) .cab-deck {display:contents}
 :host([presentation="classic"]) .cab-key,:host([presentation="classic"]) .spin.cab-start {position:absolute;margin:0;min-width:0;padding:0;border:.36cqw ridge #c0b294;border-radius:.65cqw;text-transform:none;letter-spacing:0;font:bold 2cqw/1 Arial,sans-serif;text-shadow:.13cqw .13cqw #000;color:#fff;box-shadow:inset 0 .5cqw .45cqw #fff7,inset 0 -.5cqw .55cqw #0009;cursor:pointer}
 :host([presentation="classic"]) .cab-key[data-key="autoplay"] {left:80.7%;top:.65cqw;width:12.35%;height:6.4cqw;background:linear-gradient(#deffc5 0,#8af236 25%,#3cbd04 48%,#087900 100%);color:#071900;text-shadow:0 .1cqw #aeed7d}
