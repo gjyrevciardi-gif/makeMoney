@@ -1,14 +1,16 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import {chromium} from '../../slot-skills/node_modules/playwright/index.mjs';
-import {root,playerUrl,buildPlayer,ensurePlayer,exists,json,fingerprint} from './common.mjs';
+import {root,playerUrl,playwrightEntry,buildPlayer,ensurePlayer,exists,json,fingerprint} from './common.mjs';
 import {prepareState} from './fixtures.mjs';
+import {assertReelMotion} from './motion.mjs';
+const {chromium}=await import(new URL(`file:///${playwrightEntry.replaceAll('\\','/')}`).href);
 
 const started=Date.now(),update=process.argv.includes('--update-baseline');
 const reasonIndex=process.argv.indexOf('--reason'),reason=reasonIndex<0?'':process.argv[reasonIndex+1];
-const runId=`visual-${new Date().toISOString().replaceAll(':','-')}`;
+const labelIndex=process.argv.indexOf('--label'),label=labelIndex<0?'':process.argv[labelIndex+1];
+const runId=`${label?label+'-':'visual-'}${new Date().toISOString().replaceAll(':','-')}`;
 const out=path.join(root,'screenshots/runs',runId),baseline=path.join(root,'screenshots/baseline');
-const report={status:'FAIL',mode:'approved-behavior-regression',runId,playerUrl,cases:[],failures:[],referenceParity:'Not certified. Reference scores are informational; the unchanged approved player is the regression baseline.'};
+const report={status:'FAIL',mode:'approved-behavior-regression',runId,label:label||null,playerUrl,cases:[],failures:[],referenceParity:'Not certified. Reference scores are informational; the unchanged approved player is the regression baseline.'};
 let browser;
 
 async function compare(page,current,reference,width,height,fit='exact'){
@@ -37,6 +39,37 @@ try{
   const analysis=await browser.newPage();
   const baselineManifest=await exists(path.join(baseline,'manifest.json'))?JSON.parse(await fs.readFile(path.join(baseline,'manifest.json'),'utf8')):null;
   report.browser=browser.version();report.platform=process.platform;report.limits=manifest.regressionLimits;
+  // Presentation-motion evidence: symbols must move down and reels must stop 1->5.
+  {
+    const context=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1,reducedMotion:'no-preference'});
+    await context.route('**/*',route=>{
+      const url=new URL(route.request().url());
+      if(url.pathname.startsWith('/v1/state/'))return route.fulfill({json:{featureState:{}}});
+      if(url.pathname.startsWith('/v1/'))return route.abort();
+      return route.continue();
+    });
+    const motionPage=await context.newPage();
+    await motionPage.goto(`${playerUrl}?state=01-base`,{waitUntil:'networkidle'});
+    await motionPage.waitForFunction(()=>document.documentElement.dataset.ready==='true');
+    report.motion=await assertReelMotion(motionPage);
+    await context.close();
+    const m=report.motion;
+    if(!m.sawMoving)report.failures.push({case:'motion',message:'Reels never entered a moving state'});
+    if(m.topBandFrames<3)report.failures.push({case:'motion',message:`Top of the reel window never showed continuous motion: ${m.topBandFrames} frames`});
+    if(m.firstTopChangeMs<=0||m.firstBottomChangeMs<=0)report.failures.push({case:'motion',message:`Reel window motion not observed at both bands (top=${m.firstTopChangeMs}ms bottom=${m.firstBottomChangeMs}ms)`});
+    if(m.bottomBandMeanChange<=0.05&&m.topBandMeanChange>0.05)report.failures.push({case:'motion',message:`Motion did not reach the lower window band (top=${m.topBandMeanChange} bottom=${m.bottomBandMeanChange})`});
+    // Stop order is asserted from the landing times the player itself scheduled
+    // (115ms stagger, equal travel duration). Pixel "last change" times are
+    // recorded for evidence only: reel 1 travels fast and blurred, so its last
+    // detectable change under-reports its landing by up to one stagger step.
+    const stops=m.reelLastChange.slice();
+    const observed=stops.filter(value=>value>0);
+    const scheduled=Array.isArray(m.reelScheduledStop)?m.reelScheduledStop:[];
+    if(scheduled.length===5){
+      for(let reel=1;reel<5;reel++)if(!(scheduled[reel]>scheduled[reel-1]))report.failures.push({case:'motion',message:`Scheduled reel landing times are not 1->5: ${scheduled.join(',')}`});
+    }else report.failures.push({case:'motion',message:'Player did not report per-reel landing times'});
+    if(observed.length<3)report.failures.push({case:'motion',message:`Too few reels produced a readable stop time: ${observed.join(',')}`});
+  }
   if(!update&&!baselineManifest)throw Error('Missing approved baseline. Record it explicitly with npm run visual:baseline -- --reason "...".');
   if(!update&&baselineManifest.browser!==report.browser)throw Error(`Baseline browser=${baselineManifest.browser}; current=${report.browser}. Review a baseline update before changing browsers.`);
   const jobs=[];

@@ -5,9 +5,17 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
+// The runtime/build toolkit is not vendored into this repository. `slot-skills/`
+// is a read-only junction to a locally installed toolkit checkout (see
+// client/README.md); nothing under it is written.
 export const toolkit=path.join(root,'slot-skills');
+export const playwrightEntry=path.join(toolkit,'node_modules/playwright/index.mjs');
+export const port=Number(process.env.SLOT_PREVIEW_PORT??4275);
 export const cache=path.join(root,'.cache/iteration');
-export const playerUrl='http://127.0.0.1:4175/';
+/** Read-only toolchain entry points of the local toolkit install. */
+export const toolkitTsc=path.join(toolkit,'node_modules/typescript/bin/tsc');
+export const toolkitVitest=path.join(toolkit,'node_modules/vitest/vitest.mjs');
+export const playerUrl=`http://127.0.0.1:${port}/`;
 export async function exists(file){try{await fs.access(file);return true;}catch{return false;}}
 export async function json(file,value){await fs.mkdir(path.dirname(file),{recursive:true});await fs.writeFile(file,JSON.stringify(value,null,2)+'\n');}
 export async function fingerprint(paths){
@@ -47,18 +55,24 @@ export async function buildPackages(names){
   }
   for(const name of names)await build(name);
 }
+
+export const repo=path.resolve(root,'../..');
+export const buildClientScript=path.join(root,'client/build-client.mjs');
+
+/**
+ * Rebuilds the static player bundle from the repository's vendored client
+ * sources (`client/build-client.mjs`). Read-only w.r.t. everything outside
+ * `player/build` and `games/book-of-ra/.cache`.
+ */
 export async function buildPlayer(){
-  await buildPackages(['web-client']);
-  const signature=await fingerprint([path.join(toolkit,'packages/slot-web-client/src'),...['schema','runtime','canvas-effects','spine'].map(n=>path.join(cache,`build-${n}.json`)),path.join(toolkit,'package-lock.json')]);
-  const stamp=path.join(cache,'player-build.json'),output=path.join(root,'player/build/slot-client.js');
-  if(await exists(stamp)&&await exists(output)){const old=JSON.parse(await fs.readFile(stamp));if(old.signature===signature&&old.outputSignature===await fingerprint([output]))return;}
-  const {build}=await import('../../slot-skills/node_modules/vite/dist/node/index.js');
-  await build({configFile:false,root:toolkit,logLevel:'silent',build:{lib:{entry:path.join(toolkit,'packages/slot-web-client/src/index.ts'),formats:['es'],fileName:()=> 'slot-client.js'},outDir:path.join(root,'player/build'),emptyOutDir:false,target:'es2022',sourcemap:true,minify:true}});
-  await json(stamp,{signature,outputSignature:await fingerprint([output])});
+  const result=await run([buildClientScript],{cwd:root,log:path.join(cache,'build-client.log')});
+  if(result.code)throw Error(`client build exit=${result.code}; ${path.relative(root,path.join(cache,'build-client.log'))}\n${result.output.slice(-1800)}`);
+  return result.output.trim();
 }
+
 export async function ensurePlayer(){
   const expected=await fs.readFile(path.join(root,'player/index.html'),'utf8');
-  async function probe(){try{const response=await fetch(new URL('player/index.html',playerUrl),{signal:AbortSignal.timeout(1200)});if(!response.ok||await response.text()!==expected)throw Error('Port 4175 belongs to another server; it was not stopped.');return true;}catch(error){if(error.message.includes('another server'))throw error;return false;}}
+  async function probe(){try{const response=await fetch(new URL('player/index.html',playerUrl),{signal:AbortSignal.timeout(1200)});if(!response.ok||await response.text()!==expected)throw Error(`Port ${port} belongs to another server; it was not stopped.`);return true;}catch(error){if(error.message.includes('another server'))throw error;return false;}}
   if(await probe())return;
   await fs.mkdir(cache,{recursive:true});const log=await fs.open(path.join(cache,'player-server.log'),'a');
   const child=spawn(process.execPath,[path.join(root,'scripts/serve-visual-player.mjs')],{cwd:root,detached:true,windowsHide:true,stdio:['ignore',log.fd,log.fd]});
