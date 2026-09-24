@@ -792,8 +792,11 @@ export class SlotGameElement extends HTMLElement {
   #reelArea(width: number, height: number): CellBox {
     if (this.classicPresentation) {
       const gambleReference = this.getAttribute("reference-state") === "06-gamble";
-      const scale = gambleReference ? .754 : 1, inset = gambleReference ? 137 : 0;
-      return { x: width * (inset + 97 * scale) / 1112, y: height * 113 / 630, width: width * 940 * scale / 1112, height: height * 429 / 630 };
+      // Measured against the 1255x761 approved base capture: the dark reel window
+      // spans x 162..1095, y 110..627, i.e. three 172-unit rows filling the frame's
+      // 106..622 face opening. The gamble reference keeps its existing grid.
+      if (gambleReference) return { x: width * 279 / 1255, y: height * 113 / 630, width: width * 718 / 1255, height: height * 429 / 630 };
+      return { x: width * 162 / 1255, y: height * 106 / 630, width: width * 933 / 1255, height: height * 516 / 630 };
     }
     if (this.#immersive) return { x: width * .168, y: height * .180, width: width * .687, height: height * .757 };
     return { x: width * .045, y: height * CARD_REEL_INSET, width: width * .91, height: height * (1 - 2 * CARD_REEL_INSET) };
