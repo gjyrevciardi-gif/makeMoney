@@ -1105,8 +1105,12 @@ export class SlotGameElement extends HTMLElement {
     const stopBase = Math.max(performance.now() + 90, state.startedAt + settleDelay);
     state.settleTimes = state.target.map((_, reel) => stopBase + reel * stagger + duration);
     state.motions = state.target.map((column, reel) => {
-      const entryVelocity = .012 + reel * .00075; const startTime = stopBase + reel * stagger; const startPosition = Math.max(0, startTime - state.startedAt) * entryVelocity; const targetPosition = Math.max(Math.ceil(startPosition) + 3, Math.floor(startPosition + entryVelocity * duration * .58)); const distance = targetPosition - startPosition; const stripLength = targetPosition + column.length + ids.length + 2;
-      const strip = Array.from({ length: stripLength }, (_, index) => ids[(index + reel * 3) % ids.length]!); for (let row = 0; row < column.length; row += 1) strip[targetPosition + row] = column[row]!;
+      const entryVelocity = .012 + reel * .00075; const startTime = stopBase + reel * stagger; const startPosition = Math.max(0, startTime - state.startedAt) * entryVelocity; const targetPosition = Math.max(Math.ceil(startPosition) + 3, Math.floor(startPosition + entryVelocity * duration * .58), column.length - 1); const distance = targetPosition - startPosition; const stripLength = targetPosition + column.length + ids.length + 2;
+      // The strip is read backwards from the stop position (index = whole - row), so the
+      // authoritative column is written downwards from targetPosition. The last moving
+      // frame then shows exactly the three symbols the stopped frame keeps; without this
+      // the reel landed on filler and the board visibly changed once the stop completed.
+      const strip = Array.from({ length: stripLength }, (_, index) => ids[(index + reel * 3) % ids.length]!); for (let row = 0; row < column.length; row += 1) strip[targetPosition - row] = column[row]!;
       return { strip, startTime, duration, startPosition, targetPosition, distance, entryVelocity };
     }); this.#setState("STOPPING");
     return new Promise((resolve) => { state.resolve = resolve; });

@@ -90,7 +90,9 @@ export const bookStyles = `
 :host([presentation="classic"]) dialog .close {float:right;border:2px solid #7b4b12;background:#d7a72f;color:#211000;font:bold 22px Arial;cursor:pointer}
 :host([presentation="classic"]) .game.immersive .stage {border-radius:0}
 :host([presentation="classic"]) .game.immersive canvas.reel-canvas {aspect-ratio:1112/625}
-:host([presentation="classic"]) .game.immersive .console.cabinet {position:relative;height:11.7cqw;margin:0;border:0;border-top:.35cqw solid #eead24;background:radial-gradient(ellipse at 48% -35%,#d05c16 0,#833110 65%,#39190c 100%);box-shadow:inset 0 .35cqw .4cqw #3b1a07}
+/* The permanent status/control band always paints above the reel presentation area,
+   so no Gamble surface, win overlay or scaled frame can cover it. */
+:host([presentation="classic"]) .game.immersive .console.cabinet {position:relative;z-index:2;height:11.7cqw;margin:0;border:0;border-top:.35cqw solid #eead24;background:radial-gradient(ellipse at 48% -35%,#d05c16 0,#833110 65%,#39190c 100%);box-shadow:inset 0 .35cqw .4cqw #3b1a07}
 :host([presentation="classic"]) .cab-message {position:absolute;left:9.35%;top:.65cqw;width:70.65%;height:5.9cqw;display:flex;align-items:center;justify-content:center;border:.25cqw solid #9d7b58;border-radius:1cqw;background:linear-gradient(#141518,#303033 55%,#171719);box-shadow:inset 0 0 .5cqw #000;font:bold 2.8cqw/1 Arial,sans-serif;color:#ffee42;letter-spacing:.06cqw}
 :host([presentation="classic"]) .cab-meters {position:absolute;left:9.35%;top:6.95cqw;width:46%;height:5.7cqw;display:grid;grid-template-columns:1.15fr 1.05fr 1.35fr .88fr;gap:.7cqw;padding:0;border:0;border-radius:0;background:none;box-shadow:none}
 :host([presentation="classic"]) .cab-meter {padding:0;border:0;background:none;box-shadow:none;overflow:visible}
@@ -204,20 +206,13 @@ export const bookStyles = `
  :host([presentation="classic"]) .free-hud .free-symbol {width:2.8cqw;height:2.6cqw}
  :host([presentation="classic"]) .free-hud strong {color:#fff;font-weight:900}
  }
-/* Gamble-only desktop composition; the original reference places the orange panel
-   inside the cabinet rails and a wide status strip above the lower Collect key. */
+/* Gamble-only desktop composition. The original reference places the orange panel
+   inside the cabinet rails and a wide status strip above the lower Collect key, so
+   the live Gamble surface keeps the accepted reel-window inset, the cabinet
+   proportions and the permanent status/meters/keys; only the panel's own fields are
+   re-typed here. The Start key is the COLLECT affordance while the server offers it. */
 @media(min-width:601px) {
- :host([presentation="classic"][gamble-active]) .game.immersive canvas.reel-canvas {aspect-ratio:1/.423}
- :host([presentation="classic"][gamble-active]) .bonus.gamble-screen {inset:18.5% 20.6% 2.2% 22%;z-index:6}
- :host([presentation="classic"][gamble-active]) .console.cabinet {height:14cqw}
- :host([presentation="classic"][gamble-active]) .cab-message {left:13.2%;top:3.7cqw;width:62%;height:4.4cqw;font-size:1.6cqw}
- :host([presentation="classic"][gamble-active]) .cab-meters {left:13.2%;top:9.2cqw;width:42%;height:3.4cqw;gap:.8cqw}
- :host([presentation="classic"][gamble-active]) .cab-meter small {font-size:.8cqw}
- :host([presentation="classic"][gamble-active]) .cab-meter strong {width:100%;margin-left:0;font-size:1.2cqw;height:2.3cqw}
- :host([presentation="classic"][gamble-active]) .meter-adjust,
- :host([presentation="classic"][gamble-active]) .win-total,
- :host([presentation="classic"][gamble-active]) .cab-key {display:none}
- :host([presentation="classic"][gamble-active]) .spin.cab-start {left:76%;top:9.2cqw;width:9.2%;height:3.4cqw;font-size:1.4cqw}
+ :host([presentation="classic"][gamble-active]) .bonus.gamble-screen {z-index:6}
  :host([presentation="classic"][gamble-active]) .gamble-amount {font-size:1.55cqw}
  :host([presentation="classic"][gamble-active]) .gamble-value {display:block;color:#fff279;text-align:center}
  :host([presentation="classic"][gamble-active]) .gamble-attempt {position:absolute;right:5%;top:3%;color:#fff;font:bold 1.55cqw/1.4 Arial;text-align:center;text-shadow:.1cqw .1cqw #966622}
@@ -233,14 +228,16 @@ export const bookStyles = `
 }
 
 /* Human-reviewed desktop base proportions only; other references and portrait retain
-   their accepted geometry. The face and control band consume 98.5vh together. */
+   their accepted geometry. The face and control band consume 98.5vh together, and the
+   same budget stays in force during a live Gamble so the panel lives inside the reel
+   window and the status band with the Collect key never leaves the cabinet. */
 @media(min-width:601px) {
- :host([base-desktop]:not([gamble-active]):not([help-open])) .game.immersive canvas.reel-canvas {height:86vh;aspect-ratio:auto}
- :host([base-desktop]:not([gamble-active]):not([help-open])) .game.immersive .console.cabinet {height:12.5vh}
- :host([base-desktop]:not([gamble-active]):not([help-open])) .cab-message,
- :host([base-desktop]:not([gamble-active]):not([help-open])) .cab-meters,
- :host([base-desktop]:not([gamble-active]):not([help-open])) .cab-key,
- :host([base-desktop]:not([gamble-active]):not([help-open])) .spin.cab-start {top:2vh;height:8vh}
+ :host([base-desktop]:not([help-open])) .game.immersive canvas.reel-canvas {height:86vh;aspect-ratio:auto}
+ :host([base-desktop]:not([help-open])) .game.immersive .console.cabinet {height:12.5vh}
+ :host([base-desktop]:not([help-open])) .cab-message,
+ :host([base-desktop]:not([help-open])) .cab-meters,
+ :host([base-desktop]:not([help-open])) .cab-key,
+ :host([base-desktop]:not([help-open])) .spin.cab-start {top:2vh;height:8vh}
 }
 `;
 
