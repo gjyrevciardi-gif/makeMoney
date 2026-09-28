@@ -1,0 +1,603 @@
+{
+ "runId": "rtp50-validation-2026-09-28T14:45:27.678Z",
+ "phase": "independent validation (these seeds were never used for calibration)",
+ "profileId": "lucky-lady.rtp50.v1",
+ "profileCanonicalHash": "eb0a22171a3479cea3b0238269edd4b0dc5d9486c57e4b057fa6ee0f1a70be5f",
+ "profileHashRecomputed": "eb0a22171a3479cea3b0238269edd4b0dc5d9486c57e4b057fa6ee0f1a70be5f",
+ "profileMathHash": "6bde6765143e926e9f19d16a4f66cb757f13053026a2050a0717fab2ce0b38b9",
+ "evaluatorId": "lucky-lady.original-evaluator.v1",
+ "evaluatorCodeHash": "0f02bb1e78eafdd99a51015c4bf83848050ca6b6e898123759d1442787d12843",
+ "oracleManifest": {
+  "generated": "2026-09-28T14:38:23.553Z",
+  "oraclePath": "C:\\Users\\Admin\\orca\\research\\game-pack-forensics\\runtime\\LuckyLadysCharmDX\\math-oracle\\lucky-lady-oracle.php",
+  "oracleSha256": "ab6d357bb515ec3b30bb5bc47f30ddbccdf1d3457774a247f7a7453fde310efa",
+  "sourceHashesVerified": {
+   "server": "9b7961b867e7b897b39f23274e1d6abf151b3fce5e18ed8ba278aa704a07423b",
+   "settings": "372aff5e9f275d96693f0e88740080b64922086091546c80ea8c40cdc397b095",
+   "reels": "64cf839d1f584061f4e3fe813377c4f0396832a52e7e26493974e71363235efa"
+  },
+  "extractedBlocks": {
+   "evalBlockChars": 14977,
+   "awardBlockChars": 1115,
+   "evalBlockLine": 397,
+   "awardBlockLine": 648
+  },
+  "constants": {
+   "slotWildMpl": 2,
+   "slotFreeMpl": 3,
+   "slotFreeCount": 15
+  }
+ },
+ "rulesSourceHashesVerified": {
+  "server": "9b7961b867e7b897b39f23274e1d6abf151b3fce5e18ed8ba278aa704a07423b",
+  "settings": "372aff5e9f275d96693f0e88740080b64922086091546c80ea8c40cdc397b095",
+  "reels": "64cf839d1f584061f4e3fe813377c4f0396832a52e7e26493974e71363235efa"
+ },
+ "validationSeeds": [
+  "validation-a",
+  "validation-b",
+  "validation-c",
+  "validation-d",
+  "validation-e",
+  "validation-f",
+  "validation-g",
+  "validation-h",
+  "validation-i",
+  "validation-j",
+  "validation-k",
+  "validation-l",
+  "validation-m",
+  "validation-n",
+  "validation-o",
+  "validation-p",
+  "validation-q",
+  "validation-r",
+  "validation-s",
+  "validation-t"
+ ],
+ "roundsPerSeed": 1000000,
+ "totalRounds": 20000000,
+ "bet": 1,
+ "lines": 10,
+ "denominators": {
+  "round": "one paid spin including every resulting free spin and retrigger",
+  "wager": "bet x lines per paid round; free spins add no wager",
+  "rtp": "sum of complete-round returns / sum of paid wagers",
+  "baseContribution": "paid-round line wins plus paid-round scatter wins",
+  "featureContribution": "all free-spin wins including retriggered spins",
+  "hitRate": "paid rounds with any return greater than zero",
+  "featureTriggerRate": "paid rounds awarding 15 free spins"
+ },
+ "totalWager": 200000000,
+ "totalReturn": 99724707,
+ "totalLineWin": 91391986,
+ "totalScatterWin": 5983710,
+ "totalFeatureWin": 2349011,
+ "totalFreeSpins": 167610,
+ "totalRetriggers": 89,
+ "observedRtpPercent": 49.8623535,
+ "observedStderrPercent": 0.08767465401083116,
+ "observedCi95Percent": [
+  49.69051433578176,
+  50.03419266421824
+ ],
+ "observedWithinTolerance": true,
+ "ciWithinTolerance": true,
+ "acceptanceGate": "observed RTP in 49.5..50.5 AND 95% CI contained in 49.5..50.5",
+ "gatePass": true,
+ "scatterPmf": [
+  {
+   "scatterCount": 0,
+   "probability": 0.8195720261164361
+  },
+  {
+   "scatterCount": 1,
+   "probability": 0.16639560342660878
+  },
+  {
+   "scatterCount": 2,
+   "probability": 0.013476974474311534
+  },
+  {
+   "scatterCount": 3,
+   "probability": 0.0005443427193846902
+  },
+  {
+   "scatterCount": 4,
+   "probability": 0.000010965129255072343
+  },
+  {
+   "scatterCount": 5,
+   "probability": 8.81340048059552e-8
+  },
+  {
+   "scatterCount": 6,
+   "probability": 0
+  },
+  {
+   "scatterCount": 7,
+   "probability": 0
+  },
+  {
+   "scatterCount": 8,
+   "probability": 0
+  },
+  {
+   "scatterCount": 9,
+   "probability": 0
+  },
+  {
+   "scatterCount": 10,
+   "probability": 0
+  },
+  {
+   "scatterCount": 11,
+   "probability": 0
+  },
+  {
+   "scatterCount": 12,
+   "probability": 0
+  },
+  {
+   "scatterCount": 13,
+   "probability": 0
+  },
+  {
+   "scatterCount": 14,
+   "probability": 0
+  },
+  {
+   "scatterCount": 15,
+   "probability": 0
+  }
+ ],
+ "probabilityScatterAtLeastThree": 0.0005553959826445684,
+ "analyticFreeSpinBranchingFactor": 0.008330939739668527,
+ "analyticBranchingProof": "15 x P(scatter>=3) = 15 x 0.0005553959826445684 = 0.008330939739668527 < 1",
+ "branchingSubcritical": true,
+ "empiricalRetriggersPerFreeSpin": 0.00053099457072967,
+ "empiricalBranchingEstimate": 0.00796491856094505,
+ "empiricalBranchingNote": "empirical estimate from the same validation sample; the analytic convolution is the authoritative subcriticality proof",
+ "perSeed": [
+  {
+   "seed": "validation-a",
+   "rounds": 1000000,
+   "wager": 10000000,
+   "return": 4936739,
+   "sumSquares": 14705805.989995122,
+   "rtpPercent": 49.36739,
+   "ci": [
+    48.622034171219305,
+    50.11274582878069
+   ],
+   "baseReturn": 4517489,
+   "scatterReturn": 295160,
+   "featureReturn": 124090,
+   "paidScatterContributionPercent": 2.9516,
+   "featureContributionPercent": 1.2409,
+   "hitRate": 20.947499999999998,
+   "triggerRate": 0.0567,
+   "retriggers": 1,
+   "freeSpins": 8520,
+   "maxRoundReturnX": 455
+  },
+  {
+   "seed": "validation-b",
+   "rounds": 1000000,
+   "wager": 10000000,
+   "return": 5026569,
+   "sumSquares": 16661107.689993078,
+   "rtpPercent": 50.26569,
+   "ci": [
+    49.47176077831941,
+    51.059619221680585
+   ],
+   "baseReturn": 4628656,
+   "scatterReturn": 298220,
+   "featureReturn": 99693,
+   "paidScatterContributionPercent": 2.9822,
+   "featureContributionPercent": 0.9969300000000001,
+   "hitRate": 20.956,
+   "triggerRate": 0.0525,
+   "retriggers": 2,
+   "freeSpins": 7905.000000000001,
+   "maxRoundReturnX": 912
+  },
+  {
+   "seed": "validation-c",
+   "rounds": 1000000,
+   "wager": 10000000,
+   "return": 4935488,
+   "sumSquares": 15001629.959996024,
+   "rtpPercent": 49.35488,
+   "ci": [
+    48.60193643521693,
+    50.107823564783075
+   ],
+   "baseReturn": 4529824,
+   "scatterReturn": 293930,
+   "featureReturn": 111734,
+   "paidScatterContributionPercent": 2.9393,
+   "featureContributionPercent": 1.11734,
+   "hitRate": 21.0357,
+   "triggerRate": 0.052700000000000004,
+   "retriggers": 4,
+   "freeSpins": 7965,
+   "maxRoundReturnX": 905.4
+  },
+  {
+   "seed": "validation-d",
+   "rounds": 1000000,
+   "wager": 10000000,
+   "return": 4991530,
+   "sumSquares": 15133108.819995496,
+   "rtpPercent": 49.9153,
+   "ci": [
+    49.15915120104806,
+    50.67144879895194
+   ],
+   "baseReturn": 4587074,
+   "scatterReturn": 293620,
+   "featureReturn": 110836,
+   "paidScatterContributionPercent": 2.9362,
+   "featureContributionPercent": 1.10836,
+   "hitRate": 21.002599999999997,
+   "triggerRate": 0.052700000000000004,
+   "retriggers": 6,
+   "freeSpins": 7995,
+   "maxRoundReturnX": 906
+  },
+  {
+   "seed": "validation-e",
+   "rounds": 1000000,
+   "wager": 10000000,
+   "return": 4934505,
+   "sumSquares": 15190383.369992742,
+   "rtpPercent": 49.34505,
+   "ci": [
+    48.58730424888865,
+    50.10279575111135
+   ],
+   "baseReturn": 4511319,
+   "scatterReturn": 302630,
+   "featureReturn": 120556,
+   "paidScatterContributionPercent": 3.0263,
+   "featureContributionPercent": 1.20556,
+   "hitRate": 20.9914,
+   "triggerRate": 0.0557,
+   "retriggers": 4,
+   "freeSpins": 8415,
+   "maxRoundReturnX": 781.4
+  },
+  {
+   "seed": "validation-f",
+   "rounds": 1000000,
+   "wager": 10000000,
+   "return": 4984375,
+   "sumSquares": 14491542.749995206,
+   "rtpPercent": 49.84375,
+   "ci": [
+    49.10405889610522,
+    50.58344110389478
+   ],
+   "baseReturn": 4565962,
+   "scatterReturn": 303920,
+   "featureReturn": 114493,
+   "paidScatterContributionPercent": 3.0391999999999997,
+   "featureContributionPercent": 1.14493,
+   "hitRate": 20.964199999999998,
+   "triggerRate": 0.05689999999999999,
+   "retriggers": 4,
+   "freeSpins": 8595,
+   "maxRoundReturnX": 425.2
+  },
+  {
+   "seed": "validation-g",
+   "rounds": 1000000,
+   "wager": 10000000,
+   "return": 4926581,
+   "sumSquares": 15650734.089991143,
+   "rtpPercent": 49.26581,
+   "ci": [
+    48.49646428867369,
+    50.035155711326304
+   ],
+   "baseReturn": 4506191,
+   "scatterReturn": 300320,
+   "featureReturn": 120070,
+   "paidScatterContributionPercent": 3.0032,
+   "featureContributionPercent": 1.2007,
+   "hitRate": 21.0189,
+   "triggerRate": 0.057300000000000004,
+   "retriggers": 5,
+   "freeSpins": 8670,
+   "maxRoundReturnX": 901
+  },
+  {
+   "seed": "validation-h",
+   "rounds": 1000000,
+   "wager": 10000000,
+   "return": 5046951,
+   "sumSquares": 15168432.189993743,
+   "rtpPercent": 50.46950999999999,
+   "ci": [
+    49.712605632111355,
+    51.22641436788863
+   ],
+   "baseReturn": 4637821,
+   "scatterReturn": 297230,
+   "featureReturn": 111900,
+   "paidScatterContributionPercent": 2.9722999999999997,
+   "featureContributionPercent": 1.119,
+   "hitRate": 20.9745,
+   "triggerRate": 0.056400000000000006,
+   "retriggers": 2,
+   "freeSpins": 8490,
+   "maxRoundReturnX": 356.6
+  },
+  {
+   "seed": "validation-i",
+   "rounds": 1000000,
+   "wager": 10000000,
+   "return": 4943696,
+   "sumSquares": 15486345.099993734,
+   "rtpPercent": 49.43696,
+   "ci": [
+    48.6717717914551,
+    50.202148208544905
+   ],
+   "baseReturn": 4526709,
+   "scatterReturn": 301120,
+   "featureReturn": 115867,
+   "paidScatterContributionPercent": 3.0112,
+   "featureContributionPercent": 1.15867,
+   "hitRate": 21.0569,
+   "triggerRate": 0.057499999999999996,
+   "retriggers": 3,
+   "freeSpins": 8670,
+   "maxRoundReturnX": 945
+  },
+  {
+   "seed": "validation-j",
+   "rounds": 1000000,
+   "wager": 10000000,
+   "return": 5014090,
+   "sumSquares": 15980023.119993137,
+   "rtpPercent": 50.1409,
+   "ci": [
+    49.363591722531105,
+    50.9182082774689
+   ],
+   "baseReturn": 4608902,
+   "scatterReturn": 299070,
+   "featureReturn": 106118,
+   "paidScatterContributionPercent": 2.9907,
+   "featureContributionPercent": 1.06118,
+   "hitRate": 21.051000000000002,
+   "triggerRate": 0.0588,
+   "retriggers": 8,
+   "freeSpins": 8940,
+   "maxRoundReturnX": 1073.4
+  },
+  {
+   "seed": "validation-k",
+   "rounds": 1000000,
+   "wager": 10000000,
+   "return": 5043544,
+   "sumSquares": 17609106.919991624,
+   "rtpPercent": 50.43544,
+   "ci": [
+    49.618938350817615,
+    51.251941649182385
+   ],
+   "baseReturn": 4593786,
+   "scatterReturn": 302790,
+   "featureReturn": 146968,
+   "paidScatterContributionPercent": 3.0279,
+   "featureContributionPercent": 1.4696799999999999,
+   "hitRate": 21.0494,
+   "triggerRate": 0.0576,
+   "retriggers": 5,
+   "freeSpins": 8715,
+   "maxRoundReturnX": 957.7
+  },
+  {
+   "seed": "validation-l",
+   "rounds": 1000000,
+   "wager": 10000000,
+   "return": 5003611,
+   "sumSquares": 14618017.32999469,
+   "rtpPercent": 50.03611,
+   "ci": [
+    49.29319170532344,
+    50.779028294676564
+   ],
+   "baseReturn": 4589552,
+   "scatterReturn": 303180,
+   "featureReturn": 110879,
+   "paidScatterContributionPercent": 3.0318,
+   "featureContributionPercent": 1.10879,
+   "hitRate": 21.066399999999998,
+   "triggerRate": 0.055400000000000005,
+   "retriggers": 7,
+   "freeSpins": 8415,
+   "maxRoundReturnX": 458
+  },
+  {
+   "seed": "validation-m",
+   "rounds": 1000000,
+   "wager": 10000000,
+   "return": 4957311,
+   "sumSquares": 15297109.189995619,
+   "rtpPercent": 49.57311,
+   "ci": [
+    48.8127207633418,
+    50.3334992366582
+   ],
+   "baseReturn": 4533388,
+   "scatterReturn": 297790,
+   "featureReturn": 126133,
+   "paidScatterContributionPercent": 2.9779,
+   "featureContributionPercent": 1.2613299999999998,
+   "hitRate": 21.0393,
+   "triggerRate": 0.053899999999999997,
+   "retriggers": 5,
+   "freeSpins": 8160.000000000001,
+   "maxRoundReturnX": 899.8
+  },
+  {
+   "seed": "validation-n",
+   "rounds": 1000000,
+   "wager": 10000000,
+   "return": 4974461,
+   "sumSquares": 15804843.949992822,
+   "rtpPercent": 49.74461,
+   "ci": [
+    48.97154416747115,
+    50.51767583252884
+   ],
+   "baseReturn": 4549914,
+   "scatterReturn": 298630,
+   "featureReturn": 125917,
+   "paidScatterContributionPercent": 2.9863,
+   "featureContributionPercent": 1.2591700000000001,
+   "hitRate": 21.0073,
+   "triggerRate": 0.054,
+   "retriggers": 2,
+   "freeSpins": 8130,
+   "maxRoundReturnX": 903
+  },
+  {
+   "seed": "validation-o",
+   "rounds": 1000000,
+   "wager": 10000000,
+   "return": 4990246,
+   "sumSquares": 15471541.499993969,
+   "rtpPercent": 49.90246,
+   "ci": [
+    49.137759613156476,
+    50.66716038684353
+   ],
+   "baseReturn": 4550588,
+   "scatterReturn": 300630,
+   "featureReturn": 139028,
+   "paidScatterContributionPercent": 3.0063,
+   "featureContributionPercent": 1.39028,
+   "hitRate": 21.0221,
+   "triggerRate": 0.055999999999999994,
+   "retriggers": 6,
+   "freeSpins": 8490,
+   "maxRoundReturnX": 470.3
+  },
+  {
+   "seed": "validation-p",
+   "rounds": 1000000,
+   "wager": 10000000,
+   "return": 4987373,
+   "sumSquares": 15387409.749994949,
+   "rtpPercent": 49.87373,
+   "ci": [
+    49.11113849275797,
+    50.63632150724203
+   ],
+   "baseReturn": 4570375,
+   "scatterReturn": 302510,
+   "featureReturn": 114488,
+   "paidScatterContributionPercent": 3.0251,
+   "featureContributionPercent": 1.1448800000000001,
+   "hitRate": 21.0506,
+   "triggerRate": 0.0585,
+   "retriggers": 2,
+   "freeSpins": 8805,
+   "maxRoundReturnX": 915.4
+  },
+  {
+   "seed": "validation-q",
+   "rounds": 1000000,
+   "wager": 10000000,
+   "return": 5034132,
+   "sumSquares": 17018001.499991983,
+   "rtpPercent": 50.34132,
+   "ci": [
+    49.53882120967339,
+    51.14381879032661
+   ],
+   "baseReturn": 4626559,
+   "scatterReturn": 297450,
+   "featureReturn": 110123,
+   "paidScatterContributionPercent": 2.9745,
+   "featureContributionPercent": 1.10123,
+   "hitRate": 20.9957,
+   "triggerRate": 0.0521,
+   "retriggers": 7,
+   "freeSpins": 7920,
+   "maxRoundReturnX": 926.4
+  },
+  {
+   "seed": "validation-r",
+   "rounds": 1000000,
+   "wager": 10000000,
+   "return": 4908365,
+   "sumSquares": 15412916.909992578,
+   "rtpPercent": 49.08365,
+   "ci": [
+    48.320219586976144,
+    49.84708041302386
+   ],
+   "baseReturn": 4492454,
+   "scatterReturn": 299990,
+   "featureReturn": 115921,
+   "paidScatterContributionPercent": 2.9999000000000002,
+   "featureContributionPercent": 1.1592099999999999,
+   "hitRate": 20.9867,
+   "triggerRate": 0.0535,
+   "retriggers": 6,
+   "freeSpins": 8115.000000000001,
+   "maxRoundReturnX": 920
+  },
+  {
+   "seed": "validation-s",
+   "rounds": 1000000,
+   "wager": 10000000,
+   "return": 5003105,
+   "sumSquares": 14466115.269994758,
+   "rtpPercent": 50.03105,
+   "ci": [
+    49.29206807696936,
+    50.770031923030636
+   ],
+   "baseReturn": 4592320,
+   "scatterReturn": 295670,
+   "featureReturn": 115115,
+   "paidScatterContributionPercent": 2.9567,
+   "featureContributionPercent": 1.15115,
+   "hitRate": 21.005599999999998,
+   "triggerRate": 0.056400000000000006,
+   "retriggers": 4,
+   "freeSpins": 8520,
+   "maxRoundReturnX": 497.3
+  },
+  {
+   "seed": "validation-t",
+   "rounds": 1000000,
+   "wager": 10000000,
+   "return": 5082035,
+   "sumSquares": 17892131.42999361,
+   "rtpPercent": 50.820350000000005,
+   "ci": [
+    49.9973083882335,
+    51.64339161176651
+   ],
+   "baseReturn": 4673103,
+   "scatterReturn": 299850,
+   "featureReturn": 109082,
+   "paidScatterContributionPercent": 2.9985,
+   "featureContributionPercent": 1.09082,
+   "hitRate": 20.9795,
+   "triggerRate": 0.053899999999999997,
+   "retriggers": 6,
+   "freeSpins": 8175,
+   "maxRoundReturnX": 920.4
+  }
+ ]
+}
