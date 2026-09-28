@@ -10,8 +10,10 @@ class Lang {static function get($key){return json_decode(file_get_contents(RUN.'
 class DB {static function transaction($fn,$attempts=1){return $fn();}}
 class Store {
  static $db;
+ static function file(){ $name=getenv('LUCKY_PILOT_DB')?:'pilot.sqlite'; if(!preg_match('/^[a-zA-Z0-9_-]+\.sqlite$/',$name))throw new \RuntimeException('Invalid isolated database name');return RUN.'/state/'.$name; }
+ static function testFile(){return self::file()==RUN.'/state/pilot.sqlite'?RUN.'/state/test-next.json':self::file().'.next.json';}
  static function init(){
-  self::$db=new \PDO('sqlite:'.RUN.'/state/pilot.sqlite');
+  self::$db=new \PDO('sqlite:'.self::file());
   self::$db->setAttribute(\PDO::ATTR_ERRMODE,\PDO::ERRMODE_EXCEPTION);
   self::$db->exec('PRAGMA busy_timeout=5000; CREATE TABLE IF NOT EXISTS records(kind TEXT,id INTEGER,data TEXT,PRIMARY KEY(kind,id)); CREATE TABLE IF NOT EXISTS ledger(id INTEGER PRIMARY KEY,request_id TEXT,delta REAL,before_balance REAL,after_balance REAL); CREATE TABLE IF NOT EXISTS responses(id TEXT PRIMARY KEY,body TEXT,response TEXT);');
  }

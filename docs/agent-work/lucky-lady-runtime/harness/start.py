@@ -1,16 +1,21 @@
 """Start a verified, loopback-only disposable PHP pilot. No installers or source edits."""
-import json, pathlib, secrets, shutil, subprocess
+import json, pathlib, secrets, shutil, subprocess, sys
 ROOT=pathlib.Path('C:/Users/Admin/orca/research/game-pack-forensics')
 RUN=ROOT/'runtime/LuckyLadysCharmDX'
 PREVIEW=ROOT/'previews/LuckyLadysCharmDX'
 HERE=pathlib.Path(__file__).resolve().parent
-for n in ['router.php','compat.php']:
+for n in ['router.php','compat.php','recovery.php','recovery-client.js']:
     shutil.copyfile(HERE/n,RUN/'php-shim'/n)
-shutil.copyfile(PREVIEW/'entry.preview.html',RUN/'entry.html')
+entry=(PREVIEW/'entry.preview.html').read_text()
+entry=entry.replace('    <script>','    <script src="/recovery-client.js"></script>\n    <script>',1)
+(RUN/'entry.html').write_text(entry)
 shutil.copyfile(PREVIEW/'preview-font-ready.js',RUN/'preview-font-ready.js')
 (RUN/'fixtures/language.json').write_text(json.dumps(json.loads((PREVIEW/'getSettings.json').read_text())['slotLanguage']))
 token=RUN/'state/session-token'
 if not token.exists(): token.write_text(secrets.token_hex(32))
+if '--deploy-only' in sys.argv:
+    print('Deployed recovery harness; existing PHP listener reloads files per request.')
+    sys.exit(0)
 php=RUN/'php/php.exe'
 cmd=[str(php),'-n','-d','extension_dir='+str(RUN/'php/ext'),'-d','extension=php_pdo_sqlite.dll',
  '-d','allow_url_fopen=0','-d','allow_url_include=0','-d','display_errors=0','-d','log_errors=1',
