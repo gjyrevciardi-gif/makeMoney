@@ -159,7 +159,7 @@ describe('slots security and platform integration (PostgreSQL + Redis)', () => {
   });
 
   describe('registry and public configuration', () => {
-    it('lists seven playable games including the slot', async () => {
+    it('lists every playable game including the three slot families', async () => {
       const accessToken = await token(userEmail);
       const response = await request(server())
         .get('/casino/games')
@@ -169,7 +169,7 @@ describe('slots security and platform integration (PostgreSQL + Redis)', () => {
         response.body.games;
       const playable = games.filter((game) => game.enabled).map((game) => game.gameType).sort();
       expect(playable).toEqual(
-        ['BLACKJACK', 'CRASH', 'DICE', 'MINES', 'PLINKO', 'ROULETTE', 'SLOTS'],
+        ['BLACKJACK', 'CRASH', 'DICE', 'MINES', 'PLINKO', 'ROULETTE', 'SLOTS', 'SLOTS', 'SLOTS'],
       );
       const slot = games.find((game) => game.gameType === 'SLOTS');
       expect(slot?.name).toBe("Fool's Gold Rush");
@@ -182,7 +182,11 @@ describe('slots security and platform integration (PostgreSQL + Redis)', () => {
         .get('/casino/games/SLOTS/config')
         .set('Authorization', `Bearer ${accessToken}`)
         .expect(200);
-      expect(shared.body.games).toHaveLength(1);
+      // The slot family publishes the two in-house catalogues (payline and
+      // tumble). The imported Lucky Lady client publishes its own native
+      // settings through its game session protocol instead of this board
+      // configuration endpoint.
+      expect(shared.body.games).toHaveLength(2);
       expect(shared.body.games[0].gameId).toBe('fools-gold-rush');
 
       const direct = await request(server())

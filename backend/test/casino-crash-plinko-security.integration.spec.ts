@@ -322,7 +322,7 @@ describe('crash and plinko security boundaries (PostgreSQL + Redis)', () => {
       // asserted in the slots suite, so this one only guards its own games.
       expect(playable).toEqual(expect.arrayContaining(['CRASH', 'PLINKO']));
       expect(playable).toEqual(
-        ['BLACKJACK', 'CRASH', 'DICE', 'MINES', 'PLINKO', 'ROULETTE', 'SLOTS'],
+        ['BLACKJACK', 'CRASH', 'DICE', 'MINES', 'PLINKO', 'ROULETTE', 'SLOTS', 'SLOTS', 'SLOTS'],
       );
     });
 
