@@ -1,0 +1,510 @@
+{
+ "results": [
+  {
+   "name": "assets.original-client-file-count",
+   "ok": true,
+   "detail": "files=185"
+  },
+  {
+   "name": "prod.up",
+   "ok": true,
+   "detail": "(node:13600) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+  },
+  {
+   "name": "prod.settings-lines-10",
+   "ok": true,
+   "detail": "[10]"
+  },
+  {
+   "name": "prod.settings-math-config",
+   "ok": true,
+   "detail": "{\"gameId\":\"LuckyLadysCharmDX\",\"rtpControlEnabled\":true,\"targetRtpPercent\":50,\"activeMathProfile\":\"lucky-lady.rtp50.v1\",\"profileHash\":\"eb0a22171a3479cea3b0238269edd4b0dc5d9486c57e4b057fa6ee0f1a70be5f\"}"
+  },
+  {
+   "name": "prod.symbol-set-15",
+   "ok": true,
+   "detail": "15"
+  },
+  {
+   "name": "prod.bridge-inert-without-action-identity",
+   "ok": true,
+   "detail": "{\"actionId\":null,\"receipts\":0}"
+  },
+  {
+   "name": "prod.stop-order-1-to-5",
+   "ok": true,
+   "detail": "[102,46,112,80,11]"
+  },
+  {
+   "name": "prod.client-stops-match-server",
+   "ok": true,
+   "detail": "[102,46,112,80,11] vs [102,46,112,80,11]"
+  },
+  {
+   "name": "prod.exact-15-symbol-ids-match-server",
+   "ok": true,
+   "detail": "{\"reel1\":[\"K\",\"9\",\"Q\"],\"reel2\":[\"A\",\"J\",\"P_2\"],\"reel3\":[\"9\",\"J\",\"P_3\"],\"reel4\":[\"P_1\",\"Q\",\"P_4\"],\"reel5\":[\"K\",\"P_6\",\"P_2\"]} vs {\"reel1\":[\"K\",\"9\",\"Q\"],\"reel2\":[\"A\",\"J\",\"P_2\"],\"reel3\":[\"9\",\"J\",\"P_3\"],\"reel4\":[\"P_1\",\"Q\",\"P_4\"],\"reel5\":[\"K\",\"P_6\",\"P_2\"]}"
+  },
+  {
+   "name": "prod.board-not-replaced-later",
+   "ok": true,
+   "detail": "{\"reel1\":[\"K\",\"9\",\"Q\"],\"reel2\":[\"A\",\"J\",\"P_2\"],\"reel3\":[\"9\",\"J\",\"P_3\"],\"reel4\":[\"P_1\",\"Q\",\"P_4\"],\"reel5\":[\"K\",\"P_6\",\"P_2"
+  },
+  {
+   "name": "prod.totalWin-currency-matches-lines",
+   "ok": true,
+   "detail": "0 vs 0"
+  },
+  {
+   "name": "prod.afterBalance-reconciles",
+   "ok": true,
+   "detail": "999.9+0 vs 999.9"
+  },
+  {
+   "name": "prod.client-credit-reconciles",
+   "ok": true,
+   "detail": "credit=999.9 afterBalance=999.9 Balance=999.9 slotState=IDLE"
+  },
+  {
+   "name": "prod.balance-is-post-debit-pre-win",
+   "ok": true,
+   "detail": "Balance=999.9 expected=999.9"
+  },
+  {
+   "name": "prod.receipt-posted-for-authoritative-action",
+   "ok": true,
+   "detail": "{\"ack\":\"20729119-1431-4dee-9388-5a8d734c9d17\",\"actionId\":\"20729119-1431-4dee-9388-5a8d734c9d17\"}"
+  },
+  {
+   "name": "prod.receipt-posted-after-board-rendered",
+   "ok": true,
+   "detail": "{\"reel1\":[\"K\",\"9\",\"Q\"],\"reel2\":[\"A\",\"J\",\"P_2\"],\"reel3\":[\"9\",\"J\",\"P_3\"],\"reel4\":[\"P_1\",\"Q\",\"P_4\"],\"reel5\":[\"K\",\"P_6\",\"P_2\"]}"
+  },
+  {
+   "name": "prod.refresh-preserves-round",
+   "ok": true,
+   "detail": "{\"roundId\":\"e4b91ad53558890e1b6b7f068da688f9\",\"phase\":\"IDLE\",\"balance\":999.9,\"bet\":{\"slotBet\":0.01,\"slotLines\":10},\"pendingWin\":0,\"free\":{\"total\":0,\"current\":0,"
+  },
+  {
+   "name": "prod.refresh-shows-recorded-receipt",
+   "ok": true,
+   "detail": "{\"actionId\":\"20729119-1431-4dee-9388-5a8d734c9d17\",\"receipt\":{\"event\":\"bet\",\"delivered\":true,\"acked\":true}}"
+  },
+  {
+   "name": "prod.refresh-restores-same-board",
+   "ok": true,
+   "detail": "{\"reel1\":[\"K\",\"9\",\"Q\"],\"reel2\":[\"A\",\"J\",\"P_2\"],\"reel3\":[\"9\",\"J\",\"P_3\"],\"reel4\":[\"P_1\",\"Q\",\"P_4\"],\"reel5\":[\"K\",\"P_6\",\"P_2\"]}"
+  },
+  {
+   "name": "prod.refresh-posts-no-duplicate-receipt",
+   "ok": true,
+   "detail": "acks=1->1"
+  },
+  {
+   "name": "test.up",
+   "ok": true,
+   "detail": "(node:37080) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+  },
+  {
+   "name": "test.feature-awards-15-not-future-total",
+   "ok": true,
+   "detail": "{\"total\":15,\"current\":0,\"remaining\":15,\"multiplier\":3}"
+  },
+  {
+   "name": "test.no-future-sequence-in-client",
+   "ok": true,
+   "detail": "undefined"
+  },
+  {
+   "name": "test.refresh-mid-feature-preserved",
+   "ok": true,
+   "detail": "{\"total\":15,\"current\":5,\"remaining\":10,\"multiplier\":3} vs {\"total\":15,\"current\":5,\"remaining\":10,\"multiplier\":3}"
+  },
+  {
+   "name": "test.feature-completed",
+   "ok": true,
+   "detail": "PENDING_WIN"
+  },
+  {
+   "name": "test.feature-progressed",
+   "ok": true,
+   "detail": "current=15"
+  },
+  {
+   "name": "test.free-total-matches-revealed-retrigger-rule",
+   "ok": true,
+   "detail": "retriggerEvents=0 finalTotal=15 (exact 15->30 proof lives in the scripted API test)"
+  },
+  {
+   "name": "test.pending-win-restored",
+   "ok": true,
+   "detail": "PENDING_WIN 6.75"
+  },
+  {
+   "name": "test.gamble-entry",
+   "ok": true,
+   "detail": "GAMBLE"
+  },
+  {
+   "name": "test.gamble-red-result",
+   "ok": true,
+   "detail": "{\"attempts\":1,\"cards\":[\"S\"]}"
+  },
+  {
+   "name": "test.gamble-black-result",
+   "ok": true,
+   "detail": "{\"attempts\":1,\"cards\":[\"S\"]}"
+  },
+  {
+   "name": "test.collect-reaches-idle",
+   "ok": true,
+   "detail": "IDLE"
+  },
+  {
+   "name": "test.receipts-cover-every-presented-action",
+   "ok": true,
+   "detail": "uniqueReceipts=18 freeSpins=15 phase=IDLE"
+  },
+  {
+   "name": "test.receipts-follow-rendered-board",
+   "ok": true,
+   "detail": "boardReceipts=17 mismatched=0"
+  },
+  {
+   "name": "test.receipts-target-distinct-actions",
+   "ok": true,
+   "detail": "unique=18 posts=18"
+  },
+  {
+   "name": "browser.gate-probe-starts-from-idle",
+   "ok": true,
+   "detail": "{\"phase\":\"IDLE\",\"status\":200,\"event\":\"spin\"}"
+  },
+  {
+   "name": "browser.server-refuses-next-mutation-before-receipt",
+   "ok": true,
+   "detail": "{\"first\":200,\"second\":409,\"reason\":\"previous action not acknowledged\",\"pending\":\"raw-gate-1\",\"receipt\":{\"event\":\"bet\",\"delivered\":true,\"acked\":false}}"
+  },
+  {
+   "name": "browser.reload-before-receipt-keeps-same-round",
+   "ok": true,
+   "detail": "{\"roundId\":\"1cd841f718ba10053423132081f1f546\",\"actionId\":\"raw-gate-1\"}"
+  },
+  {
+   "name": "browser.reload-before-receipt-restores-same-board",
+   "ok": true,
+   "detail": "{\"reel1\":[\"9\",\"Q\",\"J\"],\"reel2\":[\"SCAT\",\"Q\",\"A\"],\"reel3\":[\"P_1\",\"SCAT\",\"Q\"],\"reel4\":[\"Q\",\"P_4\",\"P_1\"],\"reel5\":[\"SCAT\",\"P_6\",\"J\"]}"
+  },
+  {
+   "name": "browser.restored-client-acks-after-render",
+   "ok": true,
+   "detail": "{\"actionId\":\"raw-gate-1\",\"accepted\":true,\"boardRendered\":true,\"at\":1790670368990}"
+  },
+  {
+   "name": "browser.reload-before-receipt-stays-draw-and-debit-free",
+   "ok": true,
+   "detail": "{\"before\":{\"actionExecutions\":18,\"outcomeGenerations\":1,\"engineRngDraws\":80,\"gambleGenerations\":1,\"gambleRngDraws\":2},\"after\":{\"actionExecutions\":19,\"outcomeGenerations\":2,\"engineRngDraws\":160,\"gambleGenerations\":1,\"gambleRngDraws\":2}}"
+  },
+  {
+   "name": "stall.probe-round-reset-to-idle",
+   "ok": true,
+   "detail": "IDLE"
+  },
+  {
+   "name": "stall.render-timeout-sends-no-receipt",
+   "ok": true,
+   "detail": "acks=16 action=c4216ec4-5bad-4d54-b03a-f35cedb89569"
+  },
+  {
+   "name": "stall.receipt-withheld-is-reported-not-unhandled",
+   "ok": true,
+   "detail": "[{\"actionId\":\"c4216ec4-5bad-4d54-b03a-f35cedb89569\",\"accepted\":false,\"reason\":\"RENDER_TIMEOUT\",\"at\":1790673278939}]"
+  },
+  {
+   "name": "stall.server-keeps-action-pending",
+   "ok": true,
+   "detail": "{\"actionId\":\"c4216ec4-5bad-4d54-b03a-f35cedb89569\",\"event\":\"bet\",\"delivered\":true,\"acked\":false}"
+  },
+  {
+   "name": "stall.paid-bet-settled-exactly-once",
+   "ok": true,
+   "detail": "{\"event\":\"bet\",\"rows\":[[\"bet\",-100],[\"paid-win\",500]]}"
+  },
+  {
+   "name": "stall.no-extra-draw-or-debit",
+   "ok": true,
+   "detail": "{\"event\":\"bet\",\"before\":{\"actionExecutions\":35,\"outcomeGenerations\":2,\"engineRngDraws\":160,\"gambleGenerations\":1,\"gambleRngDraws\":2},\"after\":{\"actionExecutions\":36,\"outcomeGenerations\":3,\"engineRngDraws\":240,\"gambleGenerations\":1,\"gambleRngDraws\":2},\"rows\":[[\"bet\",-100],[\"paid-win\",500]]}"
+  },
+  {
+   "name": "stall.server-gate-still-blocks-next-action",
+   "ok": true,
+   "detail": "{\"status\":409,\"body\":\"{\\\"responseEvent\\\":\\\"error\\\",\\\"reason\\\":\\\"previous action not acknowledged\\\"}\"}"
+  },
+  {
+   "name": "stall.refresh-renders-and-acks-same-outcome",
+   "ok": true,
+   "detail": "{\"actionId\":\"c4216ec4-5bad-4d54-b03a-f35cedb89569\",\"event\":\"bet\",\"delivered\":true,\"acked\":true}"
+  },
+  {
+   "name": "stall.recovery-adds-no-draw-or-debit",
+   "ok": true,
+   "detail": "{\"during\":{\"actionExecutions\":36,\"outcomeGenerations\":3,\"engineRngDraws\":240,\"gambleGenerations\":1,\"gambleRngDraws\":2},\"after\":{\"actionExecutions\":36,\"outcomeGenerations\":3,\"engineRngDraws\":240,\"gambleGenerations\":1,\"gambleRngDraws\":2}}"
+  },
+  {
+   "name": "stall.refresh-renders-authoritative-board",
+   "ok": true,
+   "detail": "{\"reel1\":[\"9\",\"P_3\",\"SCAT\"],\"reel2\":[\"P_6\",\"P_5\",\"P_2\"],\"reel3\":[\"SCAT\",\"P_3\",\"P_6\"],\"reel4\":[\"P_4\",\"A\",\"J\"],\"reel5\":[\"P_3\",\"P_1\",\"SCAT\"]}"
+  },
+  {
+   "name": "browser.no-page-errors",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "browser.no-outbound",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "assets.original-client-untouched",
+   "ok": true,
+   "detail": "185 -> 185 files"
+  }
+ ],
+ "failures": [],
+ "outbound": [],
+ "pageErrors": [],
+ "screenshots": [
+  "screenshots-prod-spin.png",
+  "screenshots-test-feature.png",
+  "screenshots-test-gamble.png"
+ ],
+ "receipts": [
+  {
+   "tag": "prod",
+   "actionId": "20729119-1431-4dee-9388-5a8d734c9d17",
+   "matchesAuthoritative": true,
+   "at": 1790670253617
+  },
+  {
+   "tag": "test",
+   "actionId": "382d8c0d-aa34-4cf0-a63f-e06c3569721e",
+   "matchesAuthoritative": true,
+   "at": 1790670275443
+  },
+  {
+   "tag": "test",
+   "actionId": "1c2923e4-6376-44c9-9d7f-3861b4c810a2",
+   "matchesAuthoritative": true,
+   "at": 1790670275652
+  },
+  {
+   "tag": "test",
+   "actionId": "74d285e4-1f62-409c-8bf3-b498e1fc0c5a",
+   "matchesAuthoritative": true,
+   "at": 1790670281385
+  },
+  {
+   "tag": "test",
+   "actionId": "cd57d19d-04f0-4786-b603-98e9e40a039b",
+   "matchesAuthoritative": true,
+   "at": 1790670287119
+  },
+  {
+   "tag": "test",
+   "actionId": "15332c64-10c8-48d1-9426-08d1d69bf18c",
+   "matchesAuthoritative": true,
+   "at": 1790670292856
+  },
+  {
+   "tag": "test",
+   "actionId": "aa96be72-10a2-4085-a58e-31ebcfaf0d61",
+   "matchesAuthoritative": true,
+   "at": 1790670299093
+  },
+  {
+   "tag": "test",
+   "actionId": "a3b92e1d-31ff-4449-aec2-c6320ca37ea8",
+   "matchesAuthoritative": true,
+   "at": 1790670308053
+  },
+  {
+   "tag": "test",
+   "actionId": "dd675d7e-de3f-43f6-b9c3-ef1cdb0710dd",
+   "matchesAuthoritative": true,
+   "at": 1790670313774
+  },
+  {
+   "tag": "test",
+   "actionId": "e4b409d1-6853-40b4-ae53-017a5e2df70d",
+   "matchesAuthoritative": true,
+   "at": 1790670319522
+  },
+  {
+   "tag": "test",
+   "actionId": "5f52c177-6bea-42d0-9347-6afa0cd3a202",
+   "matchesAuthoritative": true,
+   "at": 1790670325263
+  },
+  {
+   "tag": "test",
+   "actionId": "7e341e4e-198b-4d6f-b877-6710435ec38a",
+   "matchesAuthoritative": true,
+   "at": 1790670330987
+  },
+  {
+   "tag": "test",
+   "actionId": "c21b2125-f9da-434a-98bb-a4749dbb554f",
+   "matchesAuthoritative": true,
+   "at": 1790670337229
+  },
+  {
+   "tag": "test",
+   "actionId": "92baa7e7-5ad2-473e-a584-53512803b34f",
+   "matchesAuthoritative": true,
+   "at": 1790670342951
+  },
+  {
+   "tag": "test",
+   "actionId": "b9237437-7431-48de-988f-6dc59aec80ad",
+   "matchesAuthoritative": true,
+   "at": 1790670348681
+  },
+  {
+   "tag": "test",
+   "actionId": "019202d7-29e8-404f-a3c4-4bd1a30078db",
+   "matchesAuthoritative": true,
+   "at": 1790670354411
+  },
+  {
+   "tag": "test",
+   "actionId": "ee5a750a-da74-4cf5-967b-75eea1cedfee",
+   "matchesAuthoritative": true,
+   "at": 1790670360123
+  },
+  {
+   "tag": "test",
+   "actionId": "963e7276-1d19-4fa0-9761-b7198c823e6d",
+   "matchesAuthoritative": true,
+   "at": 1790670367404
+  },
+  {
+   "tag": "test",
+   "actionId": "4c964c4e-18d6-466d-9119-ab94487cd603",
+   "matchesAuthoritative": null,
+   "at": 1790670368179
+  },
+  {
+   "tag": "test",
+   "actionId": "raw-gate-1",
+   "matchesAuthoritative": null,
+   "at": 1790670368947
+  },
+  {
+   "tag": "stall",
+   "actionId": "probe-drive-0",
+   "matchesAuthoritative": true,
+   "at": 1790670397306
+  },
+  {
+   "tag": "stall",
+   "actionId": "probe-drive-1",
+   "matchesAuthoritative": true,
+   "at": 1790670397343
+  },
+  {
+   "tag": "stall",
+   "actionId": "probe-drive-2",
+   "matchesAuthoritative": true,
+   "at": 1790670397366
+  },
+  {
+   "tag": "stall",
+   "actionId": "probe-drive-3",
+   "matchesAuthoritative": true,
+   "at": 1790670397395
+  },
+  {
+   "tag": "stall",
+   "actionId": "probe-drive-4",
+   "matchesAuthoritative": true,
+   "at": 1790670397431
+  },
+  {
+   "tag": "stall",
+   "actionId": "probe-drive-5",
+   "matchesAuthoritative": true,
+   "at": 1790670397449
+  },
+  {
+   "tag": "stall",
+   "actionId": "probe-drive-6",
+   "matchesAuthoritative": true,
+   "at": 1790670397476
+  },
+  {
+   "tag": "stall",
+   "actionId": "probe-drive-7",
+   "matchesAuthoritative": true,
+   "at": 1790670397503
+  },
+  {
+   "tag": "stall",
+   "actionId": "probe-drive-8",
+   "matchesAuthoritative": true,
+   "at": 1790670397522
+  },
+  {
+   "tag": "stall",
+   "actionId": "probe-drive-9",
+   "matchesAuthoritative": true,
+   "at": 1790670397550
+  },
+  {
+   "tag": "stall",
+   "actionId": "probe-drive-10",
+   "matchesAuthoritative": true,
+   "at": 1790670397570
+  },
+  {
+   "tag": "stall",
+   "actionId": "probe-drive-11",
+   "matchesAuthoritative": true,
+   "at": 1790670397595
+  },
+  {
+   "tag": "stall",
+   "actionId": "probe-drive-12",
+   "matchesAuthoritative": true,
+   "at": 1790670397617
+  },
+  {
+   "tag": "stall",
+   "actionId": "probe-drive-13",
+   "matchesAuthoritative": true,
+   "at": 1790670397637
+  },
+  {
+   "tag": "stall",
+   "actionId": "probe-drive-14",
+   "matchesAuthoritative": true,
+   "at": 1790670397653
+  },
+  {
+   "tag": "stall",
+   "actionId": "probe-drive-15",
+   "matchesAuthoritative": true,
+   "at": 1790670397682
+  },
+  {
+   "tag": "stall",
+   "actionId": "c4216ec4-5bad-4d54-b03a-f35cedb89569",
+   "matchesAuthoritative": null,
+   "at": 1790670405429
+  }
+ ],
+ "clientAssets": {
+  "files": 185,
+  "manifestSha256": "85c26131aac4a0444ff33d420ea2060c5d4753a0e4d92e4d6937a6c78ea48a50"
+ }
+}

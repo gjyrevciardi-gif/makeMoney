@@ -1,0 +1,49 @@
+{
+ "scanned": [
+  {
+   "name": "server.mjs",
+   "bytes": 1958
+  },
+  {
+   "name": "http-layer.mjs",
+   "bytes": 6053
+  },
+  {
+   "name": "runtime-core.mjs",
+   "bytes": 26884
+  },
+  {
+   "name": "runtime-math.mjs",
+   "bytes": 5206
+  },
+  {
+   "name": "math/engine.mjs",
+   "bytes": 8558
+  },
+  {
+   "name": "harness/recovery-client.js",
+   "bytes": 10453
+  }
+ ],
+ "missingFiles": [],
+ "forbiddenFindings": [],
+ "productionEntry": {
+  "usesOsCsprng": true,
+  "referencesTestControls": [],
+  "cannotReachTestControls": true
+ },
+ "testEntry": {
+  "sharesCore": true,
+  "entry": "test-entry.mjs (never imported by server.mjs)"
+ },
+ "importedEngine": {
+  "scanned": "math/engine.mjs",
+  "engineHasNoOsRng": true,
+  "engineHashPinnedInRuntimeMath": true
+ },
+ "archivedLegacyHarness": {
+  "path": "harness/ (PHP pilot)",
+  "reachableFromRuntime": false
+ },
+ "pass": true
+}
