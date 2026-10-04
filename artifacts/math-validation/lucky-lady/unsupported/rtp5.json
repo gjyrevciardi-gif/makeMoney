@@ -1,0 +1,54 @@
+{
+  "target": 5,
+  "scenario": null,
+  "status": "UNSUPPORTED",
+  "reasons": [
+    {
+      "constraint": "VOLATILITY_TIER_UNSATISFIED",
+      "requested": "MED (1..3 return standard deviation)",
+      "achievable": "0.5250",
+      "detail": "The requested volatility tier is outside what this bounded board set produces."
+    }
+  ],
+  "bestEffort": {
+    "analysis": {
+      "exactRtpPercent": 5.000009550995128,
+      "baseRtpPercent": 5.000009550995128,
+      "featureRtpPercent": 0,
+      "featureTriggerProbability": 0,
+      "retriggerProbability": 0,
+      "expectedFeatureSpins": 15,
+      "featureDiverges": false,
+      "maxSingleSpinMultiplier": 12,
+      "maxRoundMultiplier": 12,
+      "maxRoundBasis": "no reachable board awards 3 or more scatters, so the feature cannot run",
+      "reachableClasses": [
+        "ZERO",
+        "MEDIUM",
+        "BIG"
+      ],
+      "notes": []
+    },
+    "rtpPercent": 5.000009550995128
+  },
+  "policy": {
+    "gameId": "lucky-lady",
+    "targetRtpPercent": 5,
+    "maxWinMultiplier": 50,
+    "maxWinScope": "PAID_ROUND_BEFORE_OPTIONAL_GAMBLE",
+    "pacing": "BALANCED",
+    "customPacing": null,
+    "hitRate": {
+      "mode": "AUTO"
+    },
+    "partialReturn": "LOW",
+    "volatility": "MED",
+    "bigWinMinMultiplier": 10,
+    "bigWinMaxMultiplier": 50,
+    "featureContribution": {
+      "minPercent": 0,
+      "maxPercent": 60
+    },
+    "presets": []
+  }
+}

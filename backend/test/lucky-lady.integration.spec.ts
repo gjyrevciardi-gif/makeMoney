@@ -21,7 +21,15 @@ import {
   generateCompleteRound,
   loadVerifiedMath,
 } from '../src/casino/games/lucky-lady/lucky-lady.math';
-import { LuckyLadyGameService } from '../src/casino/games/lucky-lady/lucky-lady.service';
+import {
+  LUCKY_LADY_CAPABILITY,
+  LuckyLadyAdapter,
+} from '../src/casino/games/lucky-lady/lucky-lady.adapter';
+import { GameCapabilityService } from '../src/casino/platform/game-capability.service';
+import { GameJournalService } from '../src/casino/platform/game-journal.service';
+import { GameRoundService } from '../src/casino/platform/game-round.service';
+import { GameWalletService } from '../src/casino/platform/game-wallet.service';
+import { GameActionContext, GamePlatform } from '../src/casino/platform/game-adapter.types';
 import { PrismaService } from '../src/prisma.service';
 import { PointsService } from '../src/wallet/points.service';
 import { uniqueTestEmail } from './test-identity';
@@ -81,7 +89,59 @@ describe('Lucky Lady platform integration (PostgreSQL)', () => {
   let requestCounter = 0;
   const sessions = new Map<string, string>();
 
-  const game = new LuckyLadyGameService(prisma, configs, registry, {
+  // ---- The reusable game-integration layer, composed exactly as the module ----
+  const capabilities = new GameCapabilityService(prisma, registry, configs);
+  const platform: GamePlatform = {
+    capabilities,
+    wallet: new GameWalletService(),
+    journal: new GameJournalService(prisma),
+    rounds: new GameRoundService(prisma),
+  };
+  const contextFor = (actor: string, sessionId: string): GameActionContext => ({
+    gameId: LUCKY_LADY_GAME_ID,
+    userId: actor,
+    sessionId,
+  });
+
+  /**
+   * The adapter contract is what the platform calls, so this suite drives the
+   * same behaviour through the same boundary: `handleGameplay` is the adapter's
+   * `execute`, the session-bound reads are its `read`, and launch/session are
+   * the shared capability service. Every assertion below is unchanged.
+   */
+  const apiOf = (adapter: LuckyLadyAdapter) => ({
+    handleGameplay: (
+      context: { userId: string; sessionId: string },
+      event: string,
+      body: Record<string, unknown>,
+      headers: Record<string, string | undefined>,
+      requestId: string,
+    ) => adapter.execute(contextFor(context.userId, context.sessionId), { event, body, headers, requestId }) as Promise<Protocol>,
+    settings: async (actor: string) => adapter.read(contextFor(actor, await sid(actor)), 'getSettings', {}) as Promise<Protocol>,
+    acknowledge: async (actor: string, body: Record<string, unknown>) =>
+      adapter.read(contextFor(actor, await sid(actor)), 'ack', body) as Promise<{
+        responseEvent: string;
+        actionId: string | null;
+        accepted: boolean;
+        reason?: string;
+      }>,
+    issueLaunch: (actor: string) =>
+      capabilities.issueLaunch(actor, {
+        gameId: LUCKY_LADY_GAME_ID,
+        scope: LUCKY_LADY_CAPABILITY.scope,
+        ttlMs: LUCKY_LADY_CAPABILITY.launchTtlMs,
+        gamePath: LUCKY_LADY_CAPABILITY.gamePath,
+      }),
+    exchangeLaunch: (token: string) =>
+      capabilities.exchangeLaunch(token, {
+        gameId: LUCKY_LADY_GAME_ID,
+        scope: LUCKY_LADY_CAPABILITY.scope,
+        sessionTtlMs: LUCKY_LADY_CAPABILITY.sessionTtlMs,
+      }),
+    assertSession: (token: string) => capabilities.assertSession(token, LUCKY_LADY_GAME_ID),
+  });
+
+  const game = apiOf(new LuckyLadyAdapter(prisma, platform, configs, registry, {
     // Deterministic generation is an explicit test seam. The production
     // provider supplies the OS CSPRNG instead.
     rngFactory: () => {
@@ -106,10 +166,10 @@ describe('Lucky Lady platform integration (PostgreSQL)', () => {
         }
       },
     },
-  });
+  }));
 
   /** The production configuration: no injected rng, no hooks. */
-  const productionGame = () => new LuckyLadyGameService(prisma, configs, registry);
+  const productionGame = () => apiOf(new LuckyLadyAdapter(prisma, platform, configs, registry));
 
   const userEmail = uniqueTestEmail('lucky-player');
   const rivalEmail = uniqueTestEmail('lucky-rival');
@@ -131,7 +191,7 @@ describe('Lucky Lady platform integration (PostgreSQL)', () => {
     injectedCommitFailures = 0;
     sessions.clear();
     await prisma.$executeRawUnsafe(
-      'TRUNCATE TABLE "LuckyLadyPrepared", "LuckyLadySession", "LuckyLadyLaunch", "CasinoGameConfigVersion", "CasinoGameConfig", "PlatformSettings", "CasinoTransaction", "CasinoRoundAction", "CasinoRound", "CasinoGameFavorite", "LedgerEntry", "BetLeg", "Bet", "AuditLog", "RefreshToken", "Wallet", "User" CASCADE',
+      'TRUNCATE TABLE "GamePreparedOutcome", "GameSession", "GameLaunchCapability", "CasinoGameConfigVersion", "CasinoGameConfig", "PlatformSettings", "CasinoTransaction", "CasinoRoundAction", "CasinoRound", "CasinoGameFavorite", "LedgerEntry", "BetLeg", "Bet", "AuditLog", "RefreshToken", "Wallet", "User" CASCADE',
     );
     const [player, rival, admin] = await Promise.all([
       prisma.user.create({ data: { email: userEmail, passwordHash: 'x', wallet: { create: {} } } }),
@@ -151,7 +211,7 @@ describe('Lucky Lady platform integration (PostgreSQL)', () => {
     const existing = sessions.get(actor);
     if (existing) return existing;
     const token = `session-${actor.slice(0, 8)}-${Math.random().toString(36).slice(2, 12)}`;
-    const row = await prisma.luckyLadySession.create({
+    const row = await prisma.gameSession.create({
       data: {
         userId: actor,
         gameId: LUCKY_LADY_GAME_ID,
@@ -315,7 +375,7 @@ describe('Lucky Lady platform integration (PostgreSQL)', () => {
 
     const { token } = await game.issueLaunch(userId);
     expect(token).toMatch(/^[A-Za-z0-9_-]{40,}$/);
-    const rows = await prisma.luckyLadyLaunch.findMany();
+    const rows = await prisma.gameLaunchCapability.findMany();
     expect(rows).toHaveLength(1);
     expect(rows[0].tokenHash).toBe(sha256(token));
     expect(rows[0].scope).toBe(`game:${LUCKY_LADY_GAME_ID}:play`);
@@ -323,7 +383,7 @@ describe('Lucky Lady platform integration (PostgreSQL)', () => {
 
     const session = await game.exchangeLaunch(token);
     expect(session.userId).toBe(userId);
-    const stored = await prisma.luckyLadySession.findFirstOrThrow();
+    const stored = await prisma.gameSession.findFirstOrThrow();
     expect(stored.tokenHash).toBe(sha256(session.sessionToken));
     expect(stored.gameId).toBe(LUCKY_LADY_GAME_ID);
     expect(JSON.stringify(stored)).not.toContain(session.sessionToken);
@@ -335,7 +395,7 @@ describe('Lucky Lady platform integration (PostgreSQL)', () => {
 
   it('rejects expired, unknown and wrong-scope launch capabilities', async () => {
     const expiredToken = 'expired-token-value-expired-token-value';
-    await prisma.luckyLadyLaunch.create({
+    await prisma.gameLaunchCapability.create({
       data: {
         userId,
         scope: `game:${LUCKY_LADY_GAME_ID}:play`,
@@ -348,7 +408,7 @@ describe('Lucky Lady platform integration (PostgreSQL)', () => {
     });
 
     const otherToken = 'other-scope-token-other-scope-token';
-    await prisma.luckyLadyLaunch.create({
+    await prisma.gameLaunchCapability.create({
       data: {
         userId,
         scope: 'game:other-game:play',
@@ -391,7 +451,7 @@ describe('Lucky Lady platform integration (PostgreSQL)', () => {
 
     expect(draws).toBe(0);
     expect(await prisma.casinoRound.count()).toBe(0);
-    expect(await prisma.luckyLadyPrepared.count()).toBe(0);
+    expect(await prisma.gamePreparedOutcome.count()).toBe(0);
     expect(await balance()).toBe(0n);
   });
 
@@ -488,7 +548,7 @@ describe('Lucky Lady platform integration (PostgreSQL)', () => {
     });
 
     expect(draws).toBe(0);
-    expect(await prisma.luckyLadyPrepared.count()).toBe(0);
+    expect(await prisma.gamePreparedOutcome.count()).toBe(0);
     expect(await prisma.casinoRound.count()).toBe(0);
     expect(await balance()).toBe(100_000n);
   });
@@ -768,7 +828,7 @@ describe('Lucky Lady platform integration (PostgreSQL)', () => {
     expect(await prisma.ledgerEntry.count({ where: { type: 'CASINO_BET' } })).toBe(0);
     expect(await prisma.casinoRound.count()).toBe(0);
     expect(await balance()).toBe(100_000n);
-    const prepared = await prisma.luckyLadyPrepared.findFirstOrThrow();
+    const prepared = await prisma.gamePreparedOutcome.findFirstOrThrow();
     const stored = prepared.payload as unknown as { roundId: string; main: { board: Record<string, string[]> } };
     expect(draws).toBe(1);
 
@@ -781,7 +841,7 @@ describe('Lucky Lady platform integration (PostgreSQL)', () => {
       requestId,
     )) as unknown as Protocol;
     expect(draws).toBe(1);
-    expect(await prisma.luckyLadyPrepared.count()).toBe(0);
+    expect(await prisma.gamePreparedOutcome.count()).toBe(0);
     expect(await prisma.ledgerEntry.count({ where: { type: 'CASINO_BET' } })).toBe(1);
     expect(await balance()).toBe(99_990n);
     const round = await prisma.casinoRound.findFirstOrThrow({ where: { userId } });
@@ -813,7 +873,7 @@ describe('Lucky Lady platform integration (PostgreSQL)', () => {
     expect(await prisma.casinoTransaction.count()).toBe(0);
     expect(await balance()).toBe(100_000n);
     expect(draws).toBe(1);
-    const prepared = await prisma.luckyLadyPrepared.findFirstOrThrow();
+    const prepared = await prisma.gamePreparedOutcome.findFirstOrThrow();
     const stored = prepared.payload as unknown as { roundId: string };
 
     // Retrying settles exactly the stored outcome: same round, one draw, one debit.
@@ -826,7 +886,7 @@ describe('Lucky Lady platform integration (PostgreSQL)', () => {
     )) as unknown as Protocol;
     expect(retried.responseEvent).toBe('spin');
     expect(draws).toBe(1);
-    expect(await prisma.luckyLadyPrepared.count()).toBe(0);
+    expect(await prisma.gamePreparedOutcome.count()).toBe(0);
     expect(await prisma.ledgerEntry.count({ where: { type: 'CASINO_BET' } })).toBe(1);
     expect(await prisma.casinoTransaction.count()).toBe(1);
     expect(await balance()).toBe(99_990n);
@@ -893,7 +953,7 @@ describe('Lucky Lady platform integration (PostgreSQL)', () => {
         requestId,
       ),
     ).rejects.toThrow('INJECTED_SETTLEMENT_FAILURE');
-    expect(await prisma.luckyLadyPrepared.count()).toBe(1);
+    expect(await prisma.gamePreparedOutcome.count()).toBe(1);
 
     // A newer authoritative state supersedes the stored outcome.
     const round = await prisma.casinoRound.findFirstOrThrow({ where: { userId } });
@@ -920,7 +980,7 @@ describe('Lucky Lady platform integration (PostgreSQL)', () => {
     )) as unknown as Protocol;
     expect(settled.responseEvent).toBe('gambleResult');
     expect(draws - drawsBefore).toBe(1);
-    expect(await prisma.luckyLadyPrepared.count()).toBe(0);
+    expect(await prisma.gamePreparedOutcome.count()).toBe(0);
     const after = await prisma.casinoRound.findFirstOrThrow({ where: { id: round.id } });
     const afterState = after.privateState as unknown as { gamble: { attempts: number } };
     expect(afterState.gamble.attempts).toBe(1);

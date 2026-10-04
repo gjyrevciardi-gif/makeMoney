@@ -1,126 +1,68 @@
-import {
-  Body,
-  Controller,
-  HttpCode,
-  HttpException,
-  HttpStatus,
-  Post,
-  Req,
-  UnauthorizedException,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpException, HttpStatus, Inject, Post, Req, UseGuards } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import type { Request } from 'express';
 import { AccessGuard, AuthenticatedRequest } from '../../../auth/access.guard';
 import { Roles } from '../../../auth/roles.decorator';
 import { RolesGuard } from '../../../auth/roles.guard';
-import { RATE_LIMITS, RateLimitService } from '../../../common/rate-limit.service';
+import { RateLimitService } from '../../../common/rate-limit.service';
+import { GAME_PLATFORM, GamePlatform } from '../../platform/game-adapter.types';
+import { GameGatewayBase } from '../../platform/game-gateway.base';
+import { LUCKY_LADY_CAPABILITY, LuckyLadyAdapter } from './lucky-lady.adapter';
 import { ExchangeLaunchDto, LuckyLadyPlayDto } from './lucky-lady.dto';
-import { LuckyLadyGameService } from './lucky-lady.service';
 
+/** The recovered client's gateway presents its session capability in this header. */
 const SESSION_HEADER = 'x-lucky-session';
+/** ... and names each state-changing request with this one. */
+const REQUEST_ID_HEADER = 'x-pilot-request-id';
 
 /**
- * Platform side of the imported game's gateway.
+ * Lucky Lady's HTTP surface.
  *
- * Two different trust relationships meet here:
- *
- *  - `launch` is a normal authenticated platform route. It is USER-only and
- *    re-reads the database role, so an administrator's valid token cannot open
- *    a player session.
- *  - everything else is called by the loopback game gateway with an opaque,
- *    hashed, expiring game capability. No platform JWT, refresh token or
- *    cookie is ever accepted or produced on these routes, so the recovered
- *    third-party client never shares an origin or a credential with the
- *    platform application.
+ * The routes are the game's own; everything behind them - capability issue and
+ * exchange, session binding, ownership, rate limits, the read/gameplay split,
+ * the request identity - is the shared gateway base. Native error mapping
+ * remains here, alongside this game's paths and DTOs.
  */
 @Controller('casino/lucky-lady')
-export class LuckyLadyController {
+export class LuckyLadyController extends GameGatewayBase {
   constructor(
-    private readonly game: LuckyLadyGameService,
-    private readonly limits: RateLimitService,
-  ) {}
+    adapter: LuckyLadyAdapter,
+    @Inject(GAME_PLATFORM) platform: GamePlatform,
+    limits: RateLimitService,
+  ) {
+    super(adapter, platform.capabilities, limits, {
+      sessionHeader: SESSION_HEADER,
+      requestIdHeader: REQUEST_ID_HEADER,
+      scope: LUCKY_LADY_CAPABILITY.scope,
+      launchTtlMs: LUCKY_LADY_CAPABILITY.launchTtlMs,
+      sessionTtlMs: LUCKY_LADY_CAPABILITY.sessionTtlMs,
+      gamePath: LUCKY_LADY_CAPABILITY.gamePath,
+    });
+  }
 
+  /** Authenticated platform route: a player mints a one-time launch capability. */
   @Post('launch')
   @UseGuards(AccessGuard, RolesGuard)
   @Roles(Role.USER)
-  async launch(@Req() request: AuthenticatedRequest) {
-    await this.limits.consume('casino-lucky-launch', request.actor.id, RATE_LIMITS.luckyLadyLaunch);
-    return this.game.issueLaunch(request.actor.id);
+  launch(@Req() request: AuthenticatedRequest) {
+    return this.issueLaunch(request);
   }
 
-  /** Called by the loopback gateway; authenticated by the opaque launch token. */
+  /** Called by the game origin; authenticated by the opaque launch capability. */
   @Post('launch/exchange')
   @HttpCode(HttpStatus.OK)
-  async exchange(@Body() body: ExchangeLaunchDto, @Req() request: Request) {
-    const subject = request.ip ?? 'unknown';
-    await this.limits.consume('casino-lucky-exchange', subject, RATE_LIMITS.luckyLadyExchange);
-    const session = await this.game.exchangeLaunch(body.token);
-    return { sessionToken: session.sessionToken, sessionId: session.sessionId };
+  exchange(@Body() body: ExchangeLaunchDto, @Req() request: Request) {
+    return this.exchangeLaunch(body, request);
   }
 
-  /**
-   * The whole native protocol: reads, gameplay, presentation receipts.
-   *
-   * The game capability is read from a header the gateway attaches, never from
-   * a cookie the browser could be tricked into sending to the platform, and
-   * every response is wrapped in the protocol's own error shape so the
-   * recovered client keeps its existing behaviour.
-   */
+  /** The whole native protocol: reads, gameplay and presentation receipts. */
   @Post('session/gameplay')
   @HttpCode(HttpStatus.OK)
-  async gameplay(
-    @Body() body: LuckyLadyPlayDto,
-    @Req() request: Request & { headers: Record<string, string | string[] | undefined> },
-  ) {
-    const rawSession = this.header(request, SESSION_HEADER);
-    if (!rawSession) throw new UnauthorizedException({ code: 'GAME_SESSION_REQUIRED', message: 'Game session required.' });
-    const session = await this.game.assertSession(rawSession);
-    const event = String(body.slotEvent);
-    const payload = body as unknown as Record<string, unknown>;
-    try {
-      if (event === 'getSettings' || event === 'update' || event === 'ack') {
-        await this.limits.consume('casino-lucky-read', session.userId, RATE_LIMITS.luckyLadyRead);
-      }
-      if (event === 'getSettings') return await this.game.settings(session.userId);
-      if (event === 'update') return await this.game.update(session.userId);
-      if (event === 'ack') return await this.game.acknowledge(session.userId, payload);
-
-      await this.limits.consume('casino', session.userId, RATE_LIMITS.casino);
-      const requestId = this.requestId(request);
-      return await this.game.handleGameplay(
-        session,
-        event,
-        payload,
-        {
-          'x-pilot-version': this.header(request, 'x-pilot-version'),
-          'x-pilot-round': this.header(request, 'x-pilot-round'),
-        },
-        requestId,
-      );
-    } catch (error) {
-      throw this.asProtocolError(error);
-    }
+  play(@Body() body: LuckyLadyPlayDto, @Req() request: Request) {
+    return this.gameplay(body, request);
   }
-
-  private header(request: Request, name: string) {
-    const value = request.headers[name];
-    if (Array.isArray(value)) return value[0];
-    return typeof value === 'string' ? value : undefined;
-  }
-
-  /** Every state change must name itself so a retry can be recognised. */
-  private requestId(request: Request) {
-    const provided = this.header(request, 'x-pilot-request-id');
-    if (provided && /^[a-zA-Z0-9_-]{8,80}$/.test(provided)) return provided;
-    throw new HttpException(
-      { responseEvent: 'error', reason: 'request id required' },
-      HttpStatus.BAD_REQUEST,
-    );
-  }
-
   /** Presents failures in the recovered client's own protocol shape. */
-  private asProtocolError(error: unknown) {
+  protected asProtocolError(error: unknown) {
     if (error instanceof HttpException) {
       const status = error.getStatus();
       const response = error.getResponse();
@@ -133,4 +75,5 @@ export class LuckyLadyController {
     }
     return error;
   }
+
 }

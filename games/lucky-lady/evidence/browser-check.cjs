@@ -325,7 +325,7 @@ async function urlReady(url, attempts = 120) {
     const launch = await launchResponse.json();
     check('launch.player-token-issued', launchResponse.status === 201 && typeof launch.token === 'string', `status=${launchResponse.status}`);
 
-    const launchRow = await prisma.luckyLadyLaunch.findFirstOrThrow({ where: { userId: player.id } });
+    const launchRow = await prisma.gameLaunchCapability.findFirstOrThrow({ where: { userId: player.id } });
     check('launch.stores-only-the-hash',
       launchRow.tokenHash === crypto.createHash('sha256').update(launch.token).digest('hex')
       && !JSON.stringify(launchRow).includes(launch.token),

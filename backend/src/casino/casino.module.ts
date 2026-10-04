@@ -28,7 +28,22 @@ import { CasinoClock } from './casino-clock.service';
 import { SlotsService } from './games/slots/slots.service';
 import { TumbleSlotsService } from './games/slots/tumble.service';
 import { LuckyLadyController } from './games/lucky-lady/lucky-lady.controller';
-import { LUCKY_LADY_OPTIONS, LuckyLadyGameService } from './games/lucky-lady/lucky-lady.service';
+import { LUCKY_LADY_OPTIONS, LuckyLadyAdapter } from './games/lucky-lady/lucky-lady.adapter';
+import { GameCapabilityService } from './platform/game-capability.service';
+import { GameJournalService } from './platform/game-journal.service';
+import { GameRoundService } from './platform/game-round.service';
+import { GameWalletService } from './platform/game-wallet.service';
+import { MathControlController } from './platform/math-control/math-control.controller';
+import { GameMathRegistry } from './platform/math-control/math-control.registry';
+import { MathControlService } from './platform/math-control/math-control.service';
+import { MathControlJobs } from './platform/math-control/math-control.jobs';
+import { LuckyLadyMathAdapter } from './games/lucky-lady/lucky-lady.math-adapter';
+import { GAME_MATH_ADAPTERS } from './platform/math-control/math-control.types';
+import {
+  GAME_AVAILABILITY,
+  GAME_PLATFORM,
+  GAME_PLAYABILITY,
+} from './platform/game-adapter.types';
 
 @Module({
   imports: [JwtModule.register({ secret: process.env.JWT_ACCESS_SECRET })],
@@ -38,6 +53,7 @@ import { LUCKY_LADY_OPTIONS, LuckyLadyGameService } from './games/lucky-lady/luc
     CasinoConfigController,
     PlatformSettingsController,
     LuckyLadyController,
+    MathControlController,
   ],
   providers: [
     PrismaService,
@@ -61,16 +77,52 @@ import { LUCKY_LADY_OPTIONS, LuckyLadyGameService } from './games/lucky-lady/luc
     PlinkoService,
     SlotsService,
     TumbleSlotsService,
-    LuckyLadyGameService,
+    // ---- Reusable game-integration layer (shared by every integrated game) ----
+    { provide: GAME_AVAILABILITY, useExisting: CasinoGameRegistry },
+    { provide: GAME_PLAYABILITY, useExisting: CasinoConfigService },
+    GameCapabilityService,
+    GameWalletService,
+    GameJournalService,
+    GameRoundService,
+    {
+      provide: GAME_PLATFORM,
+      useFactory: (
+        capabilities: GameCapabilityService,
+        wallet: GameWalletService,
+        journal: GameJournalService,
+        rounds: GameRoundService,
+      ) => ({ capabilities, wallet, journal, rounds }),
+      inject: [GameCapabilityService, GameWalletService, GameJournalService, GameRoundService],
+    },
+    // ---- Adapter #1: Lucky Lady's Charm Deluxe ----
+    LuckyLadyAdapter,
     // Production defaults: OS CSPRNG draws, no test RNG or failure hooks.
     { provide: LUCKY_LADY_OPTIONS, useValue: {} },
+    // ---- Game Math Control (shared lifecycle, per-game mathematics) ----
+    LuckyLadyMathAdapter,
+    {
+      provide: GAME_MATH_ADAPTERS,
+      useFactory: (luckyLady: LuckyLadyMathAdapter) => [luckyLady],
+      inject: [LuckyLadyMathAdapter],
+    },
+    GameMathRegistry,
+    MathControlJobs,
+    MathControlService,
   ],
   exports: [
+    GAME_PLATFORM,
+    GameCapabilityService,
+    GameWalletService,
+    GameJournalService,
+    GameRoundService,
     CasinoService,
     CasinoRoundService,
     CasinoFairnessService,
     CasinoConfigService,
     CasinoAdminService,
+    MathControlService,
+    GameMathRegistry,
+    MathControlJobs,
     CrashService,
     CasinoClock,
   ],

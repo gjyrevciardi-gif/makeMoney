@@ -24,11 +24,17 @@ export const PINNED_RULES_SHA256 = '4c03dd436f18307d9f98dc2148ff422251faa2d5c1c9
 export const PINNED_PROFILE_FILE_SHA256 = '14a5f695611aebd33b0f27f7894731b5e0e03934fc2261366598f84a0314bb65';
 export const FROZEN_PROFILE_CANONICAL_HASH = 'eb0a22171a3479cea3b0238269edd4b0dc5d9486c57e4b057fa6ee0f1a70be5f';
 
-type EngineModule = {
+/** The engine-native pre-draw weighting a generated profile carries. */
+export type EngineProfilePayload = {
+  strips?: Record<string, string[]>;
+  stopWeights?: Record<string, number[]>;
+};
+
+export type EngineModule = {
   loadRules: (path?: string) => RulesTable;
   playRound: (
     rules: RulesTable,
-    profile: MathProfile,
+    profile: MathProfile | EngineProfilePayload,
     options: { bet: number; lines: number; rng: Rng; capture?: boolean },
   ) => CompleteRound;
   evaluate: (
@@ -217,11 +223,27 @@ export function assertLineStake(units: number) {
  * sequence. Called once per accepted paid round; the result is persisted before
  * any accounting.
  */
-export function generateCompleteRound({ rng, bet, lines }: { rng: Rng; bet: number; lines: number }) {
+export function generateCompleteRound({
+  rng,
+  bet,
+  lines,
+  weighting,
+}: {
+  rng: Rng;
+  bet: number;
+  lines: number;
+  /**
+   * The profile the round is pinned to. Omitted, the round runs on the accepted
+   * frozen RTP50 artefact exactly as before. When supplied it must be the
+   * engine-native payload of an activated, validated profile; the platform
+   * never lets a request, header or environment value choose it.
+   */
+  weighting?: EngineProfilePayload;
+}) {
   assertSupportedLines(lines);
   assertLineStake(bet);
   const { engine, rules, profile } = loadVerifiedMath();
-  const round = engine.playRound(rules, profile, { bet, lines, rng, capture: true });
+  const round = engine.playRound(rules, weighting ?? profile, { bet, lines, rng, capture: true });
   return { rules, profile, round };
 }
 
@@ -311,8 +333,18 @@ export function nativeSpin(
   };
 }
 
-/** Native settings with the validated 10-line configuration locked in. */
-export function nativeSettings() {
+/**
+ * Native settings with the validated 10-line configuration locked in.
+ *
+ * When a Game Math Control profile is active, its identity is what the client
+ * is told is live; otherwise the accepted frozen RTP50 artefact is reported.
+ */
+export function nativeSettings(active?: {
+  profileId: string;
+  profileHash: string;
+  targetRtpPercent: number;
+  validatedLines: number;
+} | null) {
   const { profile } = loadVerifiedMath();
   const settings = JSON.parse(JSON.stringify(loadVerifiedMath().settings)) as Record<string, unknown>;
   // Whole points, not the pilot's fractional display: one native stake step is
@@ -322,13 +354,19 @@ export function nativeSettings() {
   if ('gameBet' in settings) settings.gameBet = [...LUCKY_LADY_LINE_STAKES];
   settings.Line = [LUCKY_LADY_LINES];
   settings.gameLine = [LUCKY_LADY_LINES];
-  settings.mathConfig = {
-    gameId: profile.id,
-    rtpControlEnabled: true,
-    targetRtpPercent: profile.targetRtpPercent,
-    activeMathProfile: profile.id,
+  const reported = active ?? {
+    profileId: profile.id,
     profileHash: profile.canonicalHash,
+    targetRtpPercent: profile.targetRtpPercent,
     validatedLines: profile.validatedLines,
+  };
+  settings.mathConfig = {
+    gameId: reported.profileId,
+    rtpControlEnabled: true,
+    targetRtpPercent: reported.targetRtpPercent,
+    activeMathProfile: reported.profileId,
+    profileHash: reported.profileHash,
+    validatedLines: reported.validatedLines,
     stakeUnit: 'WHOLE_POINTS',
   };
   return settings;

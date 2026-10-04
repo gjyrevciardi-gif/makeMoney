@@ -34,7 +34,7 @@ const { ValidationPipe } = require(path.join(ROOT, 'node_modules', '@nestjs', 'c
 const { json } = require(path.join(ROOT, 'node_modules', 'express'));
 const cookieParser = require(path.join(ROOT, 'node_modules', 'cookie-parser'));
 const { AppModule } = require(path.join(DIST, 'app.module.js'));
-const { LUCKY_LADY_OPTIONS } = require(path.join(DIST, 'casino', 'games', 'lucky-lady', 'lucky-lady.service.js'));
+const { LUCKY_LADY_OPTIONS } = require(path.join(DIST, 'casino', 'games', 'lucky-lady', 'lucky-lady.adapter.js'));
 const { createDeterministicRng } = require(path.join(DIST, 'casino', 'games', 'lucky-lady', 'lucky-lady.math.js'));
 const { BigIntInterceptor } = require(path.join(DIST, 'common', 'bigint.interceptor.js'));
 

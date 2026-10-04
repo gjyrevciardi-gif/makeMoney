@@ -1,0 +1,100 @@
+# lucky-lady.gen.retention.rtp70.30c51cb0b7 - generated payout policy
+
+- Status: **VALIDATED** (activation: **false**, testOnly: **true**)
+- Generated at: 2026-01-01T00:00:00.000Z
+- Request: `{"targetRtpPercent":"70","objective":"RETENTION"}`
+- Normalized request: target 70%, objective RETENTION, granularity 1000000, tolerance 0.01pp
+- Solver: payout-policy-solver.v1; method EXACT_TWO_CLASS; support PARTIAL_LOW+SMALL; enumerated 15 pairs / 20 triples
+- Request hash: `731f2b3f6f556fdf1a768439a53597aba5fcca497822b0602a88c22942866318`
+- Policy: `lucky-lady.gen.retention.rtp70.30c51cb0b7` hash `8c33e552a431e384eca129a6c694e0ccc0d0175f594c3208bfdec17da0552c44`
+- Model: `lucky-lady.model.bounded-generator.v1` hash `4d66174ec81e2f9ac4701de1f54b98ac96e065d968f422e76036f3c001915bc9`
+- Declared model return under its own weights: 1763.997730%; feature trigger probability 0.00099402; expected feature spins 15.2270; feature chain diverges: false
+- Unreachable classes in the declared model: BREAK_EVEN, BIG, MAX
+
+## Expected return
+
+- Expected (exact support): 70.000045%
+- Exact absolute error against the request: 0.000045pp (tolerance 0.01pp)
+- Measured over the bounded sample: 70.02611% (standard error 0.1826%; 95% interval 69.668% - 70.384%)
+- Statistical verdict: **PASS** (|measured - expected| = 0.0261pp, tolerance 3 x standard error + 0.5pp)
+
+## Class weights
+
+| Class | Weight (grid units) | Configured share | Proved expectation |
+| --- | ---: | ---: | ---: |
+| LOSS | 10000 | 1.0000% | 0.000000 |
+| PARTIAL_LOW | 705683 | 70.5683% | 0.300050 |
+| PARTIAL_HIGH | 10000 | 1.0000% | 0.800000 |
+| BREAK_EVEN | 0 | 0.0000% | unreachable |
+| SMALL | 274317 | 27.4317% | 1.750749 |
+| MEDIUM | 0 | 0.0000% | 16.978516 |
+| BIG | 0 | 0.0000% | unreachable |
+| MAX | 0 | 0.0000% | unreachable |
+| FEATURE_TRIGGER | 0 | 0.0000% | 732.683481 |
+
+## Acceptance checks
+
+- **PASS** `ACCEPTED_POLICY_VALIDATION`: the accepted distribution-policy validator accepted the generated policy
+- **PASS** `SUPPORT_PROOF_UNDER_FINAL_WEIGHTS`: the accepted support builder proved 108 boards and the per-resolution ceiling
+- **PASS** `WEIGHTS_SUM_TO_GRANULARITY`: weights sum to 1000000 of the 1000000-unit grid
+- **PASS** `WEIGHTS_NON_NEGATIVE_INTEGERS`: every weight is a non-negative safe integer
+- **PASS** `ONLY_REACHABLE_CLASSES_CARRY_WEIGHT`: unreachable classes carry zero weight (BREAK_EVEN, BIG, MAX)
+- **PASS** `WEIGHTED_CLASSES_HAVE_PROVED_EXPECTATION`: every weighted class has reachable members and a proved expectation
+- **PASS** `MAX_WIN_RESOLVED_SPIN_WITHIN_CEILING`: proved per-resolution max 50x (paid 20x, free 50x) vs the declared 50x ceiling; the feature aggregate is deliberately uncapped
+- **PASS** `MAX_WIN_CAP_IS_EXACT_ON_THE_SIMULATION_GRID`: cap 50x x 20 stake units = 1000 exact simulation units
+- **PASS** `EXPECTED_RTP_MATCHES_TARGET`: exact expected 70.000045% vs requested 70% (exact absolute error 0.000045pp, tolerance 0.01pp)
+- **PASS** `TARGET_ZERO_IS_A_PROVED_ZERO_RETURN_POLICY`: not applicable (target is not 0%)
+- **PASS** `REQUESTED_MINIMUM_WEIGHTS_HELD`: minimum weights held: {"LOSS":10000,"PARTIAL_HIGH":10000,"SMALL":10000}
+- **PASS** `FEATURE_EXPECTATION_PROVED_OR_ABSENT`: FEATURE_TRIGGER expectation 732.683481 (paid 19.988012, feature 712.695469)
+- **PASS** `POLICY_HASH_IS_CANONICAL`: policy hash 8c33e552a431e384eca129a6c694e0ccc0d0175f594c3208bfdec17da0552c44 is stable across a serialization round trip
+- **PASS** `POSITIVE_PROFIT_WEIGHT_WHEN_TARGET_POSITIVE`: 274317 grid units on classes with a proved expectation above 1x (floor 10000)
+- **PASS** `POSITIVE_LOSS_WEIGHT_WHEN_TARGET_POSITIVE`: LOSS weight 10000 units
+
+## Pipeline stages
+
+- GENERATING: request 731f2b3f6f55 accepted; objective RETENTION
+- GENERATED: solved 1000000 grid units across PARTIAL_LOW+SMALL (EXACT_TWO_CLASS)
+- VALIDATING: 15 acceptance checks
+- VALIDATED: every analytical check passed; activation is not part of this pipeline
+
+## Bankroll sample (accepted simulator, simulation-only denomination)
+
+- Sessions: 80; horizon: 5000 paid spins; censored 0; ruined 80
+- Seeds: prefix `generated:rtp70-retention:v1` (generated:rtp70-retention:v1:0 .. generated:rtp70-retention:v1:79)
+- Initial balance 100.00 PTS (10000 units); paid stake 0.20 PTS (20 units)
+- Spins: 133284 paid + 0 free = 133284 resolved
+- Ledger identity (exact units): opening 800000 + returned 1866672 - wager 2665680 = closing 992 (exact: true)
+- Paid spins per session: mean 1666.0, median 1667.5, p90 1783.1
+- Turnover (paid only): mean 333.21 PTS, median 333.5 PTS, p90 356.62 PTS
+- House per session: mean wager 333.2100 PTS, mean payout 233.3340 PTS, mean net 99.8760 PTS
+- Drawdown (units): mean 9997.0, median 9994.0, p90 10014.2, p95 10028.0
+- Paid-event full loss 1.00%; hit 99.00%; partial 71.53%; profitable 27.48%
+- Feature triggered 0.0000% of paid rounds; retriggered 0.0000%; native class mismatches 0
+- Max observed paid resolved spin 50 units; free resolved spin 0 units (cap 1000); feature aggregate 0 units (deliberately uncapped)
+
+| N | Alive@N (observed) | Balance mean | Ruin by N | Ruin observed |
+| ---: | ---: | ---: | ---: | ---: |
+| 100 | 100.00% (80) | 9399.4 | 0.00% | 80 |
+| 250 | 100.00% (80) | 8486.7 | 0.00% | 80 |
+| 500 | 100.00% (80) | 6992.6 | 0.00% | 80 |
+| 1000 | 100.00% (80) | 4015.3 | 0.00% | 80 |
+| 2500 | 0.00% (80) | n/a | 100.00% | 80 |
+| 5000 | 0.00% (80) | n/a | 100.00% | 80 |
+| 10000 | unobserved (0) | not requested | unknown | 0 |
+
+- FULL_LOSS dry spell: pooled mean 1.01 (denominator 1313 runs); longest per session mean 1.18, p90 2.0, p99 2.0
+- NON_PROFITABLE dry spell: pooled mean 3.62 (denominator 26681 runs); longest per session mean 19.88, p90 24.0, p99 28.6
+
+- reached 125 PTS: 0.00%
+- reached 150 PTS: 0.00%
+- reached 200 PTS: 0.00%
+- fell below 20 PTS: 100.00%
+- fell below 40 PTS: 100.00%
+- fell below 60 PTS: 100.00%
+- fell below 80 PTS: 100.00%
+
+## Warnings
+
+- Offline generator evidence: activation is never part of this pipeline; the candidate stays a reviewable artifact.
+- The bankroll sample is bounded and predeclared; the seed prefix and sample size are recorded, and no seed is searched.
+- Session proportions carry Wilson 95% intervals limited by the session count; the RTP interval is a normal approximation over observed paid rounds while the number of rounds is bankroll-dependent (optional stopping), so it is approximate.

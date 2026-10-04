@@ -1,0 +1,728 @@
+{
+  "PRODUCT CODE": [
+    {
+      "path": "backend/nest-cli.json",
+      "bytes": 350
+    },
+    {
+      "path": "backend/prisma/migrations/20260929180000_game_adapter_platform/migration.sql",
+      "bytes": 2483
+    },
+    {
+      "path": "backend/prisma/migrations/20261001120000_game_math_control/migration.sql",
+      "bytes": 3633
+    },
+    {
+      "path": "backend/prisma/schema.prisma",
+      "bytes": 22063
+    },
+    {
+      "path": "backend/scripts/math-control-evidence.mjs",
+      "bytes": 17338
+    },
+    {
+      "path": "backend/scripts/payout-policy-bankroll-evidence.mjs",
+      "bytes": 8122
+    },
+    {
+      "path": "backend/scripts/payout-policy-generator-evidence.mjs",
+      "bytes": 11967
+    },
+    {
+      "path": "backend/src/casino/casino.module.ts",
+      "bytes": 5021
+    },
+    {
+      "path": "backend/src/casino/games/lucky-lady/lucky-lady.adapter.ts",
+      "bytes": 51866
+    },
+    {
+      "path": "backend/src/casino/games/lucky-lady/lucky-lady.controller.ts",
+      "bytes": 2709
+    },
+    {
+      "path": "backend/src/casino/games/lucky-lady/lucky-lady.distribution-fixtures.ts",
+      "bytes": 10654
+    },
+    {
+      "path": "backend/src/casino/games/lucky-lady/lucky-lady.distribution-session.ts",
+      "bytes": 6166
+    },
+    {
+      "path": "backend/src/casino/games/lucky-lady/lucky-lady.distribution.ts",
+      "bytes": 13898
+    },
+    {
+      "path": "backend/src/casino/games/lucky-lady/lucky-lady.exact.ts",
+      "bytes": 11673
+    },
+    {
+      "path": "backend/src/casino/games/lucky-lady/lucky-lady.math-adapter.ts",
+      "bytes": 57702
+    },
+    {
+      "path": "backend/src/casino/games/lucky-lady/lucky-lady.math.ts",
+      "bytes": 14027
+    },
+    {
+      "path": "backend/src/casino/games/lucky-lady/lucky-lady.policy-generator.ts",
+      "bytes": 43700
+    },
+    {
+      "path": "backend/src/casino/games/lucky-lady/lucky-lady.service.ts",
+      "bytes": null
+    },
+    {
+      "path": "backend/src/casino/platform/game-adapter.types.ts",
+      "bytes": 10358
+    },
+    {
+      "path": "backend/src/casino/platform/game-capability.service.ts",
+      "bytes": 6940
+    },
+    {
+      "path": "backend/src/casino/platform/game-gateway.base.ts",
+      "bytes": 6461
+    },
+    {
+      "path": "backend/src/casino/platform/game-journal.service.ts",
+      "bytes": 10393
+    },
+    {
+      "path": "backend/src/casino/platform/game-round.service.ts",
+      "bytes": 3586
+    },
+    {
+      "path": "backend/src/casino/platform/game-wallet.service.ts",
+      "bytes": 4468
+    },
+    {
+      "path": "backend/src/casino/platform/math-control/math-control.analytics.ts",
+      "bytes": 11981
+    },
+    {
+      "path": "backend/src/casino/platform/math-control/math-control.artifacts.ts",
+      "bytes": 9918
+    },
+    {
+      "path": "backend/src/casino/platform/math-control/math-control.bankroll.ts",
+      "bytes": 21926
+    },
+    {
+      "path": "backend/src/casino/platform/math-control/math-control.controller.ts",
+      "bytes": 5615
+    },
+    {
+      "path": "backend/src/casino/platform/math-control/math-control.dto.ts",
+      "bytes": 2810
+    },
+    {
+      "path": "backend/src/casino/platform/math-control/math-control.jobs.ts",
+      "bytes": 7982
+    },
+    {
+      "path": "backend/src/casino/platform/math-control/math-control.policy.ts",
+      "bytes": 16899
+    },
+    {
+      "path": "backend/src/casino/platform/math-control/math-control.random.ts",
+      "bytes": 2328
+    },
+    {
+      "path": "backend/src/casino/platform/math-control/math-control.rational.ts",
+      "bytes": 21239
+    },
+    {
+      "path": "backend/src/casino/platform/math-control/math-control.registry.ts",
+      "bytes": 1132
+    },
+    {
+      "path": "backend/src/casino/platform/math-control/math-control.service.ts",
+      "bytes": 27587
+    },
+    {
+      "path": "backend/src/casino/platform/math-control/math-control.types.ts",
+      "bytes": 23870
+    },
+    {
+      "path": "backend/src/casino/platform/math-control/math-control.worker.js",
+      "bytes": 1141
+    },
+    {
+      "path": "backend/src/casino/platform/math-control/payout-distribution.ts",
+      "bytes": 17699
+    },
+    {
+      "path": "backend/src/casino/platform/math-control/payout-policy-bankroll.ts",
+      "bytes": 53798
+    },
+    {
+      "path": "backend/src/casino/platform/math-control/payout-policy-generator.ts",
+      "bytes": 47583
+    },
+    {
+      "path": "backend/src/common/rate-limit.service.ts",
+      "bytes": 1722
+    },
+    {
+      "path": "frontend/app/admin/casino/math/page.tsx",
+      "bytes": 24085
+    },
+    {
+      "path": "frontend/app/admin/page.tsx",
+      "bytes": 9543
+    },
+    {
+      "path": "frontend/lib/math-control.ts",
+      "bytes": 5934
+    }
+  ],
+  "TESTS": [
+    {
+      "path": "backend/test/fixtures/coin-flip.adapter.ts",
+      "bytes": 8332
+    },
+    {
+      "path": "backend/test/game-adapter-template.integration.spec.ts",
+      "bytes": 10742
+    },
+    {
+      "path": "backend/test/game-math-control.integration.spec.ts",
+      "bytes": 15085
+    },
+    {
+      "path": "backend/test/game-math-control.spec.ts",
+      "bytes": 50022
+    },
+    {
+      "path": "backend/test/lucky-lady.integration.spec.ts",
+      "bytes": 53911
+    },
+    {
+      "path": "backend/test/lucky-lady.max-win-scope.spec.ts",
+      "bytes": 31633
+    },
+    {
+      "path": "backend/test/lucky-lady.session-source.spec.ts",
+      "bytes": 8612
+    },
+    {
+      "path": "backend/test/payout-distribution-runtime.spec.ts",
+      "bytes": 37782
+    },
+    {
+      "path": "backend/test/payout-distribution.spec.ts",
+      "bytes": 25995
+    },
+    {
+      "path": "backend/test/payout-policy-bankroll.spec.ts",
+      "bytes": 35345
+    },
+    {
+      "path": "backend/test/payout-policy-generator.spec.ts",
+      "bytes": 24998
+    },
+    {
+      "path": "games/lucky-lady/evidence/backend-harness.cjs",
+      "bytes": 4800
+    },
+    {
+      "path": "games/lucky-lady/evidence/browser-check.cjs",
+      "bytes": 46565
+    }
+  ],
+  "REPORTS": [
+    {
+      "path": "docs/agent-work/game-math-control/PAYOUT-DISTRIBUTION.md",
+      "bytes": 15572
+    },
+    {
+      "path": "docs/agent-work/game-math-control/REPORT.md",
+      "bytes": 14914
+    },
+    {
+      "path": "docs/agent-work/game-math-control/REVIEW-CONTRACT.md",
+      "bytes": 10120
+    },
+    {
+      "path": "docs/agent-work/game-math-control/generated/lucky-lady/ASTRA-REVIEW.md",
+      "bytes": 6730
+    },
+    {
+      "path": "docs/agent-work/game-math-control/generated/lucky-lady/CLOSURE.md",
+      "bytes": 6154
+    },
+    {
+      "path": "docs/agent-work/game-math-control/generated/lucky-lady/closure-integrity.json",
+      "bytes": 258
+    },
+    {
+      "path": "docs/agent-work/game-math-control/generated/lucky-lady/closure-maxwin20.json",
+      "bytes": 37992
+    },
+    {
+      "path": "docs/agent-work/game-math-control/generated/lucky-lady/closure-maxwin20.md",
+      "bytes": 6605
+    },
+    {
+      "path": "docs/agent-work/game-math-control/generated/lucky-lady/comparison.json",
+      "bytes": 16810
+    },
+    {
+      "path": "docs/agent-work/game-math-control/generated/lucky-lady/comparison.md",
+      "bytes": 2378
+    },
+    {
+      "path": "docs/agent-work/game-math-control/generated/lucky-lady/model.json",
+      "bytes": 4045
+    },
+    {
+      "path": "docs/agent-work/game-math-control/generated/lucky-lady/rtp0-f4bc5decb0.json",
+      "bytes": 36620
+    },
+    {
+      "path": "docs/agent-work/game-math-control/generated/lucky-lady/rtp0-f4bc5decb0.md",
+      "bytes": 6228
+    },
+    {
+      "path": "docs/agent-work/game-math-control/generated/lucky-lady/rtp100-aff0a6763f.json",
+      "bytes": 38348
+    },
+    {
+      "path": "docs/agent-work/game-math-control/generated/lucky-lady/rtp100-aff0a6763f.md",
+      "bytes": 6359
+    },
+    {
+      "path": "docs/agent-work/game-math-control/generated/lucky-lady/rtp20-d88dbbf61f.json",
+      "bytes": 38212
+    },
+    {
+      "path": "docs/agent-work/game-math-control/generated/lucky-lady/rtp20-d88dbbf61f.md",
+      "bytes": 6345
+    },
+    {
+      "path": "docs/agent-work/game-math-control/generated/lucky-lady/rtp50-8402de4636.json",
+      "bytes": 38286
+    },
+    {
+      "path": "docs/agent-work/game-math-control/generated/lucky-lady/rtp50-8402de4636.md",
+      "bytes": 6359
+    },
+    {
+      "path": "docs/agent-work/game-math-control/generated/lucky-lady/rtp63p5-03d7f13e38.json",
+      "bytes": 38333
+    },
+    {
+      "path": "docs/agent-work/game-math-control/generated/lucky-lady/rtp63p5-03d7f13e38.md",
+      "bytes": 6384
+    },
+    {
+      "path": "docs/agent-work/game-math-control/generated/lucky-lady/rtp70-retention-30c51cb0b7.json",
+      "bytes": 38271
+    },
+    {
+      "path": "docs/agent-work/game-math-control/generated/lucky-lady/rtp70-retention-30c51cb0b7.md",
+      "bytes": 6388
+    },
+    {
+      "path": "docs/agent-work/game-math-control/generated/lucky-lady/rtp70-volatile-de8e196af6.json",
+      "bytes": 38502
+    },
+    {
+      "path": "docs/agent-work/game-math-control/generated/lucky-lady/rtp70-volatile-de8e196af6.md",
+      "bytes": 6378
+    },
+    {
+      "path": "docs/agent-work/game-math-control/generated/lucky-lady/rtp90-c7dc94b3b3.json",
+      "bytes": 38441
+    },
+    {
+      "path": "docs/agent-work/game-math-control/generated/lucky-lady/rtp90-c7dc94b3b3.md",
+      "bytes": 6360
+    },
+    {
+      "path": "docs/agent-work/game-math-control/reports/lucky-lady/ASTRA-CONDITIONAL-BALANCE-REVIEW.md",
+      "bytes": 4780
+    },
+    {
+      "path": "docs/agent-work/game-math-control/reports/lucky-lady/ASTRA-REVIEW.md",
+      "bytes": 3860
+    },
+    {
+      "path": "docs/agent-work/game-math-control/reports/lucky-lady/comparison.json",
+      "bytes": 186427
+    },
+    {
+      "path": "docs/agent-work/game-math-control/reports/lucky-lady/comparison.md",
+      "bytes": 3741
+    },
+    {
+      "path": "docs/agent-work/game-math-control/reports/lucky-lady/test-break-even-100.json",
+      "bytes": 26047
+    },
+    {
+      "path": "docs/agent-work/game-math-control/reports/lucky-lady/test-break-even-100.md",
+      "bytes": 11566
+    },
+    {
+      "path": "docs/agent-work/game-math-control/reports/lucky-lady/test-feature-mix.json",
+      "bytes": 27572
+    },
+    {
+      "path": "docs/agent-work/game-math-control/reports/lucky-lady/test-feature-mix.md",
+      "bytes": 11557
+    },
+    {
+      "path": "docs/agent-work/game-math-control/reports/lucky-lady/test-high-return.json",
+      "bytes": 27622
+    },
+    {
+      "path": "docs/agent-work/game-math-control/reports/lucky-lady/test-high-return.md",
+      "bytes": 11739
+    },
+    {
+      "path": "docs/agent-work/game-math-control/reports/lucky-lady/test-loss-100.json",
+      "bytes": 25609
+    },
+    {
+      "path": "docs/agent-work/game-math-control/reports/lucky-lady/test-loss-100.md",
+      "bytes": 11162
+    },
+    {
+      "path": "docs/agent-work/game-math-control/reports/lucky-lady/test-retention.json",
+      "bytes": 26619
+    },
+    {
+      "path": "docs/agent-work/game-math-control/reports/lucky-lady/test-retention.md",
+      "bytes": 11269
+    },
+    {
+      "path": "docs/agent-work/game-math-control/reports/lucky-lady/test-tight.json",
+      "bytes": 26609
+    },
+    {
+      "path": "docs/agent-work/game-math-control/reports/lucky-lady/test-tight.md",
+      "bytes": 11221
+    },
+    {
+      "path": "docs/agent-work/game-math-profiles/reports/lucky-lady/lucky-lady.rtp0.g90113193f77b-bankroll.md",
+      "bytes": 3600
+    },
+    {
+      "path": "docs/agent-work/game-math-profiles/reports/lucky-lady/lucky-lady.rtp10.g7ce56de27a47-bankroll.md",
+      "bytes": 3578
+    },
+    {
+      "path": "docs/agent-work/game-math-profiles/reports/lucky-lady/lucky-lady.rtp100.g33a2146e123b-bankroll.md",
+      "bytes": 3604
+    },
+    {
+      "path": "docs/agent-work/game-math-profiles/reports/lucky-lady/lucky-lady.rtp20.ge40351cdee76-bankroll.md",
+      "bytes": 3583
+    },
+    {
+      "path": "docs/agent-work/game-math-profiles/reports/lucky-lady/lucky-lady.rtp30.g6e4875beb70b-bankroll.md",
+      "bytes": 3582
+    },
+    {
+      "path": "docs/agent-work/game-math-profiles/reports/lucky-lady/lucky-lady.rtp33p30.g51c06ba481f1-bankroll.md",
+      "bytes": 3590
+    },
+    {
+      "path": "docs/agent-work/game-math-profiles/reports/lucky-lady/lucky-lady.rtp40.g1c8ab822fd16-bankroll.md",
+      "bytes": 3878
+    },
+    {
+      "path": "docs/agent-work/game-math-profiles/reports/lucky-lady/lucky-lady.rtp50.gdfef8c399389-bankroll.md",
+      "bytes": 3880
+    },
+    {
+      "path": "docs/agent-work/game-math-profiles/reports/lucky-lady/lucky-lady.rtp60.g14ddd5b97ca3-bankroll.md",
+      "bytes": 3596
+    },
+    {
+      "path": "docs/agent-work/game-math-profiles/reports/lucky-lady/lucky-lady.rtp70.gf7ac0d49615a-bankroll.md",
+      "bytes": 3880
+    },
+    {
+      "path": "docs/agent-work/game-math-profiles/reports/lucky-lady/lucky-lady.rtp77p70.g8a3b9f80ab74-bankroll.md",
+      "bytes": 3605
+    },
+    {
+      "path": "docs/agent-work/game-math-profiles/reports/lucky-lady/lucky-lady.rtp80.g4fa0b1386b06-bankroll.md",
+      "bytes": 3882
+    },
+    {
+      "path": "docs/agent-work/game-math-profiles/reports/lucky-lady/lucky-lady.rtp90.gc208a7e7eabe-bankroll.md",
+      "bytes": 3591
+    },
+    {
+      "path": "docs/agent-work/game-math-profiles/reports/lucky-lady/lucky-lady.rtp95.g5095154ce856-bankroll.md",
+      "bytes": 3585
+    }
+  ],
+  "GENERATED ARTIFACTS": [
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp0.g90113193f77b/bankroll.json",
+      "bytes": 3527
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp0.g90113193f77b/profile.json",
+      "bytes": 10045
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp0.g90113193f77b/validation.json",
+      "bytes": 9830
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp10.g7ce56de27a47/bankroll.json",
+      "bytes": 3749
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp10.g7ce56de27a47/profile.json",
+      "bytes": 10150
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp10.g7ce56de27a47/validation.json",
+      "bytes": 10334
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp100.g33a2146e123b/bankroll.json",
+      "bytes": 3795
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp100.g33a2146e123b/profile.json",
+      "bytes": 10154
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp100.g33a2146e123b/validation.json",
+      "bytes": 10413
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp20.ge40351cdee76/bankroll.json",
+      "bytes": 3673
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp20.ge40351cdee76/profile.json",
+      "bytes": 10150
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp20.ge40351cdee76/validation.json",
+      "bytes": 10271
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp30.g6e4875beb70b/bankroll.json",
+      "bytes": 3721
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp30.g6e4875beb70b/profile.json",
+      "bytes": 10150
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp30.g6e4875beb70b/validation.json",
+      "bytes": 10335
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp33p30.g51c06ba481f1/bankroll.json",
+      "bytes": 3747
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp33p30.g51c06ba481f1/profile.json",
+      "bytes": 10152
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp33p30.g51c06ba481f1/validation.json",
+      "bytes": 10344
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp40.g1c8ab822fd16/bankroll-1.json",
+      "bytes": 3858
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp40.g1c8ab822fd16/bankroll.json",
+      "bytes": 3808
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp40.g1c8ab822fd16/profile.json",
+      "bytes": 10147
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp40.g1c8ab822fd16/validation-1.json",
+      "bytes": 11204
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp40.g1c8ab822fd16/validation.json",
+      "bytes": 10406
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp50.gdfef8c399389/bankroll-1.json",
+      "bytes": 3865
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp50.gdfef8c399389/bankroll.json",
+      "bytes": 3814
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp50.gdfef8c399389/profile.json",
+      "bytes": 10150
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp50.gdfef8c399389/validation-1.json",
+      "bytes": 11275
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp50.gdfef8c399389/validation.json",
+      "bytes": 10428
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp60.g14ddd5b97ca3/bankroll.json",
+      "bytes": 3803
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp60.g14ddd5b97ca3/profile.json",
+      "bytes": 10149
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp60.g14ddd5b97ca3/validation.json",
+      "bytes": 10443
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp70.gf7ac0d49615a/bankroll-1.json",
+      "bytes": 3855
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp70.gf7ac0d49615a/bankroll.json",
+      "bytes": 3766
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp70.gf7ac0d49615a/profile.json",
+      "bytes": 10147
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp70.gf7ac0d49615a/validation-1.json",
+      "bytes": 11262
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp70.gf7ac0d49615a/validation.json",
+      "bytes": 10369
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp77p70.g8a3b9f80ab74/bankroll.json",
+      "bytes": 3816
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp77p70.g8a3b9f80ab74/profile.json",
+      "bytes": 10152
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp77p70.g8a3b9f80ab74/validation.json",
+      "bytes": 10407
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp80.g4fa0b1386b06/bankroll-1.json",
+      "bytes": 3860
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp80.g4fa0b1386b06/bankroll.json",
+      "bytes": 3823
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp80.g4fa0b1386b06/profile.json",
+      "bytes": 10147
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp80.g4fa0b1386b06/validation-1.json",
+      "bytes": 11225
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp80.g4fa0b1386b06/validation.json",
+      "bytes": 10448
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp90.gc208a7e7eabe/bankroll.json",
+      "bytes": 3840
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp90.gc208a7e7eabe/profile.json",
+      "bytes": 10144
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp90.gc208a7e7eabe/validation.json",
+      "bytes": 10432
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp95.g5095154ce856/bankroll.json",
+      "bytes": 3747
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp95.g5095154ce856/profile.json",
+      "bytes": 10150
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/lucky-lady.rtp95.g5095154ce856/validation.json",
+      "bytes": 10357
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/summary.json",
+      "bytes": 16036
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/summary.md",
+      "bytes": 3929
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/unsupported/rtp0.json",
+      "bytes": 1329
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/unsupported/rtp5.json",
+      "bytes": 1412
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/unsupported/scenario-feature-with-hard-ceiling.json",
+      "bytes": 1203
+    },
+    {
+      "path": "artifacts/math-validation/lucky-lady/unsupported/scenario-total-ceiling-including-gamble.json",
+      "bytes": 1007
+    }
+  ],
+  "TEMP/DEBUG FILES": [
+    {
+      "path": "post-correction-hashes.txt",
+      "bytes": 919
+    },
+    {
+      "path": "post-distribution-correction-hashes.txt",
+      "bytes": 737
+    },
+    {
+      "path": "post-lock-hashes.txt",
+      "bytes": 752
+    },
+    {
+      "path": "post-presentation-hashes.txt",
+      "bytes": 254
+    },
+    {
+      "path": "post-resolved-spin-hashes.txt",
+      "bytes": 496
+    },
+    {
+      "path": "pre-correction-hashes.txt",
+      "bytes": 800
+    },
+    {
+      "path": "pre-lock-hashes.txt",
+      "bytes": 752
+    },
+    {
+      "path": "pre-presentation-hashes.txt",
+      "bytes": 391
+    },
+    {
+      "path": "pre-resolved-spin-hashes.txt",
+      "bytes": 383
+    }
+  ]
+}

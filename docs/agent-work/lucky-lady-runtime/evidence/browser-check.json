@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-09-29T17:40:10.902Z",
+ "generatedAt": "2026-10-04T16:23:53.996Z",
  "checks": 92,
  "failures": 0,
  "results": [
@@ -161,7 +161,7 @@
   {
    "name": "receipt.posted-for-authoritative-action",
    "ok": true,
-   "detail": "actionId=dad148f2-0808-49a7-ab09-c216e5c29a9a"
+   "detail": "actionId=51074e8b-1a4f-4c1b-9d3f-b160cfb35a0d"
   },
   {
    "name": "receipt.posted-after-board-rendered",
@@ -181,7 +181,7 @@
   {
    "name": "recovery.refresh-preserves-state",
    "ok": true,
-   "detail": "{\"round\":\"86c0ea86-0c67-4ab9-a15f-531df04c4517\",\"phase\":\"IDLE\"}"
+   "detail": "{\"round\":\"1a7d1b3f-e175-442f-a889-b9aec77089fb\",\"phase\":\"IDLE\"}"
   },
   {
    "name": "recovery.refresh-restores-same-board",
@@ -436,7 +436,7 @@
   {
    "name": "launcher.paid-round-board-matches-the-server",
    "ok": true,
-   "detail": "{\"reel1\":[\"Q\",\"9\",\"K\"],\"reel2\":[\"P_5\",\"P_2\",\"P_6\"],\"reel3\":[\"9\",\"J\",\"P_3\"],\"reel4\":[\"Q\",\"A\",\"P_5\"],\"reel5\":[\"P_5\",\"SCAT\""
+   "detail": "{\"reel1\":[\"9\",\"K\",\"Q\"],\"reel2\":[\"P_5\",\"P_2\",\"P_6\"],\"reel3\":[\"J\",\"9\",\"P_3\"],\"reel4\":[\"P_1\",\"Q\",\"P_4\"],\"reel5\":[\"P_5\",\"J\","
   },
   {
    "name": "launcher.paid-round-debits-exactly-once",
@@ -446,7 +446,7 @@
   {
    "name": "rng.production-path-draws-one-per-paid-round-and-gamble",
    "ok": true,
-   "detail": "{\"draws\":8,\"queued\":0,\"lastSeed\":\"csprng:884e681bd47806a60a8e990e295bef841de331f709b5cc4852af0eaa6df67681\"}"
+   "detail": "{\"draws\":8,\"queued\":0,\"lastSeed\":\"csprng:fc40064bd62b1a89256d2c84cdddeed26fe010e4361849cd62df28aab3dacd94\"}"
   },
   {
    "name": "network.no-external-requests",

@@ -101,6 +101,9 @@ enum AuditAction {
   CASINO_GAME_DISABLED
   CASINO_MAINTENANCE_CHANGED
   PLATFORM_MAINTENANCE_CHANGED
+  CASINO_MATH_PROFILE_GENERATED
+  CASINO_MATH_PROFILE_VALIDATED
+  CASINO_MATH_PROFILE_ACTIVATED
 }
 
 enum CasinoConfigStatus {
@@ -146,9 +149,9 @@ model User {
   casinoGameFavorites   CasinoGameFavorite[]
   authoredCasinoConfigs CasinoGameConfigVersion[] @relation("CasinoConfigAuthor")
   acknowledgedConflicts SportsResultConflict[]
-  luckyLadyLaunches     LuckyLadyLaunch[]         @relation("LuckyLadyLaunchOwner")
-  luckyLadySessions     LuckyLadySession[]        @relation("LuckyLadySessionOwner")
-  luckyLadyPrepared     LuckyLadyPrepared[]       @relation("LuckyLadyPreparedOwner")
+  gameLaunches          GameLaunchCapability[]     @relation("GameLaunchCapabilityOwner")
+  gameSessions          GameSession[]              @relation("GameSessionOwner")
+  gamePreparedOutcomes  GamePreparedOutcome[]      @relation("GamePreparedOutcomeOwner")
 }
 
 model Wallet {
@@ -368,11 +371,13 @@ model CasinoRoundAction {
   @@index([userId, gameId, seq])
 }
 
-/// One-time launch capability. The raw opaque secret is returned to the
-/// authenticated launcher exactly once and only its hash is stored, so a
-/// database read can never replay a launch. Scope, actor and expiry are pinned
-/// at issue time and consumption is a single conditional update.
-model LuckyLadyLaunch {
+/// One-time game launch capability, shared by every integrated game.
+///
+/// The raw opaque secret is returned to the authenticated launcher exactly once
+/// and only its hash is stored, so a database read can never replay a launch.
+/// Scope, actor and expiry are pinned at issue time and consumption is a single
+/// conditional update.
+model GameLaunchCapability {
   id         String    @id @default(uuid()) @db.Uuid
   userId     String    @db.Uuid
   scope      String
@@ -381,16 +386,18 @@ model LuckyLadyLaunch {
   consumedAt DateTime?
   sessionId  String?   @db.Uuid
   createdAt  DateTime  @default(now())
-  user       User      @relation("LuckyLadyLaunchOwner", fields: [userId], references: [id], onDelete: Cascade)
+  user       User      @relation("GameLaunchCapabilityOwner", fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
   @@index([expiresAt])
 }
 
-/// Reconnectable gameplay capability bound to one user and one game. The
-/// browser never learns the plaintext of another session; the stored hash is
+/// Reconnectable gameplay capability bound to one user and one game.
+///
+/// The browser never learns the plaintext of another session; the stored hash is
 /// the only lookup key, and gameplay re-checks the database role on every call.
-model LuckyLadySession {
+/// Game-specific state never lives here: it belongs to the game's own round.
+model GameSession {
   id         String    @id @default(uuid()) @db.Uuid
   userId     String    @db.Uuid
   gameId     String
@@ -399,20 +406,24 @@ model LuckyLadySession {
   revokedAt  DateTime?
   lastSeenAt DateTime  @default(now())
   createdAt  DateTime  @default(now())
-  user       User      @relation("LuckyLadySessionOwner", fields: [userId], references: [id], onDelete: Cascade)
+  user       User      @relation("GameSessionOwner", fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, gameId, createdAt])
   @@index([expiresAt])
 }
 
-/// Durable prepared-outcome journal for one imported game.
+/// Durable prepared-outcome journal for an integrated game.
 ///
 /// The authoritative outcome (paid board plus the whole future feature
 /// sequence, or one gamble draw) is committed here before any wallet movement.
 /// Settlement then consumes this stored row, so a crash or a serialization
 /// failure can never cause a reroll, a second wager debit, or a lost round.
-model LuckyLadyPrepared {
+///
+/// The payload is opaque to the platform: the owning adapter serializes and
+/// reads back its own game-specific result and feature state.
+model GamePreparedOutcome {
   id         String   @id @default(uuid()) @db.Uuid
+  gameId     String
   userId     String   @db.Uuid
   requestKey String   @unique
   kind       String
@@ -429,9 +440,93 @@ model LuckyLadyPrepared {
   originVersion Int?
   originPhase   String?
   createdAt  DateTime @default(now())
-  user       User     @relation("LuckyLadyPreparedOwner", fields: [userId], references: [id], onDelete: Cascade)
+  user       User     @relation("GamePreparedOutcomeOwner", fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
+  @@index([gameId, createdAt])
+}
+
+/// Immutable, game-specific mathematics profile produced by Game Math Control.
+///
+/// The row is the *canonical math artifact*: `payload` is the exact evaluation
+/// input the game's own engine consumes (for Lucky Lady: pre-draw stop
+/// weights), and `canonicalHash` is the SHA-256 of that artifact alone. Status,
+/// validation evidence and the active pointer live outside the hash, so
+/// activating or re-validating a profile can never change its identity.
+model GameMathProfile {
+  id                String  @id @default(uuid()) @db.Uuid
+  /// Registry id of the game this mathematics belongs to.
+  gameId            String
+  /// Operator-facing immutable identity, e.g. `lucky-lady.rtp95.v2`.
+  profileId         String
+  /// SHA-256 over the canonical artifact (policy + payload + engine identity).
+  canonicalHash     String
+  engineSha256      String
+  rulesSha256       String
+  targetRtpPercent  Decimal @db.Decimal(9, 4)
+  measuredRtpPercent Decimal? @db.Decimal(9, 4)
+  maxWinMultiplier  Decimal @db.Decimal(20, 4)
+  /// The validated policy that produced this profile (bounded, whitelisted).
+  policy            Json
+  /// Analytical results computed at generation time (exact EV, support proof).
+  analytic          Json
+  /// Opaque engine-native profile body. Never interpreted by the platform.
+  payload           Json
+  status            String  @default("DRAFT")
+  generatedBy       String  @db.Uuid
+  createdAt         DateTime @default(now())
+  validations       GameMathProfileValidation[]
+  actives           GameActiveMathProfile[]
+
+  @@unique([gameId, profileId])
+  @@unique([gameId, canonicalHash])
+  @@index([gameId, createdAt])
+}
+
+/// Append-only validation evidence for an immutable math profile.
+///
+/// Validation is always server-produced: it replays the frozen profile through
+/// the game's own engine with seeds independent from calibration, and records
+/// the analytical bounds, the Monte Carlo run and the complete-session bankroll
+/// simulation that justify the pass/fail decision.
+model GameMathProfileValidation {
+  id            String   @id @default(uuid()) @db.Uuid
+  profileRowId  String   @db.Uuid
+  gameId        String
+  profileId     String
+  profileHash   String
+  result        String
+  metrics       Json
+  bankroll      Json
+  checks        Json
+  runs          Json
+  artifactPath  String
+  validatedBy   String   @db.Uuid
+  createdAt     DateTime @default(now())
+  profile       GameMathProfile @relation(fields: [profileRowId], references: [id], onDelete: Cascade)
+
+  @@index([profileRowId, createdAt])
+  @@index([gameId, profileId, createdAt])
+}
+
+/// Durable per-game active mathematics pointer.
+///
+/// One row per game, and only one: a new paid round pins the identity it read,
+/// so a later activation can never retroactively change a round already in
+/// flight. `version` is the optimistic-concurrency token the API echoes.
+model GameActiveMathProfile {
+  gameId        String   @id
+  profileRowId  String   @db.Uuid
+  profileId     String
+  profileHash   String
+  validationId  String   @db.Uuid
+  version       Int      @default(1)
+  activatedBy   String   @db.Uuid
+  activatedAt   DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  profile       GameMathProfile @relation(fields: [profileRowId], references: [id], onDelete: Restrict)
+
+  @@index([profileId])
 }
 
 /// Game-domain view of casino value movement. The immutable LedgerEntry table

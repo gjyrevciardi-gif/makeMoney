@@ -1,0 +1,269 @@
+{
+  "baseline": "e62e74746af110f9cedf29a3e08859d5be453a5a",
+  "fullSuiteRunOnce": {
+    "numTotalTestSuites": 36,
+    "numPassedTestSuites": 35,
+    "numFailedTestSuites": 1,
+    "numTotalTests": 671,
+    "numPassedTests": 669,
+    "numFailedTests": 2,
+    "numPendingTests": 0
+  },
+  "focusedCorrectionRun": {
+    "numTotalTestSuites": 9,
+    "numPassedTestSuites": 9,
+    "numFailedTestSuites": 0,
+    "numTotalTests": 147,
+    "numPassedTests": 147,
+    "numFailedTests": 0,
+    "numPendingTests": 0
+  },
+  "consolidated": {
+    "suites": 36,
+    "tests": 672,
+    "failures": 0
+  },
+  "suiteEvidence": [
+    {
+      "suite": "auth-security.integration.spec.ts",
+      "status": "passed",
+      "tests": 9,
+      "sourceRun": "full"
+    },
+    {
+      "suite": "bet-placement.integration.spec.ts",
+      "status": "passed",
+      "tests": 12,
+      "sourceRun": "full"
+    },
+    {
+      "suite": "casino-admin-config.integration.spec.ts",
+      "status": "passed",
+      "tests": 41,
+      "sourceRun": "full"
+    },
+    {
+      "suite": "casino-crash-plinko-security.integration.spec.ts",
+      "status": "passed",
+      "tests": 39,
+      "sourceRun": "full"
+    },
+    {
+      "suite": "casino-crash-plinko.spec.ts",
+      "status": "passed",
+      "tests": 37,
+      "sourceRun": "full"
+    },
+    {
+      "suite": "casino-crash.integration.spec.ts",
+      "status": "passed",
+      "tests": 26,
+      "sourceRun": "full"
+    },
+    {
+      "suite": "casino-dice.integration.spec.ts",
+      "status": "passed",
+      "tests": 18,
+      "sourceRun": "full"
+    },
+    {
+      "suite": "casino-math.spec.ts",
+      "status": "passed",
+      "tests": 21,
+      "sourceRun": "full"
+    },
+    {
+      "suite": "casino-mines.integration.spec.ts",
+      "status": "passed",
+      "tests": 16,
+      "sourceRun": "full"
+    },
+    {
+      "suite": "casino-plinko.integration.spec.ts",
+      "status": "passed",
+      "tests": 18,
+      "sourceRun": "full"
+    },
+    {
+      "suite": "casino-registry-favorites.integration.spec.ts",
+      "status": "passed",
+      "tests": 20,
+      "sourceRun": "full"
+    },
+    {
+      "suite": "casino-security.integration.spec.ts",
+      "status": "passed",
+      "tests": 21,
+      "sourceRun": "full"
+    },
+    {
+      "suite": "casino-slots-security.integration.spec.ts",
+      "status": "passed",
+      "tests": 29,
+      "sourceRun": "full"
+    },
+    {
+      "suite": "casino-slots.integration.spec.ts",
+      "status": "passed",
+      "tests": 19,
+      "sourceRun": "full"
+    },
+    {
+      "suite": "casino-slots.spec.ts",
+      "status": "passed",
+      "tests": 38,
+      "sourceRun": "full"
+    },
+    {
+      "suite": "casino-table-games.integration.spec.ts",
+      "status": "passed",
+      "tests": 21,
+      "sourceRun": "full"
+    },
+    {
+      "suite": "casino-table-games.spec.ts",
+      "status": "passed",
+      "tests": 17,
+      "sourceRun": "full"
+    },
+    {
+      "suite": "casino-tumble.spec.ts",
+      "status": "passed",
+      "tests": 39,
+      "sourceRun": "full"
+    },
+    {
+      "suite": "game-adapter-template.integration.spec.ts",
+      "status": "passed",
+      "tests": 8,
+      "sourceRun": "focused"
+    },
+    {
+      "suite": "game-math-control.integration.spec.ts",
+      "status": "passed",
+      "tests": 6,
+      "sourceRun": "full"
+    },
+    {
+      "suite": "game-math-control.spec.ts",
+      "status": "passed",
+      "tests": 43,
+      "sourceRun": "focused"
+    },
+    {
+      "suite": "lucky-lady.integration.spec.ts",
+      "status": "passed",
+      "tests": 28,
+      "sourceRun": "focused"
+    },
+    {
+      "suite": "lucky-lady.max-win-scope.spec.ts",
+      "status": "passed",
+      "tests": 11,
+      "sourceRun": "focused"
+    },
+    {
+      "suite": "lucky-lady.session-source.spec.ts",
+      "status": "passed",
+      "tests": 3,
+      "sourceRun": "focused"
+    },
+    {
+      "suite": "payout-distribution-runtime.spec.ts",
+      "status": "passed",
+      "tests": 6,
+      "sourceRun": "focused"
+    },
+    {
+      "suite": "payout-distribution.spec.ts",
+      "status": "passed",
+      "tests": 19,
+      "sourceRun": "focused"
+    },
+    {
+      "suite": "payout-policy-bankroll.spec.ts",
+      "status": "passed",
+      "tests": 13,
+      "sourceRun": "focused"
+    },
+    {
+      "suite": "payout-policy-generator.spec.ts",
+      "status": "passed",
+      "tests": 16,
+      "sourceRun": "focused"
+    },
+    {
+      "suite": "points.integration.spec.ts",
+      "status": "passed",
+      "tests": 8,
+      "sourceRun": "full"
+    },
+    {
+      "suite": "production-environment.spec.ts",
+      "status": "passed",
+      "tests": 32,
+      "sourceRun": "full"
+    },
+    {
+      "suite": "production-health.integration.spec.ts",
+      "status": "passed",
+      "tests": 5,
+      "sourceRun": "full"
+    },
+    {
+      "suite": "settlement-evaluators.spec.ts",
+      "status": "passed",
+      "tests": 4,
+      "sourceRun": "full"
+    },
+    {
+      "suite": "settlement.integration.spec.ts",
+      "status": "passed",
+      "tests": 9,
+      "sourceRun": "full"
+    },
+    {
+      "suite": "sports-cache.spec.ts",
+      "status": "passed",
+      "tests": 4,
+      "sourceRun": "full"
+    },
+    {
+      "suite": "sports-operations.integration.spec.ts",
+      "status": "passed",
+      "tests": 9,
+      "sourceRun": "full"
+    },
+    {
+      "suite": "sports-provider.spec.ts",
+      "status": "passed",
+      "tests": 7,
+      "sourceRun": "full"
+    }
+  ],
+  "browser": {
+    "checks": 92,
+    "failures": 0,
+    "evidence": "../lucky-lady-runtime/evidence/browser-check.json"
+  },
+  "client": {
+    "clientFileCount": 185,
+    "upstreamFileCount": 185,
+    "gitBlobMismatches": [],
+    "manifestSha256": "261e381209dc31d820c89649bc0fe01bfbc44f26ab93ccecefa7a0090f3c4418",
+    "mathUnchanged": {
+      "backend/src/casino/games/lucky-lady/math/engine.mjs": true,
+      "backend/src/casino/games/lucky-lady/math/data/rules.json": true,
+      "backend/src/casino/games/lucky-lady/math/profiles/lucky-lady.rtp50.v1.json": true
+    },
+    "acceptedManifestSha256": "85c26131aac4a0444ff33d420ea2060c5d4753a0e4d92e4d6937a6c78ea48a50",
+    "acceptedManifestMatches": true
+  },
+  "typecheck": {
+    "backend": "PASS",
+    "frontend": "PASS"
+  },
+  "build": "PASS",
+  "noProductionActivation": true,
+  "correction": "Separate native error mapping from shared gateway; exclude funding grants from fixture settlement deltas while asserting complete ledger identity."
+}
