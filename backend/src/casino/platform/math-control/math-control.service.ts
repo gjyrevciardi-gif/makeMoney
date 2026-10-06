@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../../../prisma.service';
+import { hasCapability } from '../../../auth/capabilities';
 import { canonicalProfileHash } from './math-control.analytics';
 import { writeValidationArtifacts } from './math-control.artifacts';
 import { validatePolicy } from './math-control.policy';
@@ -51,8 +52,8 @@ export class MathControlService {
   ) {}
 
   private async assertAdmin(actorId: string, operation: string) {
-    const actor = await this.prisma.user.findUnique({ where: { id: actorId }, select: { role: true } });
-    if (actor?.role === Role.ADMIN) return;
+    const actor = await this.prisma.user.findUnique({ where: { id: actorId }, select: { role: true, disabled: true } });
+    if (actor && !actor.disabled && hasCapability(actor.role, 'GAME_MATH_MANAGE')) return;
     await this.prisma.auditLog.create({
       data: {
         actorId,
@@ -502,9 +503,13 @@ export class MathControlService {
    * re-derived on every read, so a tampered row fails closed instead of
    * silently changing payouts.
    */
-  async activeProfile(gameId: string): Promise<{ artifact: MathProfileArtifact; validationId: string; version: number } | null> {
+  async activeProfile(gameId: string): Promise<{ artifact: MathProfileArtifact; validationId: string | null; version: number } | null> {
     const pointer = await this.prisma.gameActiveMathProfile.findUnique({ where: { gameId } });
-    if (!pointer) return null;
+    // No pointer at all is the accepted "never activated" default. An explicit
+    // `DEFAULT` tombstone keeps the monotonic revision but also leaves the game
+    // on its immutable golden mathematics, so the runtime falls back exactly as
+    // it does before the first activation.
+    if (!pointer || pointer.kind === 'DEFAULT' || pointer.profileRowId === null) return null;
     const row = await this.prisma.gameMathProfile.findUnique({ where: { id: pointer.profileRowId } });
     if (!row) {
       throw new InternalServerErrorException({

@@ -2,6 +2,8 @@ import * as core from '../src/casino/platform/math-control/payout-distribution';
 import * as mathModule from '../src/casino/games/lucky-lady/lucky-lady.math';
 import { loadVerifiedMath } from '../src/casino/games/lucky-lady/lucky-lady.math';
 import { LuckyLadyAdapter } from '../src/casino/games/lucky-lady/lucky-lady.adapter';
+import { LuckyLadyPayoutService } from '../src/casino/games/lucky-lady/payout/lucky-lady-payout.service';
+import { luckyLadyGeneratorModel } from '../src/casino/games/lucky-lady/lucky-lady.policy-generator';
 import { canonicalProfileHash } from '../src/casino/platform/math-control/math-control.analytics';
 import {
   DISTRIBUTION_CLASSES,
@@ -297,6 +299,7 @@ const buildHarness = (
   runtime: Runtime,
   counters: Counters,
   hooks: { beforeSettle?: (info: { requestKey: string; kind: string }) => void | Promise<void> } = {},
+  payoutControl?: LuckyLadyPayoutService,
 ) => {
   let chain: Promise<unknown> = Promise.resolve();
   const tx = {
@@ -440,12 +443,64 @@ const buildHarness = (
       hooks,
     },
     mathControl as never,
+    payoutControl,
   );
 
   return { adapter, state };
 };
 
 type Harness = ReturnType<typeof buildHarness>;
+
+const barrier = () => {
+  let release!: () => void;
+  const promise = new Promise<void>((resolve) => { release = resolve; });
+  return { promise, release };
+};
+
+/** MVCC read-port double, not a database integration test. The service must
+ * request RepeatableRead; the first pointer read captures the committed rows.
+ * Barriers allow a DEFAULT commit on either side of that read. */
+const snapshotService = (
+  state: HarnessState,
+  gates: { beforeRead?: () => Promise<void>; afterRead?: () => Promise<void> } = {},
+  panelCandidate?: { candidateId: string; modelProfileId: string; modelHash: string;
+    policyHash: string; maxWinMultiplier: number; distributionPolicy: DistributionPolicy; targetRtpPercent: number },
+) => {
+  const reads = { pointer: 0, model: 0, config: 0 };
+  const prisma = {
+    $transaction: jest.fn(async (work: (tx: unknown) => Promise<unknown>, options: unknown) => {
+      expect(options).toEqual({ isolationLevel: 'RepeatableRead' });
+      let captured: HarnessState;
+      const tx = {
+        gameActiveMathProfile: { findUnique: async () => {
+          reads.pointer += 1;
+          await gates.beforeRead?.();
+          captured = JSON.parse(JSON.stringify(state));
+          await gates.afterRead?.();
+          return captured.active ? {
+            kind: 'GENERATED', version: captured.active.version, validationId: captured.active.validationId,
+            profileRowId: 'model-row', profileId: captured.active.artifact.profileId,
+            profileHash: captured.active.artifact.canonicalHash,
+            payoutCandidateId: panelCandidate?.candidateId ?? null,
+          } : { kind: 'DEFAULT', profileRowId: null, version: 2 };
+        } },
+        gameMathProfile: { findUnique: async () => {
+          reads.model += 1;
+          const artifact = captured.active!.artifact;
+          return { ...artifact, createdAt: new Date(artifact.createdAt) };
+        } },
+        casinoGameConfig: { findUnique: async () => {
+          reads.config += 1;
+          return { activeVersion: { gameSpecificConfig: captured.config ?? {} } };
+        } },
+        luckyLadyPayoutCandidate: { findUnique: async () => panelCandidate },
+      };
+      return work(tx);
+    }),
+  };
+  const service = new LuckyLadyPayoutService(prisma as never, {} as never);
+  return { service, reads };
+};
 
 const lastRound = (state: HarnessState): StoredState =>
   state.rounds[state.rounds.length - 1].privateState as unknown as StoredState;
@@ -542,6 +597,156 @@ describe('opt-in distribution runtime (serialized in-memory ports, JSON reload)'
     };
     return { counters, runtime, state, harness: buildHarness(state, runtime, counters) };
   };
+
+  it('resolves explicit DEFAULT, ignoring even a stale custom config envelope', async () => {
+    const { state } = newScenario();
+    state.active = null;
+    const port = snapshotService(state);
+    const snapshot = await port.service.activePayoutSnapshot(GAME_ID);
+    expect(snapshot).toMatchObject({
+      mode: 'DEFAULT', profileId: 'lucky-lady.rtp50.v1',
+      profileHash: hashes.profileCanonicalHash, version: 2,
+      policy: null, policyId: null, policyHash: null, distributionPolicy: null,
+    });
+    expect(snapshot.modelPayload).toEqual(loadVerifiedMath().profile);
+    expect(port.reads).toEqual({ pointer: 1, model: 0, config: 0 });
+  });
+
+  it('an absent activation pointer resolves the same immutable default explicitly', async () => {
+    const service = new LuckyLadyPayoutService({
+      $transaction: async (read: (tx: unknown) => Promise<unknown>) => read({
+        gameActiveMathProfile: { findUnique: async () => null },
+      }),
+    } as never, {} as never);
+    expect(await service.activePayoutSnapshot(GAME_ID)).toMatchObject({
+      mode: 'DEFAULT', version: 0, profileId: 'lucky-lady.rtp50.v1',
+      profileHash: hashes.profileCanonicalHash, modelPayload: loadVerifiedMath().profile,
+      distributionPolicy: null, policy: null,
+    });
+  });
+
+  it('resolves a complete panel CUSTOM snapshot from its exact candidate identity', async () => {
+    const { state } = newScenario();
+    const model = luckyLadyGeneratorModel(50);
+    const policy = distributionPolicy({ mathProfileId: model.modelId,
+      mathProfileHash: model.artifact.canonicalHash, weights: weightsFor({ LOSS: 10_000 }) });
+    state.active = activeFor(model.artifact);
+    const port = snapshotService(state, {}, {
+      candidateId: 'snapshot-test-candidate', modelProfileId: model.modelId,
+      modelHash: model.artifact.canonicalHash, policyHash: distributionPolicyHash(policy),
+      maxWinMultiplier: 50, distributionPolicy: policy, targetRtpPercent: 0,
+    });
+    const snapshot = await port.service.activePayoutSnapshot(GAME_ID);
+    expect(snapshot).toMatchObject({ mode: 'CUSTOM', candidateId: 'snapshot-test-candidate',
+      profileId: model.modelId, profileHash: model.artifact.canonicalHash,
+      policyId: policy.policyId, policyHash: distributionPolicyHash(policy),
+      policy: { maxWinMultiplier: 50, maxWinScope: 'RESOLVED_SPIN' }, distributionPolicy: policy,
+    });
+    expect(snapshot.modelPayload).toEqual(model.artifact.payload);
+    expect(port.reads.config).toBe(0);
+  });
+
+  it('DEFAULT committed before a new round pins only the golden payload, with no selector', async () => {
+    const scenario = newScenario();
+    scenario.state.active = null; // DEFAULT already committed; config deliberately left stale.
+    const port = snapshotService(scenario.state);
+    const rng = engine.createRng('snapshot-default-round');
+    scenario.runtime.scripts.push(() => ({ ...rng, remaining: () => 0 }));
+    const harness = buildHarness(scenario.state, scenario.runtime, scenario.counters, {}, port.service);
+    const result = await harness.adapter.execute(context, betRequest('default-first-round'));
+    expect(lastRound(scenario.state)).toMatchObject({ profileId: 'lucky-lady.rtp50.v1',
+      profileHash: hashes.profileCanonicalHash, maxWin: null, distribution: null });
+    expect(generationSpy.mock.calls[0][0].weighting).toEqual(loadVerifiedMath().profile);
+    expect(classSpy).not.toHaveBeenCalled();
+    expect(scenario.counters.activeProfileReads).toBe(0);
+    expect(await harness.adapter.execute(context, betRequest('default-first-round'))).toEqual(result);
+    expect(port.reads.pointer).toBe(1);
+    expect(scenario.counters.debits).toBe(1);
+  });
+
+  it.each(['before', 'after'] as const)('barrier: DEFAULT commits %s the snapshot read; never mixes sources', async (order) => {
+    const scenario = newScenario();
+    scenario.state.active = activeFor(lossArtifact);
+    scenario.state.config = { distributionPolicy: policyB, distributionPolicyHash: distributionPolicyHash(policyB) };
+    const reached = barrier();
+    const resume = barrier();
+    const gate = async () => { reached.release(); await resume.promise; };
+    const port = snapshotService(scenario.state, order === 'before' ? { beforeRead: gate } : { afterRead: gate });
+    const rng = engine.createRng('snapshot-barrier-default');
+    scenario.runtime.scripts.push(order === 'before'
+      ? () => ({ ...rng, remaining: () => 0 })
+      : () => scriptedRng(lossPayload, []));
+    const harness = buildHarness(scenario.state, scenario.runtime, scenario.counters, {}, port.service);
+    const pending = harness.adapter.execute(context, betRequest(`barrier-${order}-round`));
+    await reached.promise;
+    scenario.state.active = null;
+    scenario.state.config = null; // atomic DEFAULT commit in the port double
+    resume.release();
+    const original = await pending;
+    const stored = lastRound(scenario.state);
+    expect(stored.profileId).toBe(order === 'before' ? 'lucky-lady.rtp50.v1' : lossArtifact.profileId);
+    expect(stored.profileHash).toBe(order === 'before' ? hashes.profileCanonicalHash : lossArtifact.canonicalHash);
+    expect(stored.distribution).toEqual(order === 'before' ? null : {
+      policyId: policyB.policyId, policyHash: distributionPolicyHash(policyB), selectedClass: 'LOSS',
+    });
+    expect(generationSpy.mock.calls[0][0].weighting).toEqual(order === 'before' ? loadVerifiedMath().profile : lossPayload);
+    expect(scenario.counters.activeProfileReads).toBe(0);
+    const calls = classSpy.mock.calls.length;
+    expect(await harness.adapter.execute(context, betRequest(`barrier-${order}-round`))).toEqual(original);
+    expect(port.reads.pointer).toBe(1);
+    expect(generationSpy).toHaveBeenCalledTimes(1);
+    expect(classSpy).toHaveBeenCalledTimes(calls);
+    expect(scenario.counters.debits).toBe(1);
+    if (order === 'after') {
+      // The first (custom LOSS) round settled. A genuinely new round after the
+      // committed DEFAULT must not inherit any of its custom distribution.
+      const nextRng = engine.createRng('snapshot-next-default');
+      scenario.runtime.scripts.push(() => ({ ...nextRng, remaining: () => 0 }));
+      await harness.adapter.execute(context, betRequest('after-default-new-round', headersFor(scenario.state)));
+      expect(lastRound(scenario.state)).toMatchObject({ profileId: 'lucky-lady.rtp50.v1',
+        profileHash: hashes.profileCanonicalHash, maxWin: null, distribution: null });
+      expect(port.reads.pointer).toBe(2);
+      expect(classSpy).toHaveBeenCalledTimes(calls);
+      expect(scenario.counters.debits).toBe(2);
+    }
+  });
+
+  it('a prepared custom feature survives DEFAULT, reload, retrigger and replay without rereading policy', async () => {
+    const scenario = newScenario();
+    const port = snapshotService(scenario.state);
+    scenario.runtime.scripts.push(() => scriptedRng(featurePayload, [CEILING_50, ...Array.from({ length: 29 }, () => FEATURE_DEAD)]));
+    const prepared = barrier();
+    const finish = barrier();
+    const harness = buildHarness(scenario.state, scenario.runtime, scenario.counters, {
+      beforeSettle: async () => { prepared.release(); await finish.promise; },
+    }, port.service);
+    const pending = harness.adapter.execute(context, betRequest('snapshot-feature-round'));
+    await prepared.promise;
+    const locked = JSON.parse(JSON.stringify(scenario.state.prepared[0].payload)) as StoredState;
+    expect(locked.profileId).toBe(featureArtifact.profileId);
+    expect(locked.distribution?.policyHash).toBe(distributionPolicyHash(policyA));
+    scenario.state.active = null;
+    scenario.state.config = null;
+    finish.release();
+    const original = await pending;
+    const reloadedState = JSON.parse(JSON.stringify(scenario.state)) as HarnessState;
+    const reloaded = buildHarness(reloadedState, scenario.runtime, scenario.counters, {}, port.service);
+    expect(await reloaded.adapter.execute(context, betRequest('snapshot-feature-round'))).toEqual(original);
+    expect(lastRound(reloadedState).freeTotal).toBe(15);
+    for (let i = 1; i <= 30; i += 1) {
+      const request = freeRequest(`snapshot-free-${i}`, headersFor(reloadedState));
+      const response = await reloaded.adapter.execute(context, request);
+      expect(lastRound(reloadedState)).toMatchObject({ profileId: locked.profileId,
+        profileHash: locked.profileHash, distribution: locked.distribution, maxWin: locked.maxWin,
+        freeTotal: 30, fsIndex: i });
+      if (i === 1) expect(await reloaded.adapter.execute(context, request)).toEqual(response);
+    }
+    expect(port.reads.pointer).toBe(1);
+    expect(generationSpy).toHaveBeenCalledTimes(1);
+    expect(classSpy).toHaveBeenCalledTimes(1);
+    expect(scenario.counters.debits).toBe(1);
+    expect(scenario.counters.activeProfileReads).toBe(0);
+  });
 
   it('selects and generates exactly once for concurrent identical requests and for a post-reload replay', async () => {
     const scenario = newScenario();

@@ -37,6 +37,8 @@ import { MathControlController } from './platform/math-control/math-control.cont
 import { GameMathRegistry } from './platform/math-control/math-control.registry';
 import { MathControlService } from './platform/math-control/math-control.service';
 import { MathControlJobs } from './platform/math-control/math-control.jobs';
+import { LuckyLadyPayoutController } from './games/lucky-lady/payout/lucky-lady-payout.controller';
+import { LuckyLadyPayoutService } from './games/lucky-lady/payout/lucky-lady-payout.service';
 import { LuckyLadyMathAdapter } from './games/lucky-lady/lucky-lady.math-adapter';
 import { GAME_MATH_ADAPTERS } from './platform/math-control/math-control.types';
 import {
@@ -54,6 +56,7 @@ import {
     PlatformSettingsController,
     LuckyLadyController,
     MathControlController,
+    LuckyLadyPayoutController,
   ],
   providers: [
     PrismaService,
@@ -108,6 +111,7 @@ import {
     GameMathRegistry,
     MathControlJobs,
     MathControlService,
+    LuckyLadyPayoutService,
   ],
   exports: [
     GAME_PLATFORM,
@@ -121,6 +125,7 @@ import {
     CasinoConfigService,
     CasinoAdminService,
     MathControlService,
+    LuckyLadyPayoutService,
     GameMathRegistry,
     MathControlJobs,
     CrashService,

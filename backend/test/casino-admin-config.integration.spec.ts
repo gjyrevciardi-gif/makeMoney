@@ -94,7 +94,10 @@ describe('super admin casino configuration (PostgreSQL + Redis)', () => {
         data: {
           email: adminEmail,
           passwordHash: hash,
-          role: 'ADMIN',
+          // Platform maintenance and provider/settlement switches are
+          // PLATFORM_MANAGE, held by SUPER_ADMIN; this suite is the super-admin
+          // configuration path.
+          role: 'SUPER_ADMIN',
           wallet: { create: {} },
         },
       }),

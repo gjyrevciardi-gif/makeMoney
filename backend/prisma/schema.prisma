@@ -10,6 +10,7 @@ datasource db {
 enum Role {
   USER
   ADMIN
+  SUPER_ADMIN
 }
 
 enum LedgerType {
@@ -76,6 +77,7 @@ enum AuditAction {
   REFRESH_REUSE_DETECTED
   PERMISSION_DENIED
   ADMIN_ROLE_GRANTED
+  ADMIN_ROLE_REVOKED
   ADMIN_COIN_GRANT
   ADMIN_COIN_REMOVE
   ADMIN_COIN_ADJUSTMENT
@@ -104,6 +106,8 @@ enum AuditAction {
   CASINO_MATH_PROFILE_GENERATED
   CASINO_MATH_PROFILE_VALIDATED
   CASINO_MATH_PROFILE_ACTIVATED
+  CASINO_MATH_PAYOUT_LIFECYCLE
+  ADMIN_USER_STATUS_CHANGED
 }
 
 enum CasinoConfigStatus {
@@ -139,6 +143,9 @@ model User {
   email                 String                    @unique
   passwordHash          String
   role                  Role                      @default(USER)
+  /// Account status. A disabled account's live tokens stop being accepted and
+  /// privileged operations refuse it. Existing rows default to enabled.
+  disabled              Boolean                   @default(false)
   createdAt             DateTime                  @default(now())
   wallet                Wallet?
   refreshTokens         RefreshToken[]
@@ -514,19 +521,134 @@ model GameMathProfileValidation {
 /// One row per game, and only one: a new paid round pins the identity it read,
 /// so a later activation can never retroactively change a round already in
 /// flight. `version` is the optimistic-concurrency token the API echoes.
+///
+/// `kind` is additive for the payout-policy lifecycle. `GENERATED` is the
+/// classic behaviour (a specific row is active). `DEFAULT` is an explicit
+/// operator restore-to-default: the pointer row and its monotonic revision are
+/// retained as a tombstone so a delete/recreate can never reset the version to
+/// 1, but the runtime reads no profile and the accepted immutable golden
+/// mathematics stays live. `profileRowId` is nullable so a `DEFAULT` tombstone
+/// holds no profile; both are null for rows written before this column existed.
 model GameActiveMathProfile {
   gameId        String   @id
-  profileRowId  String   @db.Uuid
+  profileRowId  String?  @db.Uuid
   profileId     String
   profileHash   String
-  validationId  String   @db.Uuid
+  validationId  String?  @db.Uuid
+  kind          String   @default("GENERATED")
+  /// Exact active payout candidate id for a panel-managed transition. Null for
+  /// DEFAULT and for a legacy activation that used the shared math lifecycle, so
+  /// the panel never has to guess which candidate is active from the model hash.
+  payoutCandidateId String?
   version       Int      @default(1)
   activatedBy   String   @db.Uuid
   activatedAt   DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  profile       GameMathProfile @relation(fields: [profileRowId], references: [id], onDelete: Restrict)
+  profile       GameMathProfile? @relation(fields: [profileRowId], references: [id], onDelete: SetNull)
 
   @@index([profileId])
+}
+
+/// Immutable generated payout-policy candidate.
+///
+/// One row binds the declared bounded generator model (the raw weighting the
+/// runtime executes) to the frozen class-distribution policy the generator
+/// solved for it. Both hashes and the request hash are stored verbatim; the
+/// row is never edited, so a later candidate can never mutate this identity.
+/// The distribution is what the runtime selects over; the model weighting is
+/// what actually plays the board. Activation always binds both together.
+model LuckyLadyPayoutCandidate {
+  id                   String   @id @default(uuid()) @db.Uuid
+  gameId               String
+  candidateId          String
+  /// SHA-256 over the canonical request + solver + bound model identity.
+  requestHash          String?
+  /// SHA-256 over the solved class-distribution policy.
+  policyHash           String
+  /// SHA-256 over the immutable bounded generator model artifact.
+  modelHash            String
+  /// Registry id of the bounded generator model this policy selects over.
+  modelProfileId       String
+  /// The generator model's own complete-round return under its own weights.
+  declaredReturnPercent Decimal @db.Decimal(9, 4)
+  /// The operator-requested target the solver was asked for.
+  targetRtpPercent     Decimal  @db.Decimal(9, 4)
+  maxWinMultiplier     Int
+  style                String
+  /// Normalized request the solver accepted (with applied floors).
+  request              Json
+  /// The solved class-distribution policy, frozen with the candidate.
+  distributionPolicy   Json
+  /// The immutable model artifact (MathProfileArtifact) the runtime pins.
+  modelArtifact        Json
+  createdBy            String   @db.Uuid
+  createdAt            DateTime @default(now())
+  validations          LuckyLadyPayoutValidation[]
+  activations          LuckyLadyPayoutActivation[]
+
+  @@unique([gameId, candidateId])
+  @@unique([gameId, policyHash])
+  @@index([gameId, createdAt])
+  @@index([modelHash])
+}
+
+/// Append-only server evidence for one payout candidate.
+///
+/// The report is produced entirely by the accepted generator + bankroll
+/// simulator from the frozen candidate; it is never accepted from a client.
+/// `status` is the honest lifecycle verdict (VALIDATED / GENERATED /
+/// INFEASIBLE / SEARCH_EXHAUSTED / REJECTED) - activation reads the row, not
+/// the HTTP response.
+model LuckyLadyPayoutValidation {
+  id             String   @id @default(uuid()) @db.Uuid
+  candidateRowId String   @db.Uuid
+  gameId         String
+  candidateId    String
+  policyHash     String
+  modelHash      String
+  status         String
+  verdict        String
+  report         Json
+  metrics        Json
+  artifactPath   String
+  validatedBy    String   @db.Uuid
+  createdAt      DateTime @default(now())
+  candidate      LuckyLadyPayoutCandidate @relation(fields: [candidateRowId], references: [id], onDelete: Cascade)
+
+  @@index([candidateRowId, createdAt])
+  @@index([gameId, candidateId, createdAt])
+}
+
+/// Append-only payout activation history.
+///
+/// Every ACTIVE / ROLLBACK / DEFAULT transition appends exactly one row in the
+/// same transaction as the pointer move and the audit entry. `actionId` is the
+/// caller's idempotency key: an exact replay returns this recorded transition,
+/// while the same key with different semantics is a conflict. `previous`
+/// records the pre-transition snapshot so a later rollback is a NEW event over
+/// a trusted server value, never a client-chosen previous policy.
+model LuckyLadyPayoutActivation {
+  id             String   @id @default(uuid()) @db.Uuid
+  gameId         String
+  actionId       String
+  action         String
+  candidateRowId String?  @db.Uuid
+  /// Operator-facing candidate id recorded on the transition.
+  candidateId    String?
+  modelProfileId String?
+  policyHash     String?
+  modelHash      String?
+  targetRtpPercent Decimal? @db.Decimal(9, 4)
+  maxWinMultiplier Int?
+  style          String?
+  version        Int
+  previous       Json
+  actorId        String   @db.Uuid
+  createdAt      DateTime @default(now())
+  candidate      LuckyLadyPayoutCandidate? @relation(fields: [candidateRowId], references: [id], onDelete: SetNull)
+
+  @@unique([gameId, actionId])
+  @@index([gameId, createdAt])
 }
 
 /// Game-domain view of casino value movement. The immutable LedgerEntry table

@@ -1,6 +1,7 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { CasinoGameType, CasinoRoundStatus, Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
+import { hasCapability } from '../auth/capabilities';
 import { CasinoRoundService } from './casino-round.service';
 
 /**
@@ -21,9 +22,9 @@ export class CasinoAdminService {
   private async assertAdmin(actorId: string, operation: string) {
     const actor = await this.prisma.user.findUnique({
       where: { id: actorId },
-      select: { role: true },
+      select: { role: true, disabled: true },
     });
-    if (actor?.role === Role.ADMIN) return;
+    if (actor && !actor.disabled && hasCapability(actor.role, 'GAME_ADMIN')) return;
     await this.prisma.auditLog.create({
       data: {
         actorId,

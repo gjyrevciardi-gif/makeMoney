@@ -136,7 +136,9 @@ describe('sportsbook operational monitoring and reconciliation (PostgreSQL + Red
       data: {
         email: adminEmail,
         passwordHash: await argon2.hash('correct-horse-battery'),
-        role: 'ADMIN',
+        // Sports operations / provider / settlement endpoints are
+        // PLATFORM_MANAGE, held by SUPER_ADMIN.
+        role: 'SUPER_ADMIN',
         wallet: { create: {} },
       },
     });

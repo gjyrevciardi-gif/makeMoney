@@ -1,0 +1,63 @@
+
+> test
+> node -e "const raw=process.env.DATABASE_URL||''; if(!raw) throw new Error('DATABASE_URL is required for backend tests'); const name=new URL(raw).pathname.replace(/^\/+/, '').split('/')[0]||''; const safe=name.toLowerCase().includes('_test'); if(!safe || name.toLowerCase()==='fools_gold' || name.toLowerCase()==='postgres') throw new Error('Unsafe test database: ' + name);" && node --experimental-vm-modules ../node_modules/jest/bin/jest.js --runInBand test/p1-snapshot-concurrency.integration.spec.ts -t zero nested acquisition proof --verbose
+
+(node:36900) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+  console.log
+    P1_CONCURRENCY_RESULTS [
+      {
+        "scenario": "proof-pool1-n3",
+        "pool": 1,
+        "concurrentRounds": 3,
+        "flipping": false,
+        "completed": 0,
+        "failed": 3,
+        "poolOrTransactionStartErrors": 3,
+        "otherErrors": 0,
+        "errorSamples": [
+          "Timed out fetching a new connection from the connection pool. More info: http://pris.ly/d/connection-pool (Current connection pool timeout: 10, connection limit",
+          "\nInvalid `prisma.platformSettings.upsert()` invocation:\n\n\nTimed out fetching a new connection from the connection pool. More info: http://pris.ly/d/connection-p"
+        ],
+        "durationMs": 10152,
+        "roundsWritten": 0,
+        "usersWithMoreThanOneRound": 0,
+        "duplicateDebits": 0,
+        "duplicateActionRows": 0,
+        "coherentDefault": 0,
+        "coherentCustom": 0,
+        "mixedSnapshots": 0,
+        "balanceLedgerMismatches": 0,
+        "failedRoundsWithSideEffects": 0,
+        "replays": 0,
+        "replayResponseMismatches": 0,
+        "replayNewLedgerRows": 0,
+        "flips": 0
+      }
+    ]
+
+      at Object.<anonymous> (test/C:/Users/Admin/orca/workspaces/toto/toto-game-adapter-template/backend/test/p1-snapshot-concurrency.integration.spec.ts:114:13)
+
+FAIL test/p1-snapshot-concurrency.integration.spec.ts (118.598 s)
+  ● P1: snapshot transaction under concurrent NEW paid rounds (isolated PostgreSQL + Redis) › zero nested acquisition proof: pool 1, 3 concurrent paid rounds
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 0
+    Received: 3
+
+      at assertIntegrity (test/C:/Users/Admin/orca/workspaces/toto/toto-game-adapter-template/backend/test/p1-snapshot-concurrency.integration.spec.ts:245:50)
+      at Object.<anonymous> (test/C:/Users/Admin/orca/workspaces/toto/toto-game-adapter-template/backend/test/p1-snapshot-concurrency.integration.spec.ts:273:5)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 3 skipped, 4 total
+Snapshots:   0 total
+Time:        118.884 s, estimated 140 s
+Ran all test suites matching test/p1-snapshot-concurrency.integration.spec.ts with tests matching "zero nested acquisition proof".
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path C:\Users\Admin\orca\workspaces\toto\toto-game-adapter-template\backend
+npm error workspace backend
+npm error location C:\Users\Admin\orca\workspaces\toto\toto-game-adapter-template\backend
+npm error command failed
+npm error command C:\WINDOWS\SYSTEM32\cmd.exe /d /s /c node -e "const raw=process.env.DATABASE_URL||''; if(!raw) throw new Error('DATABASE_URL is required for backend tests'); const name=new URL(raw).pathname.replace(/^\/+/, '').split('/')[0]||''; const safe=name.toLowerCase().includes('_test'); if(!safe || name.toLowerCase()==='fools_gold' || name.toLowerCase()==='postgres') throw new Error('Unsafe test database: ' + name);" && node --experimental-vm-modules ../node_modules/jest/bin/jest.js --runInBand test/p1-snapshot-concurrency.integration.spec.ts -t ^"zero^ nested^ acquisition^ proof^" --verbose

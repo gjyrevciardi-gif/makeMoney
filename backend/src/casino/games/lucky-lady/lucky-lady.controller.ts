@@ -1,8 +1,7 @@
 import { Body, Controller, HttpCode, HttpException, HttpStatus, Inject, Post, Req, UseGuards } from '@nestjs/common';
-import { Role } from '@prisma/client';
 import type { Request } from 'express';
 import { AccessGuard, AuthenticatedRequest } from '../../../auth/access.guard';
-import { Roles } from '../../../auth/roles.decorator';
+import { Capabilities } from '../../../auth/capabilities.decorator';
 import { RolesGuard } from '../../../auth/roles.guard';
 import { RateLimitService } from '../../../common/rate-limit.service';
 import { GAME_PLATFORM, GamePlatform } from '../../platform/game-adapter.types';
@@ -43,7 +42,7 @@ export class LuckyLadyController extends GameGatewayBase {
   /** Authenticated platform route: a player mints a one-time launch capability. */
   @Post('launch')
   @UseGuards(AccessGuard, RolesGuard)
-  @Roles(Role.USER)
+  @Capabilities('GAME_PLAY')
   launch(@Req() request: AuthenticatedRequest) {
     return this.issueLaunch(request);
   }

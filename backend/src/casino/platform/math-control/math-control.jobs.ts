@@ -38,17 +38,21 @@ export type MathJob<T = unknown> = {
 };
 
 export type WorkerJobPayload = {
-  kind: MathJobKind;
+  kind: string;
   modulePath: string;
   exportName: string;
   policy?: unknown;
   artifact?: unknown;
   options?: unknown;
+  /** Game-specific bounded job input for a custom worker entry. */
+  request?: unknown;
 };
 
 type QueuedJob = MathJob & {
   work: (execution: 'worker-thread' | 'in-process-bounded') => Promise<unknown>;
   worker?: WorkerJobPayload;
+  /** Optional worker entry override for a game-specific bounded job. */
+  workerPath?: string;
 };
 
 @Injectable()
@@ -59,7 +63,7 @@ export class MathControlJobs {
   private running = false;
 
   submit<T>(
-    input: { kind: MathJobKind; gameId: string; actorId: string; worker?: WorkerJobPayload },
+    input: { kind: MathJobKind; gameId: string; actorId: string; worker?: WorkerJobPayload; workerPath?: string },
     work: (execution: 'worker-thread' | 'in-process-bounded') => Promise<T>,
   ): MathJob<T> {
     const queued = this.order.filter((id) => this.jobs.get(id)?.status === 'QUEUED').length;
@@ -83,6 +87,7 @@ export class MathControlJobs {
       error: null,
       work,
       worker: input.worker,
+      workerPath: input.workerPath,
     };
     this.jobs.set(job.id, job);
     this.order.push(job.id);
@@ -141,6 +146,38 @@ export class MathControlJobs {
     return { job, result: job.result };
   }
 
+  /**
+   * Enqueue a bounded job under a caller-supplied kind.
+   *
+   * The shared queue, timeout and execution-path recording are reused; the kind
+   * is supplied so a game-specific lifecycle (for example the payout-policy
+   * generator + evidence run) can borrow the same bounded runner without
+   * widening the shared `MathJobKind` union.
+   */
+  async enqueue<T>(
+    input: { kind: string; gameId: string; actorId: string; worker?: WorkerJobPayload; workerPath?: string },
+    work: () => Promise<T>,
+  ): Promise<{ job: MathJob<T>; result: T }> {
+    const submitted = this.submit<T>(
+      {
+        kind: input.kind as MathJobKind,
+        gameId: input.gameId,
+        actorId: input.actorId,
+        worker: input.worker,
+        workerPath: input.workerPath,
+      },
+      async () => work(),
+    );
+    const job = await this.waitFor<T>(submitted.id);
+    if (job.status !== 'DONE' || job.result === null) {
+      const error = job.error ?? { code: 'MATH_JOB_FAILED', message: 'The mathematics job failed.' };
+      const failure = new Error(error.message) as Error & { code?: string };
+      failure.code = error.code;
+      throw failure;
+    }
+    return { job, result: job.result };
+  }
+
   private async tick() {
     if (this.running) return;
     const next = this.order
@@ -151,7 +188,7 @@ export class MathControlJobs {
     next.status = 'RUNNING';
     next.startedAt = new Date().toISOString();
     try {
-      const workerReady = next.worker ? this.workerPath() : null;
+      const workerReady = next.worker ? this.resolveWorkerPath(next.workerPath) : null;
       const execution: QueuedJob['execution'] = workerReady ? 'worker-thread' : 'in-process-bounded';
       next.execution = execution;
       const work = workerReady && next.worker
@@ -195,9 +232,10 @@ export class MathControlJobs {
   }
 
   /** The compiled worker entry, or `null` in a source-only environment. */
-  private workerPath(): string | null {
+  private resolveWorkerPath(override?: string): string | null {
     if (process.env.MATH_CONTROL_INPROCESS === '1') return null;
     if (process.env.JEST_WORKER_ID) return null;
+    if (override) return override;
     if (!__filename.endsWith('.js')) return null;
     const candidate = join(dirname(__filename), 'math-control.worker.js');
     return candidate;

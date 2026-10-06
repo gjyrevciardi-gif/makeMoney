@@ -42,6 +42,12 @@ export class AuthService {
       await this.prisma.auditLog.create({ data: { targetType: 'LOGIN', action: 'LOGIN_FAILED', result: 'INVALID_CREDENTIALS', metadata: { email: normalized } } });
       throw new UnauthorizedException('INVALID_CREDENTIALS');
     }
+    // Checked after the password so account state is never disclosed to someone
+    // who does not hold the credentials. A disabled account gets no new session.
+    if (user.disabled) {
+      await this.prisma.auditLog.create({ data: { actorId: user.id, targetType: 'LOGIN', action: 'LOGIN_FAILED', result: 'ACCOUNT_DISABLED' } });
+      throw new ForbiddenException('ACCOUNT_DISABLED');
+    }
     const pair = await this.prisma.$transaction(async (tx) => {
       const issued = await this.createPair(tx, user.id, user.role);
       await tx.auditLog.create({ data: { actorId: user.id, targetType: 'USER', targetId: user.id, action: 'LOGIN_SUCCESS', result: 'SUCCESS' } });
@@ -61,12 +67,20 @@ export class AuthService {
         return { kind: 'reuse' as const };
       }
       if (record.expiresAt <= new Date()) return { kind: 'invalid' as const };
+      if (record.user.disabled) {
+        // Status comes from the database, never the token: revoke the whole family
+        // so a re-enabled account must sign in again, and report it.
+        await tx.refreshToken.updateMany({ where: { familyId: record.familyId, revokedAt: null }, data: { revokedAt: new Date() } });
+        await tx.auditLog.create({ data: { actorId: record.userId, targetType: 'TOKEN_FAMILY', targetId: record.familyId, action: 'PERMISSION_DENIED', result: 'ACCOUNT_DISABLED' } });
+        return { kind: 'disabled' as const };
+      }
       await tx.refreshToken.update({ where: { id: record.id }, data: { revokedAt: new Date() } });
       const pair = await this.createPair(tx, record.userId, record.user.role, record.familyId);
       await tx.auditLog.create({ data: { actorId: record.userId, targetType: 'TOKEN_FAMILY', targetId: record.familyId, action: 'REFRESH_SUCCESS', result: 'SUCCESS' } });
       return { kind: 'success' as const, pair };
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
     if (outcome.kind === 'reuse') throw new ForbiddenException('REFRESH_TOKEN_REUSE_DETECTED');
+    if (outcome.kind === 'disabled') throw new ForbiddenException('ACCOUNT_DISABLED');
     if (outcome.kind !== 'success') throw new UnauthorizedException('INVALID_REFRESH_TOKEN');
     return outcome.pair;
   }

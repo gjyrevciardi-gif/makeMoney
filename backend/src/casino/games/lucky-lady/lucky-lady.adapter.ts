@@ -21,6 +21,7 @@ import {
   TransactionClient,
 } from '../../platform/game-adapter.types';
 import { MathControlService } from '../../platform/math-control/math-control.service';
+import { LuckyLadyPayoutService } from './payout/lucky-lady-payout.service';
 import { toSafePoints } from '../../platform/game-wallet.service';
 import { LUCKY_LADY_V1 } from './lucky-lady.definition';
 import { LUCKY_LADY_PLAY_EVENTS } from './lucky-lady.dto';
@@ -184,6 +185,9 @@ export class LuckyLadyAdapter implements GameAdapter {
     private readonly registry: CasinoGameRegistry,
     @Optional() @Inject(LUCKY_LADY_OPTIONS) options: LuckyLadyOptions = {},
     @Optional() private readonly mathControl?: MathControlService,
+    // The panel's single authoritative payout snapshot. Optional so a test that
+    // builds this adapter directly keeps the legacy path.
+    @Optional() private readonly payoutControl?: LuckyLadyPayoutService,
   ) {
     // Production default: OS CSPRNG, one generator per draw. A deterministic
     // factory can only be supplied by a test that builds this adapter itself.
@@ -387,6 +391,15 @@ export class LuckyLadyAdapter implements GameAdapter {
     canonical: string,
   ) {
     const userId = context.userId;
+    // Resolved BEFORE the round transaction opens, never inside it. The round
+    // transaction holds a pooled connection for its whole life; asking the pool
+    // for another while holding one is a dependency cycle once concurrent rounds
+    // reach the pool size. Each acquisition here completes and releases its
+    // connection before the round's own begins. The snapshot keeps its own
+    // RepeatableRead read, is final before any draw, and is pinned on the round.
+    // (A request that turns out to be a replay discards it: nothing is pinned.)
+    const legacyPinned = this.payoutControl ? null : await this.pinnedMath();
+    const snapshot = this.payoutControl ? await this.payoutControl.activePayoutSnapshot(this.gameId) : null;
     const prepared = await this.journal.serialized<{ replay?: unknown; conflict?: unknown; row?: { requestKey: string } }>(
       this.gameId,
       userId,
@@ -415,7 +428,8 @@ export class LuckyLadyAdapter implements GameAdapter {
         const units = this.parseLineStake(body);
         const lines = this.parseLines(body);
         this.registry.assertEnabled(this.gameId);
-        const effective = await this.configs.assertPlayable(this.gameId);
+        // Read through the round's own transaction client: no second connection.
+        const effective = await this.configs.assertPlayable(this.gameId, tx);
         const wager = BigInt(units * lines);
         // The operator's configured limits are enforced, not ignored. This game
         // publishes a fixed native ladder, so its spec refuses any candidate
@@ -439,35 +453,68 @@ export class LuckyLadyAdapter implements GameAdapter {
           if (existing.canonical !== canonical) this.journal.conflictSemantics();
           return { row: { requestKey: key } };
         }
-        // Pin the mathematics before the draw: the round records the exact
-        // profile identity it was produced under.
-        const pinned = await this.pinnedMath();
+        // Resolve once before any draw. An explicit DEFAULT snapshot is final;
+        // neither pre-read game config nor a later math lookup may override it.
+        // The legacy branch is only for adapters constructed without this port.
+        let pinned = legacyPinned;
+        let distributionPolicy: DistributionPolicy | null = null;
+        let distributionDeclaredHash: string | null = null;
+        if (snapshot) {
+          const verified = loadVerifiedMath();
+          if (
+            snapshot.engineSha256 !== verified.hashes.engineSha256 ||
+            snapshot.rulesSha256 !== verified.hashes.rulesSha256
+          ) {
+            throw this.journal.conflict(
+              'MATH_ENGINE_MISMATCH',
+              'The active payout policy was generated against a different evaluator or rules table.',
+            );
+          }
+          if (snapshot.mode === 'CUSTOM') pinned = {
+            payload: snapshot.modelPayload as unknown as EngineProfilePayload,
+            profileId: snapshot.profileId,
+            profileHash: snapshot.profileHash,
+            targetRtpPercent: snapshot.targetRtpPercent,
+            validatedLines: LUCKY_LADY_LINES,
+            version: snapshot.version,
+            validationId: snapshot.validationId,
+            maxWinPin: resolveMaxWinPin(snapshot.policy, snapshot.profileId, snapshot.profileHash),
+          };
+          distributionPolicy = snapshot.distributionPolicy;
+          distributionDeclaredHash = snapshot.policyHash;
+        } else if (!this.payoutControl) {
+          const envelope = this.distributionEnvelope((effective as { gameSpecific?: unknown }).gameSpecific);
+          if (envelope) {
+            distributionPolicy = envelope.policy;
+            distributionDeclaredHash = envelope.declaredHash;
+          }
+        }
         // Opt-in global distribution: selected once, here, from the
         // pre-validated reachable support of the pinned profile, then persisted
         // on the round. Absence keeps the accepted path byte-equivalent.
         let distributionPin: LuckyLadyState['distribution'] = null;
         let rng = this.rngFactory();
-        const envelope = this.distributionEnvelope((effective as { gameSpecific?: unknown }).gameSpecific);
-        if (envelope) {
+        if (distributionPolicy) {
+          const policy = distributionPolicy;
           if (!pinned) {
             throw this.journal.conflict(
               'DISTRIBUTION_REQUIRES_PINNED_MATH',
               'A distribution policy needs an activated RESOLVED_SPIN mathematics profile.',
             );
           }
-          const policyHash = distributionPolicyHash(envelope.policy);
-          if (envelope.declaredHash && envelope.declaredHash !== policyHash) {
+          const policyHash = distributionPolicyHash(policy);
+          if (distributionDeclaredHash && distributionDeclaredHash !== policyHash) {
             throw this.journal.conflict(
               'DISTRIBUTION_POLICY_HASH_MISMATCH',
               'The declared distribution policy hash does not match the policy content.',
             );
           }
           if (
-            envelope.policy.gameId !== this.gameId ||
-            envelope.policy.mathProfileId !== pinned.profileId ||
-            envelope.policy.mathProfileHash !== pinned.profileHash ||
-            envelope.policy.maxWinScope !== pinned.maxWinPin.maxWinScope ||
-            envelope.policy.maxWinMultiplier !== pinned.maxWinPin.maxWinMultiplier
+            policy.gameId !== this.gameId ||
+            policy.mathProfileId !== pinned.profileId ||
+            policy.mathProfileHash !== pinned.profileHash ||
+            policy.maxWinScope !== pinned.maxWinPin.maxWinScope ||
+            policy.maxWinMultiplier !== pinned.maxWinPin.maxWinMultiplier
           ) {
             throw this.journal.conflict(
               'DISTRIBUTION_MATH_MISMATCH',
@@ -479,7 +526,7 @@ export class LuckyLadyAdapter implements GameAdapter {
             profileHash: pinned.profileHash,
             payload: pinned.payload,
           };
-          const built = buildDistributionSupport(identity, envelope.policy, { maxBoards: DISTRIBUTION_MAX_BOARDS });
+          const built = buildDistributionSupport(identity, policy, { maxBoards: DISTRIBUTION_MAX_BOARDS });
           if (!built.ok) {
             throw this.journal.conflict(
               'DISTRIBUTION_SUPPORT_UNPROVABLE',
@@ -489,7 +536,7 @@ export class LuckyLadyAdapter implements GameAdapter {
           const choice = selectDistributionOutcome(built.support, createCryptoMassSelector());
           rng = withForcedInitialStops(rng, identity.payload, choice.stops);
           distributionPin = {
-            policyId: envelope.policy.policyId,
+            policyId: policy.policyId,
             policyHash,
             selectedClass: choice.class,
           };
@@ -498,7 +545,7 @@ export class LuckyLadyAdapter implements GameAdapter {
           rng,
           bet: units,
           lines,
-          weighting: pinned?.payload,
+          weighting: snapshot ? snapshot.modelPayload as EngineProfilePayload : pinned?.payload,
         });
         const stateOut: LuckyLadyState = {
           version: 1,
@@ -525,10 +572,10 @@ export class LuckyLadyAdapter implements GameAdapter {
           payout: 0,
           result: null,
           lastGamble: null,
-          profileId: pinned?.profileId ?? loadVerifiedMath().profile.id,
-          profileHash: pinned?.profileHash ?? loadVerifiedMath().hashes.profileCanonicalHash,
+          profileId: snapshot?.profileId ?? pinned?.profileId ?? loadVerifiedMath().profile.id,
+          profileHash: snapshot?.profileHash ?? pinned?.profileHash ?? loadVerifiedMath().hashes.profileCanonicalHash,
           profileVersion: LUCKY_LADY_PROFILE_VERSION,
-          profilePointerVersion: pinned?.version ?? null,
+          profilePointerVersion: snapshot?.version ?? pinned?.version ?? null,
           // Pinned once, here, for the life of the round.
           maxWin: pinned?.maxWinPin ?? null,
           distribution: distributionPin,

@@ -1,0 +1,96 @@
+
+> test
+> node -e "const raw=process.env.DATABASE_URL||''; if(!raw) throw new Error('DATABASE_URL is required for backend tests'); const name=new URL(raw).pathname.replace(/^\/+/, '').split('/')[0]||''; const safe=name.toLowerCase().includes('_test'); if(!safe || name.toLowerCase()==='fools_gold' || name.toLowerCase()==='postgres') throw new Error('Unsafe test database: ' + name);" && node --experimental-vm-modules ../node_modules/jest/bin/jest.js --runInBand test/lucky-lady.integration.spec.ts test/lucky-lady-payout-panel.integration.spec.ts test/payout-distribution-runtime.spec.ts test/lucky-lady-payout-messages.spec.ts test/hierarchical-rbac.integration.spec.ts test/rbac-unit.spec.ts test/p0-pts-superadmin-security.integration.spec.ts test/p1-auth-ratelimit-audit.integration.spec.ts --verbose
+
+(node:36612) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"event":"HTTP_REQUEST","requestId":"61e3f87c-ace5-48e7-97b9-bd197c3e5361","method":"POST","route":"/admin/casino/math/lucky-lady/payout/generate","statusCode":201,"durationMs":6}
+{"event":"HTTP_REQUEST","requestId":"d634603e-ffb1-4035-a9f6-de9e25c2e04f","method":"POST","route":"/admin/casino/math/lucky-lady/payout/generate","statusCode":201,"durationMs":92215}
+{"event":"HTTP_REQUEST","requestId":"9bc649a4-621c-4434-911d-a22c1520deab","method":"GET","route":"/admin/casino/math/lucky-lady/payout/candidates/:candidateId","statusCode":200,"durationMs":19}
+{"event":"HTTP_REQUEST","requestId":"5c49f322-f6c3-4b18-abbd-d66d02378a82","method":"POST","route":"/casino/lucky-lady/launch","statusCode":201,"durationMs":55}
+{"event":"HTTP_REQUEST","requestId":"3b4ef293-7433-43a2-b92c-fdd83d862823","method":"POST","route":"/casino/lucky-lady/launch","statusCode":201,"durationMs":15}
+{"event":"HTTP_REQUEST","requestId":"4ae4e100-b9a3-445b-bdf3-e79766bb844c","method":"POST","route":"/casino/lucky-lady/launch/exchange","statusCode":200,"durationMs":9}
+{"event":"HTTP_REQUEST","requestId":"831b99b6-d551-44cd-8674-c54686551ef6","method":"POST","route":"/casino/lucky-lady/launch/exchange","statusCode":200,"durationMs":22}
+{"event":"HTTP_REQUEST","requestId":"56483a31-8dc6-4944-8844-99ff8cb08a78","method":"POST","route":"/casino/lucky-lady/session/gameplay","statusCode":200,"durationMs":35}
+{"event":"HTTP_REQUEST","requestId":"0aba9c92-19c0-4bef-a6d6-46a6307acb47","method":"POST","route":"/casino/lucky-lady/session/gameplay","statusCode":200,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"895d84db-0e7f-45ac-b641-051957425fde","method":"POST","route":"/casino/lucky-lady/session/gameplay","statusCode":200,"durationMs":0}
+{"event":"HTTP_REQUEST","requestId":"49fabd54-177c-4848-9d4f-381a860915f0","method":"POST","route":"/casino/lucky-lady/session/gameplay","statusCode":200,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"88d373f6-9092-446f-b633-cbc009db1120","method":"POST","route":"/casino/lucky-lady/session/gameplay","statusCode":200,"durationMs":92}
+{"event":"HTTP_REQUEST","requestId":"8a652e4d-26ba-4f42-8c25-1fbdbe85da1c","method":"POST","route":"/casino/lucky-lady/launch","statusCode":201,"durationMs":60}
+{"event":"HTTP_REQUEST","requestId":"127e7ac2-30c1-490e-a137-092195f00999","method":"POST","route":"/casino/lucky-lady/launch","statusCode":201,"durationMs":16}
+{"event":"HTTP_REQUEST","requestId":"e8ac2d10-0790-4adf-ba7e-08bcbe3356be","method":"POST","route":"/casino/lucky-lady/launch","statusCode":201,"durationMs":17}
+{"event":"HTTP_REQUEST","requestId":"19a4b5a0-173b-4512-93cc-96a0f6317b38","method":"GET","route":"/admin/casino/math","statusCode":200,"durationMs":16}
+{"event":"HTTP_REQUEST","requestId":"2f3e73d5-3352-46f2-8203-ee4254872ce2","method":"GET","route":"/admin/casino/math","statusCode":200,"durationMs":6}
+{"event":"HTTP_REQUEST","requestId":"e909871b-402a-4c87-9ff7-4a6d8c7dc9ea","method":"PATCH","route":"/admin/platform/maintenance","statusCode":200,"durationMs":56}
+{"event":"HTTP_REQUEST","requestId":"e5510a06-ad8f-4253-bbbd-bb811613bf91","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":39}
+{"event":"HTTP_REQUEST","requestId":"6e2c63bb-ca0a-4312-967c-e0fe0877ee99","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":14}
+{"event":"HTTP_REQUEST","requestId":"8558ed81-7954-4759-902a-6b14103dbaec","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":21}
+{"event":"HTTP_REQUEST","requestId":"dcb78e1a-f6c9-4b7b-9311-6fd2a58a5177","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":15}
+{"event":"HTTP_REQUEST","requestId":"bc62d92d-03a6-4e10-99cc-64d94a942785","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":17}
+{"event":"HTTP_REQUEST","requestId":"14ebd60d-64bf-4a2a-9ef3-df66db86f651","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":15}
+{"event":"HTTP_REQUEST","requestId":"27f29cc6-0c05-4db4-ad29-6b3d1a40a792","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":23}
+{"event":"HTTP_REQUEST","requestId":"158172b8-8196-4cd7-953c-27f6b7fd3e7e","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":25}
+{"event":"HTTP_REQUEST","requestId":"e30a1eb9-ae7c-45b0-8bb1-11c106f8483c","method":"GET","route":"/admin/users","statusCode":200,"durationMs":37}
+{"event":"HTTP_REQUEST","requestId":"1146bdb4-f5b8-4c83-aa33-2cd6efa21aed","method":"GET","route":"/admin/users","statusCode":200,"durationMs":19}
+{"event":"HTTP_REQUEST","requestId":"5c97489d-3326-4638-9bcd-03b53e0ac2e5","method":"GET","route":"/admin/users/:userId","statusCode":200,"durationMs":9}
+{"event":"HTTP_REQUEST","requestId":"f9c274bd-ac2f-49f5-bdf9-d0349a882015","method":"GET","route":"/admin/casino/math","statusCode":200,"durationMs":7}
+{"event":"HTTP_REQUEST","requestId":"97ed9d74-06a2-4096-8106-1624640efbbf","method":"GET","route":"/casino/rounds/:roundId","statusCode":200,"durationMs":6}
+{"event":"HTTP_REQUEST","requestId":"ac3dd283-9530-44d5-943c-7de2fa954876","method":"GET","route":"/casino/rounds/:roundId","statusCode":200,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"9ae1c45f-9230-4e8a-bceb-3890d73091f1","method":"GET","route":"/casino/rounds/:roundId","statusCode":200,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"bd865067-8abd-45f0-ac6d-ece9241c6de3","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":50}
+{"event":"HTTP_REQUEST","requestId":"2dba2bfc-3b6a-4a47-8501-3f930449d5cb","method":"POST","route":"/admin/users/:userId/coins/remove","statusCode":201,"durationMs":25}
+{"event":"HTTP_REQUEST","requestId":"b285d185-9139-4461-9ffd-ba8796e91699","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":20}
+{"event":"HTTP_REQUEST","requestId":"e081d342-49a1-49c7-b511-faba66191c1c","method":"POST","route":"/admin/users/:userId/coins/remove","statusCode":201,"durationMs":17}
+{"event":"HTTP_REQUEST","requestId":"131172cb-28f1-4ced-9a32-b5bd372ae51d","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":12}
+{"event":"HTTP_REQUEST","requestId":"7d165b35-d273-4905-99b7-e8a4f3f70727","method":"POST","route":"/admin/users/:userId/coins/remove","statusCode":201,"durationMs":10}
+{"event":"HTTP_REQUEST","requestId":"a2fcd2c4-7e36-4746-8798-48e405673a4c","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":10}
+{"event":"HTTP_REQUEST","requestId":"b2fb54a1-5471-40a8-a804-8a4854b857ce","method":"POST","route":"/admin/users/:userId/coins/remove","statusCode":201,"durationMs":12}
+{"event":"HTTP_REQUEST","requestId":"fa78e8f6-662d-4b2b-8849-e8b1a8f81fe6","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":17}
+{"event":"HTTP_REQUEST","requestId":"30fed8c9-3135-485c-9504-dc4ef12f39c8","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":11}
+{"event":"HTTP_REQUEST","requestId":"e5cdc9f8-471f-45cb-8de2-c44e32a573fa","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":10}
+{"event":"HTTP_REQUEST","requestId":"861fb941-4902-414b-b802-f39172956814","method":"GET","route":"/admin/casino/math","statusCode":200,"durationMs":33}
+{"event":"HTTP_REQUEST","requestId":"177639df-95d7-4910-8e9c-c57d98f57c0d","method":"POST","route":"/casino/lucky-lady/launch","statusCode":201,"durationMs":52}
+{"event":"HTTP_REQUEST","requestId":"e6ce9a28-e81b-4ee4-bebc-5eaa39ab8b7d","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":42}
+{"event":"HTTP_REQUEST","requestId":"fa858c0e-6089-4d67-aba0-ba7e0d6d7fdb","method":"POST","route":"/auth/login","statusCode":201,"durationMs":135}
+{"event":"HTTP_REQUEST","requestId":"16a39bc8-59b3-40e9-884d-1f61e2f451b9","method":"POST","route":"/auth/login","statusCode":201,"durationMs":113}
+{"event":"HTTP_REQUEST","requestId":"ea1aee11-f4d6-48cf-b22a-001b15960217","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":17}
+{"event":"HTTP_REQUEST","requestId":"175bea63-0d80-4bc1-b996-809b5736a1ef","method":"POST","route":"/auth/login","statusCode":201,"durationMs":126}
+{"event":"HTTP_REQUEST","requestId":"9aefa10e-1dcd-4d6f-b446-464443395ea1","method":"POST","route":"/auth/login","statusCode":201,"durationMs":122}
+{"event":"HTTP_REQUEST","requestId":"2862e5c2-84f3-4be9-be6f-2a14baaf8e3d","method":"GET","route":"/casino/games","statusCode":200,"durationMs":24}
+{"event":"HTTP_REQUEST","requestId":"bb8ec13d-1614-458d-b6a1-6bf88ab12f63","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":48}
+{"event":"HTTP_REQUEST","requestId":"c2519628-9611-4758-a3e0-b5560b38d22b","method":"POST","route":"/auth/refresh","statusCode":201,"durationMs":31}
+{"event":"HTTP_REQUEST","requestId":"c237d212-43ed-4ceb-b5b4-435e44c23011","method":"POST","route":"/auth/login","statusCode":201,"durationMs":188}
+{"event":"HTTP_REQUEST","requestId":"f89fe8df-85a2-4a8d-87d5-a5e5ea03a6b9","method":"POST","route":"/auth/refresh","statusCode":201,"durationMs":14}
+{"event":"HTTP_REQUEST","requestId":"db714e9d-cbb9-4847-9f8a-56e535add284","method":"POST","route":"/auth/refresh","statusCode":201,"durationMs":15}
+{"event":"HTTP_REQUEST","requestId":"94ec946f-6dd9-4f51-a356-8aaecef7dbb4","method":"POST","route":"/auth/login","statusCode":201,"durationMs":113}
+{"event":"HTTP_REQUEST","requestId":"33e6be25-e6b4-46f2-a318-d5e96173e6a9","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":31}
+{"event":"HTTP_REQUEST","requestId":"a5577d05-9872-47ec-8b4c-7c85ad70e0ee","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":32}
+{"event":"HTTP_REQUEST","requestId":"24d14661-8999-4b3b-a1de-9ef828d3e4c4","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":24}
+{"event":"HTTP_REQUEST","requestId":"bfab15f7-c1cb-4aa3-811d-0920698f6166","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":24}
+{"event":"HTTP_REQUEST","requestId":"b7c38d91-8f2c-447c-b3c7-3301ad821be1","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":38}
+{"event":"HTTP_REQUEST","requestId":"d5000d4b-5e52-474d-adaf-ad5944b41d30","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":62}
+{"event":"HTTP_REQUEST","requestId":"91790be2-8fff-4e22-bf07-ae62a64bdcd1","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":77}
+{"event":"HTTP_REQUEST","requestId":"ccd9d26d-8e51-4804-b41d-65fb6e90c208","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":35}
+{"event":"HTTP_REQUEST","requestId":"8d63efd7-560e-4ae7-a7ec-150d10588ed8","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":24}
+{"event":"HTTP_REQUEST","requestId":"96ea5302-6649-42cd-afeb-8a9585f86da2","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":19}
+{"event":"HTTP_REQUEST","requestId":"f822caf5-e490-4091-95ef-12afb5517207","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":18}
+{"event":"HTTP_REQUEST","requestId":"cd0bac75-7485-446f-a772-c410daa7672d","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":18}
+{"event":"HTTP_REQUEST","requestId":"cf27ec62-164d-4bd9-9197-e93b8d742b08","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":17}
+{"event":"HTTP_REQUEST","requestId":"2a535e6e-3ebd-4917-b830-b1d895e9cfe1","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":17}
+{"event":"HTTP_REQUEST","requestId":"8bcf1d19-6ff1-4bcf-bbe6-638a3ebf5124","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":16}
+{"event":"HTTP_REQUEST","requestId":"cd28ab2e-d05b-4de9-befa-9107089544cb","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":18}
+{"event":"HTTP_REQUEST","requestId":"fa436dda-8824-4c10-9946-d902ab133d7d","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":15}
+{"event":"HTTP_REQUEST","requestId":"9d08f60a-5465-42c1-89a7-716ee935a638","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":15}
+{"event":"HTTP_REQUEST","requestId":"09ccf233-c7f0-4dd9-a39a-683ca9c54726","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":16}
+{"event":"HTTP_REQUEST","requestId":"7be72618-b82b-4a0f-bcdc-6bc6d933e27b","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":15}
+{"event":"HTTP_REQUEST","requestId":"151df5ba-88b5-4ae2-ad0d-8d9af3893564","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"7f8035f7-069d-4ab5-9de5-8378bb12c5fe","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"781f4aca-e6ee-456e-be54-2e0c0c873b46","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":18}
+{"event":"HTTP_REQUEST","requestId":"a756ce67-17af-41ee-bc30-74380633d604","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":18}
+{"event":"HTTP_REQUEST","requestId":"87ae10f0-23f0-4561-8f03-95bf62ddb67b","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":16}
+{"event":"HTTP_REQUEST","requestId":"12a5f9bc-da92-4294-863a-18b82cff0073","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":18}
+Test Suites: 8 passed, 8 total
+Tests:       92 passed, 92 total
+Snapshots:   0 total
+Time:        717.963 s, estimated 772 s
+Ran all test suites matching test/lucky-lady.integration.spec.ts|test/lucky-lady-payout-panel.integration.spec.ts|test/payout-distribution-runtime.spec.ts|test/lucky-lady-payout-messages.spec.ts|test/hierarchical-rbac.integration.spec.ts|test/rbac-unit.spec.ts|test/p0-pts-superadmin-security.integration.spec.ts|test/p1-auth-ratelimit-audit.integration.spec.ts.

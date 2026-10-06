@@ -370,9 +370,39 @@ describe('Lucky Lady platform integration (PostgreSQL)', () => {
     expect(registry.findById(LUCKY_LADY_GAME_ID)?.gameVersion).toBe('lucky-lady.rtp50.v1');
   });
 
-  it('issues a one-time launch only to an enabled USER and stores only its hash', async () => {
-    await expect(game.issueLaunch(adminId)).rejects.toBeInstanceOf(ForbiddenException);
+  it('GAME_PLAY: USER, ADMIN and SUPER_ADMIN may launch, a disabled account may not, and every session binds its own owner', async () => {
+    const superAdmin = await prisma.user.create({
+      data: { email: uniqueTestEmail('lucky-super'), passwordHash: 'x', role: 'SUPER_ADMIN', wallet: { create: {} } },
+    });
+    const disabled = await prisma.user.create({
+      data: { email: uniqueTestEmail('lucky-disabled'), passwordHash: 'x', disabled: true, wallet: { create: {} } },
+    });
 
+    const sessions: Record<string, string> = {};
+    for (const [label, actor] of [['USER', userId], ['ADMIN', adminId], ['SUPER_ADMIN', superAdmin.id]] as const) {
+      const { token } = await game.issueLaunch(actor);
+      const session = await game.exchangeLaunch(token);
+      // Role grants the right to play; it never grants anyone else's session.
+      expect(session.userId).toBe(actor);
+      expect((await game.assertSession(session.sessionToken)).userId).toBe(actor);
+      sessions[label] = session.sessionToken;
+    }
+    expect(await prisma.gameLaunchCapability.count()).toBe(3);
+
+    // A disabled account is refused at launch, and the refusal is audited.
+    await expect(game.issueLaunch(disabled.id)).rejects.toMatchObject({ response: { code: 'GAME_PLAY_REQUIRED' } });
+    expect(await prisma.auditLog.count({ where: { actorId: disabled.id, action: 'PERMISSION_DENIED' } })).toBe(1);
+
+    // Disabling an account after it holds a live session revokes that session's effect at once.
+    await prisma.user.update({ where: { id: adminId }, data: { disabled: true } });
+    await expect(game.assertSession(sessions.ADMIN)).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(game.issueLaunch(adminId)).rejects.toBeInstanceOf(ForbiddenException);
+    // The other holders are unaffected, and no session resolves to a different user.
+    expect((await game.assertSession(sessions.USER)).userId).toBe(userId);
+    expect((await game.assertSession(sessions.SUPER_ADMIN)).userId).toBe(superAdmin.id);
+  });
+
+  it('issues a one-time launch to an enabled player and stores only its hash', async () => {
     const { token } = await game.issueLaunch(userId);
     expect(token).toMatch(/^[A-Za-z0-9_-]{40,}$/);
     const rows = await prisma.gameLaunchCapability.findMany();
@@ -1106,10 +1136,15 @@ describe('Lucky Lady platform integration (PostgreSQL)', () => {
       const playerToken = (await auth.login(httpEmail, password)).pair.accessToken;
       const adminToken = (await auth.login(httpAdminEmail, password)).pair.accessToken;
 
-      await request(server())
+      // GAME_PLAY is held by ADMIN as well; the capability it receives is bound to the admin's own account.
+      const adminLaunch = await request(server())
         .post('/casino/lucky-lady/launch')
         .set('Authorization', `Bearer ${adminToken}`)
-        .expect(403);
+        .expect(201);
+      expect(adminLaunch.body.token).toMatch(/^[A-Za-z0-9_-]{40,}$/);
+      const adminCapability = await prisma.gameLaunchCapability.findFirstOrThrow({ where: { userId: admin.id } });
+      expect(adminCapability.userId).toBe(admin.id);
+      expect(adminCapability.userId).not.toBe(player.id);
 
       const launched = await request(server())
         .post('/casino/lucky-lady/launch')

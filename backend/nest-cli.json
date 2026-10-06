@@ -10,6 +10,10 @@
       {
         "include": "casino/platform/math-control/*.js",
         "outDir": "dist/src"
+      },
+      {
+        "include": "casino/games/lucky-lady/payout/*.js",
+        "outDir": "dist/src"
       }
     ],
     "watchAssets": false

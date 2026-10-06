@@ -1,0 +1,30 @@
+
+> test
+> node -e "const raw=process.env.DATABASE_URL||''; if(!raw) throw new Error('DATABASE_URL is required for backend tests'); const name=new URL(raw).pathname.replace(/^\/+/, '').split('/')[0]||''; const safe=name.toLowerCase().includes('_test'); if(!safe || name.toLowerCase()==='fools_gold' || name.toLowerCase()==='postgres') throw new Error('Unsafe test database: ' + name);" && node --experimental-vm-modules ../node_modules/jest/bin/jest.js --runInBand test/hierarchical-rbac.integration.spec.ts test/rbac-unit.spec.ts --verbose
+
+{"event":"HTTP_REQUEST","requestId":"5182573a-dfeb-43f4-ac58-ba08feef459a","method":"POST","route":"/casino/lucky-lady/launch","statusCode":201,"durationMs":70}
+{"event":"HTTP_REQUEST","requestId":"b5dc7d28-886a-4bde-a23d-5ab60436d00f","method":"POST","route":"/casino/lucky-lady/launch","statusCode":201,"durationMs":23}
+{"event":"HTTP_REQUEST","requestId":"e39c7e18-232a-412d-8156-6a6593a645cf","method":"POST","route":"/casino/lucky-lady/launch","statusCode":201,"durationMs":31}
+{"event":"HTTP_REQUEST","requestId":"51bb103a-d804-471a-87a7-6a5c96aa9d09","method":"GET","route":"/admin/casino/math","statusCode":200,"durationMs":21}
+{"event":"HTTP_REQUEST","requestId":"b1047559-4efa-499a-be2f-33033fa0bc38","method":"GET","route":"/admin/casino/math","statusCode":200,"durationMs":9}
+{"event":"HTTP_REQUEST","requestId":"7567b15c-6db6-4463-9756-cb75f548c552","method":"PATCH","route":"/admin/platform/maintenance","statusCode":200,"durationMs":28}
+{"event":"HTTP_REQUEST","requestId":"0aaa6608-1b2f-43c0-bfcd-1229371d6627","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":36}
+{"event":"HTTP_REQUEST","requestId":"5220b6f3-b245-4fe7-be23-7c716808a405","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":10}
+{"event":"HTTP_REQUEST","requestId":"0f087925-3aca-4414-97f2-d7627e06980b","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":17}
+{"event":"HTTP_REQUEST","requestId":"89be8268-70e6-4619-a48e-db5b6ef1f479","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":26}
+{"event":"HTTP_REQUEST","requestId":"65abfc8d-096d-464c-9b36-55f18250979b","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":19}
+{"event":"HTTP_REQUEST","requestId":"3050a061-8055-4a05-a405-11e5043e6913","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":27}
+{"event":"HTTP_REQUEST","requestId":"981b7b7c-2ff0-4bbc-a24d-9b0213403f42","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":19}
+{"event":"HTTP_REQUEST","requestId":"fec79a66-95b8-4b61-be39-cf975144b5ac","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":18}
+{"event":"HTTP_REQUEST","requestId":"3520de0e-14f7-4a30-8da3-674a3962143b","method":"GET","route":"/admin/users","statusCode":200,"durationMs":16}
+{"event":"HTTP_REQUEST","requestId":"2bb63396-42e2-4fd2-b7d2-9210ebec9b8a","method":"GET","route":"/admin/users","statusCode":200,"durationMs":11}
+{"event":"HTTP_REQUEST","requestId":"5d967db4-102d-4dc1-a9f2-deae79877f0f","method":"GET","route":"/admin/users/:userId","statusCode":200,"durationMs":3}
+{"event":"HTTP_REQUEST","requestId":"fa7842df-a426-4c45-a690-870f22c0bd6f","method":"GET","route":"/admin/casino/math","statusCode":200,"durationMs":11}
+{"event":"HTTP_REQUEST","requestId":"a0fedc38-aed3-4838-8211-a2974ed844cc","method":"GET","route":"/casino/rounds/:roundId","statusCode":200,"durationMs":10}
+{"event":"HTTP_REQUEST","requestId":"121d50da-5ab9-4c0d-8845-c8d2d17893f2","method":"GET","route":"/casino/rounds/:roundId","statusCode":200,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"2866d006-e200-478c-8888-dc29c6985c9a","method":"GET","route":"/casino/rounds/:roundId","statusCode":200,"durationMs":4}
+Test Suites: 2 passed, 2 total
+Tests:       21 passed, 21 total
+Snapshots:   0 total
+Time:        25.814 s
+Ran all test suites matching test/hierarchical-rbac.integration.spec.ts|test/rbac-unit.spec.ts.

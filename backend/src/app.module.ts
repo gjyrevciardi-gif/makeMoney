@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { AdminController } from './admin/admin.controller';
 import { AuthController } from './auth/auth.controller';
 import { AuthService } from './auth/auth.service';
+import { AuthorizationService } from './auth/authorization.service';
+import { UserAdminController } from './auth/user-admin.controller';
 import { PrismaService } from './prisma.service';
 import { PointsService } from './wallet/points.service';
 import { JwtModule } from '@nestjs/jwt';
@@ -25,8 +27,8 @@ import { MiddlewareConsumer, NestModule } from '@nestjs/common';
 
 @Module({
   imports: [JwtModule.register({ secret: process.env.JWT_ACCESS_SECRET }), SportsModule, BetsModule, SettlementModule, SportsOperationsModule, CasinoModule],
-  controllers: [AuthController, AdminController, PrivateController, ProductionHealthController],
-  providers: [PrismaService, AuthService, PointsService, AccessGuard, RolesGuard, RedisService, RateLimitService, RequestIdMiddleware, { provide: APP_INTERCEPTOR, useClass: BigIntInterceptor }, { provide: APP_INTERCEPTOR, useClass: RequestLoggingInterceptor }, { provide: APP_FILTER, useClass: SafeExceptionFilter }],
+  controllers: [AuthController, AdminController, UserAdminController, PrivateController, ProductionHealthController],
+  providers: [PrismaService, AuthService, AuthorizationService, PointsService, AccessGuard, RolesGuard, RedisService, RateLimitService, RequestIdMiddleware, { provide: APP_INTERCEPTOR, useClass: BigIntInterceptor }, { provide: APP_INTERCEPTOR, useClass: RequestLoggingInterceptor }, { provide: APP_FILTER, useClass: SafeExceptionFilter }],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

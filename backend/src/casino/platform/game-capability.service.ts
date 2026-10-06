@@ -6,9 +6,9 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Role } from '@prisma/client';
 import { createHash, randomBytes } from 'node:crypto';
 import { PrismaService } from '../../prisma.service';
+import { hasCapability } from '../../auth/capabilities';
 import {
   ExchangeOptions,
   GAME_AVAILABILITY,
@@ -49,13 +49,19 @@ export class GameCapabilityService {
     @Inject(GAME_PLAYABILITY) private readonly playability: GamePlayability,
   ) {}
 
-  /** Re-reads the database role: a demoted admin's live token must not play. */
+  /** Re-reads the database role and status: a demoted or disabled account must not play. */
   async requirePlayer(userId: string, gameId: string) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { id: true, role: true } });
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, role: true, disabled: true },
+    });
     if (!user) {
       throw new UnauthorizedException({ code: 'AUTHENTICATION_REQUIRED', message: 'Authentication required.' });
     }
-    if (user.role !== Role.USER) {
+    // GAME_PLAY is held by USER, ADMIN and SUPER_ADMIN alike, so any account
+    // with the capability may open a game session - but the session and every
+    // round stay bound to that one user.
+    if (user.disabled || !hasCapability(user.role, 'GAME_PLAY')) {
       await this.prisma.auditLog.create({
         data: {
           actorId: user.id,
@@ -63,10 +69,10 @@ export class GameCapabilityService {
           targetId: gameId,
           action: 'PERMISSION_DENIED',
           result: 'DENIED',
-          metadata: { operation: 'GAME_PLAYER_ONLY' },
+          metadata: { operation: 'GAME_PLAY_REQUIRED', disabled: user.disabled },
         },
       });
-      throw new ForbiddenException({ code: 'PLAYER_ROLE_REQUIRED', message: 'This game is available to players only.' });
+      throw new ForbiddenException({ code: 'GAME_PLAY_REQUIRED', message: 'This account may not play games.' });
     }
     return user;
   }

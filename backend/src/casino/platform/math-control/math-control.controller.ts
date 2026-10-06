@@ -1,9 +1,8 @@
 import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
-import { Role } from '@prisma/client';
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 import { AccessGuard, AuthenticatedRequest } from '../../../auth/access.guard';
-import { Roles } from '../../../auth/roles.decorator';
+import { Capabilities } from '../../../auth/capabilities.decorator';
 import { RolesGuard } from '../../../auth/roles.guard';
 import { RATE_LIMITS, RateLimitService } from '../../../common/rate-limit.service';
 import { ActivateMathDto, MathPolicyDto, ValidationOptionsDto } from './math-control.dto';
@@ -35,7 +34,7 @@ class ValidationQuery {
  */
 @Controller('admin/casino/math')
 @UseGuards(AccessGuard, RolesGuard)
-@Roles(Role.ADMIN)
+@Capabilities('GAME_MATH_MANAGE')
 export class MathControlController {
   constructor(
     private readonly math: MathControlService,
