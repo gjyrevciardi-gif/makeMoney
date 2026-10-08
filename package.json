@@ -1,12 +1,25 @@
 {
   "name": "fools-gold-club",
   "private": true,
-  "workspaces": ["backend", "frontend"],
+  "workspaces": [
+    "backend",
+    "frontend",
+    "packages/slot-skills/*",
+    "games/gates/backend",
+    "games/gates/frontend",
+    "games/book-of-ra"
+  ],
   "scripts": {
     "install:all": "npm install",
     "test": "npm run test -w backend",
+    "backend:test": "npm run test -w backend",
     "typecheck": "npm run typecheck -w backend && npm run typecheck -w frontend",
-    "build": "npm run build -w backend && npm run build -w frontend"
+    "build": "npm run build -w backend && npm run build -w frontend",
+    "build:slot-skills": "npm run build --workspace=@slot-skills/schema && npm run build --workspace=@slot-skills/math && npm run build --workspace=@slot-skills/features && npm run build --workspace=@slot-skills/runtime && npm run build --workspace=@slot-skills/host",
+    "game:gates:test": "npm run test --workspace=games/gates/backend",
+    "game:book:test": "npm run build:slot-skills && npm run test --workspace=@slot-skills/schema --workspace=@slot-skills/math --workspace=@slot-skills/features --workspace=@slot-skills/runtime --workspace=@slot-skills/host",
+    "games:test": "npm run game:gates:test && npm run game:book:test",
+    "acceptance": "node scripts/acceptance.mjs"
   }
 }
 

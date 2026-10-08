@@ -1,0 +1,250 @@
+schemaVersion: "2.0"
+engineApi: "1.0"
+id: book-of-the-sands
+version: 1.0.0
+title: Book of the Sands
+
+# Portrait-capable on purpose. The reference Gates package declares `landscape`,
+# which force-rotates narrow phones; this game is mobile-first, so the client is
+# allowed to reflow instead.
+layout:
+  reels: 5
+  rows: 3
+  orientation: responsive
+  maxVisibleCells: 100
+
+# Canonical ids are required by the framework's symbol contract (high-N / low-N
+# contiguous from 1, bare `scatter` for a single special). The Egyptian identity
+# lives in `name` and the artwork.
+#
+# There is no separate Wild: in this style of game the Book is the only special,
+# acting as the scatter that pays anywhere and opens the free spins.
+symbols:
+  - id: high-1
+    name: Explorer
+    kind: normal
+    asset: high-1
+    tags: [high]
+  - id: high-2
+    name: Pharaoh
+    kind: normal
+    asset: high-2
+    tags: [high]
+  - id: high-3
+    name: Scarab
+    kind: normal
+    asset: high-3
+    tags: [high]
+  - id: high-4
+    name: Guardian Statue
+    kind: normal
+    asset: high-4
+    tags: [high]
+  - id: low-1
+    name: Ace
+    kind: normal
+    asset: low-1
+    tags: [low]
+  - id: low-2
+    name: King
+    kind: normal
+    asset: low-2
+    tags: [low]
+  - id: low-3
+    name: Queen
+    kind: normal
+    asset: low-3
+    tags: [low]
+  - id: low-4
+    name: Jack
+    kind: normal
+    asset: low-4
+    tags: [low]
+  - id: low-5
+    name: Ten
+    kind: normal
+    asset: low-5
+    tags: [low]
+  - id: scatter
+    name: Book of the Sands
+    kind: scatter
+    asset: scatter
+
+math:
+  evaluator: paylines
+  outcomeGenerator: weighted-grid
+  targets:
+    rtpBps: 9600
+    volatility: high
+    hitRateBps: [2200, 3200]
+    maxWinMultiplier:
+      numerator: "5000"
+      denominator: "1"
+  paytable:
+    - { symbolId: high-1, count: 2, payout: { numerator: "10", denominator: "1" }, basis: line-bet }
+    - { symbolId: high-1, count: 3, payout: { numerator: "100", denominator: "1" }, basis: line-bet }
+    - { symbolId: high-1, count: 4, payout: { numerator: "1000", denominator: "1" }, basis: line-bet }
+    - { symbolId: high-1, count: 5, payout: { numerator: "5000", denominator: "1" }, basis: line-bet }
+    - { symbolId: high-2, count: 2, payout: { numerator: "5", denominator: "1" }, basis: line-bet }
+    - { symbolId: high-2, count: 3, payout: { numerator: "40", denominator: "1" }, basis: line-bet }
+    - { symbolId: high-2, count: 4, payout: { numerator: "400", denominator: "1" }, basis: line-bet }
+    - { symbolId: high-2, count: 5, payout: { numerator: "2000", denominator: "1" }, basis: line-bet }
+    - { symbolId: high-3, count: 2, payout: { numerator: "5", denominator: "1" }, basis: line-bet }
+    - { symbolId: high-3, count: 3, payout: { numerator: "30", denominator: "1" }, basis: line-bet }
+    - { symbolId: high-3, count: 4, payout: { numerator: "100", denominator: "1" }, basis: line-bet }
+    - { symbolId: high-3, count: 5, payout: { numerator: "750", denominator: "1" }, basis: line-bet }
+    - { symbolId: high-4, count: 2, payout: { numerator: "5", denominator: "1" }, basis: line-bet }
+    - { symbolId: high-4, count: 3, payout: { numerator: "30", denominator: "1" }, basis: line-bet }
+    - { symbolId: high-4, count: 4, payout: { numerator: "100", denominator: "1" }, basis: line-bet }
+    - { symbolId: high-4, count: 5, payout: { numerator: "750", denominator: "1" }, basis: line-bet }
+    - { symbolId: low-1, count: 3, payout: { numerator: "5", denominator: "1" }, basis: line-bet }
+    - { symbolId: low-1, count: 4, payout: { numerator: "40", denominator: "1" }, basis: line-bet }
+    - { symbolId: low-1, count: 5, payout: { numerator: "150", denominator: "1" }, basis: line-bet }
+    - { symbolId: low-2, count: 3, payout: { numerator: "5", denominator: "1" }, basis: line-bet }
+    - { symbolId: low-2, count: 4, payout: { numerator: "40", denominator: "1" }, basis: line-bet }
+    - { symbolId: low-2, count: 5, payout: { numerator: "150", denominator: "1" }, basis: line-bet }
+    - { symbolId: low-3, count: 3, payout: { numerator: "5", denominator: "1" }, basis: line-bet }
+    - { symbolId: low-3, count: 4, payout: { numerator: "25", denominator: "1" }, basis: line-bet }
+    - { symbolId: low-3, count: 5, payout: { numerator: "100", denominator: "1" }, basis: line-bet }
+    - { symbolId: low-4, count: 3, payout: { numerator: "5", denominator: "1" }, basis: line-bet }
+    - { symbolId: low-4, count: 4, payout: { numerator: "25", denominator: "1" }, basis: line-bet }
+    - { symbolId: low-4, count: 5, payout: { numerator: "100", denominator: "1" }, basis: line-bet }
+    - { symbolId: low-5, count: 3, payout: { numerator: "5", denominator: "1" }, basis: line-bet }
+    - { symbolId: low-5, count: 4, payout: { numerator: "25", denominator: "1" }, basis: line-bet }
+    - { symbolId: low-5, count: 5, payout: { numerator: "100", denominator: "1" }, basis: line-bet }
+
+    # The Book pays anywhere and also opens the feature.
+    - { symbolId: scatter, count: 3, payout: { numerator: "2", denominator: "1" }, basis: bet }
+    - { symbolId: scatter, count: 4, payout: { numerator: "20", denominator: "1" }, basis: bet }
+    - { symbolId: scatter, count: 5, payout: { numerator: "200", denominator: "1" }, basis: bet }
+
+  symbolWeights:
+    high-1: 5
+    high-2: 7
+    high-3: 9
+    high-4: 9
+    low-1: 14
+    low-2: 14
+    low-3: 16
+    low-4: 16
+    low-5: 18
+    scatter: 3
+
+  featureWeights:
+    scatter-trigger: 100
+    free-spins: 100
+    retriggering-free-spins: 100
+    symbol-expansion: 100
+    gamble-feature: 100
+
+  maxCascades: 1
+
+  # The classic ten-line set for a 5x3 cabinet: three straights, a V and a
+  # chevron, two staircases, and three zig-zags. Rows are 0 top, 2 bottom.
+  paylines:
+    - [1, 1, 1, 1, 1]
+    - [0, 0, 0, 0, 0]
+    - [2, 2, 2, 2, 2]
+    - [0, 1, 2, 1, 0]
+    - [2, 1, 0, 1, 2]
+    - [0, 0, 1, 2, 2]
+    - [2, 2, 1, 0, 0]
+    - [1, 0, 1, 2, 1]
+    - [1, 2, 1, 0, 1]
+    - [0, 1, 1, 1, 0]
+
+features:
+  - id: scatter-trigger
+    enabled: true
+    config:
+      count: 3
+      countOn: final-grid
+  - id: free-spins
+    enabled: true
+    config:
+      spins: 10
+  - id: retriggering-free-spins
+    enabled: true
+    config:
+      scatterCount: 3
+      spins: 10
+      countOn: final-grid
+  # The special symbol expands to fill any reel it lands on, before evaluation.
+  - id: symbol-expansion
+    enabled: true
+    config:
+      symbolId: high-1
+  - id: gamble-feature
+    enabled: true
+
+assets:
+  - { id: high-1, role: symbol, path: assets/high-1.svg, mediaType: image/svg+xml }
+  - { id: high-2, role: symbol, path: assets/high-2.svg, mediaType: image/svg+xml }
+  - { id: high-3, role: symbol, path: assets/high-3.svg, mediaType: image/svg+xml }
+  - { id: high-4, role: symbol, path: assets/high-4.svg, mediaType: image/svg+xml }
+  - { id: low-1, role: symbol, path: assets/low-1.svg, mediaType: image/svg+xml }
+  - { id: low-2, role: symbol, path: assets/low-2.svg, mediaType: image/svg+xml }
+  - { id: low-3, role: symbol, path: assets/low-3.svg, mediaType: image/svg+xml }
+  - { id: low-4, role: symbol, path: assets/low-4.svg, mediaType: image/svg+xml }
+  - { id: low-5, role: symbol, path: assets/low-5.svg, mediaType: image/svg+xml }
+  - { id: scatter, role: symbol, path: assets/scatter.svg, mediaType: image/svg+xml }
+  - { id: background, role: background, path: assets/background.svg, mediaType: image/svg+xml }
+
+theme:
+  id: book-of-the-sands-theme
+  palette:
+    - "#150d07"
+    - "#4a2f17"
+    - "#e8b93c"
+    - "#c0392b"
+    - "#f3e2bd"
+  components:
+    reels: renderer:dom-grid
+    hud: renderer:default-hud
+    paytable: renderer:default-paytable
+    effects: renderer:canvas-overlay
+  effects:
+    round-start: reel-spin-blur
+    reel-stop: reel-stop-impact
+    win: symbol-win-pulse
+    reel-transform: symbol-wild-reveal
+    near-miss: reel-anticipation
+    free-spins-start: light-rays
+    free-spins-end: shine-starburst
+    feature-start: light-radial-pulse
+    max-win: fire-inferno
+  sounds: {}
+
+locales:
+  default: en
+  packs:
+    en: locales/en.json
+    en-XA: locales/en-XA.json
+
+jurisdiction:
+  profileId: mt-mga-reference
+  reviewedAt: 2026-09-18
+  reviewBy: 2026-12-18
+  sourceUrls:
+    - https://legislation.mt/eli/cap/583/eng
+    - https://www.mga.org.mt/app/uploads/Player-Protection-Directive-Directive-2-of-2018.pdf
+    - https://gaminglabs.com/wp-content/uploads/2024/06/GLI-19-Interactive-Gaming-Systems-v3.0.pdf
+
+providers:
+  rng: external-rng
+  wallet: external-wallet
+  jackpot: external-jackpot
+  session: external-session
+  audit: external-audit
+  image: gemini-3.1-flash-image
+  video: veo-3.1-generate-preview
+  audio: elevenlabs
+
+presentation:
+  symbolScale: 1.12
+  cycleDurationMs: 2600
+  autoPlay: true
+  turbo: true
+  slamStop: true
+  celebrateReturnAtOrBelowStake: false
+  reducedMotionFallback: true

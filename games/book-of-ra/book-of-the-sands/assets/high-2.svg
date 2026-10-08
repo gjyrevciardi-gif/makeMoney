@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<defs>
+  <linearGradient id="au" x1=".18" y1="0" x2=".82" y2="1">
+    <stop offset="0%" stop-color="#fff8dd"/><stop offset="16%" stop-color="#ffe9a8"/>
+    <stop offset="38%" stop-color="#eec25a"/><stop offset="55%" stop-color="#c9922a"/>
+    <stop offset="74%" stop-color="#8d5d12"/><stop offset="100%" stop-color="#4a2d05"/>
+  </linearGradient>
+  <linearGradient id="auEdge" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#6a4410"/><stop offset="100%" stop-color="#2e1c04"/>
+  </linearGradient>
+  <radialGradient id="auDome" cx="36%" cy="26%" r="78%">
+    <stop offset="0%" stop-color="#fff6d6"/><stop offset="30%" stop-color="#f0c75e"/>
+    <stop offset="66%" stop-color="#b57f22"/><stop offset="100%" stop-color="#4a2d05"/>
+  </radialGradient>
+  <radialGradient id="fleshD" cx="38%" cy="28%" r="76%">
+    <stop offset="0%" stop-color="#f7ddb9"/><stop offset="45%" stop-color="#ddb684"/>
+    <stop offset="80%" stop-color="#a8794a"/><stop offset="100%" stop-color="#6b4a28"/>
+  </radialGradient>
+  <radialGradient id="lapisD" cx="36%" cy="26%" r="80%">
+    <stop offset="0%" stop-color="#bfe4ff"/><stop offset="34%" stop-color="#3e90d8"/>
+    <stop offset="72%" stop-color="#17508f"/><stop offset="100%" stop-color="#08254c"/>
+  </radialGradient>
+  <radialGradient id="redD" cx="36%" cy="28%" r="78%">
+    <stop offset="0%" stop-color="#ff9c88"/><stop offset="40%" stop-color="#d2402c"/>
+    <stop offset="100%" stop-color="#5e1208"/>
+  </radialGradient>
+  <linearGradient id="clothD" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#8a6a3c"/><stop offset="48%" stop-color="#5d4523"/>
+    <stop offset="100%" stop-color="#2b1e0d"/>
+  </linearGradient>
+  <linearGradient id="linen" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#fbf3dd"/><stop offset="60%" stop-color="#ddcaa2"/>
+    <stop offset="100%" stop-color="#9c8558"/>
+  </linearGradient>
+  <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
+    <feGaussianBlur stdDeviation="9"/>
+  </filter>
+  <filter id="soft4" x="-40%" y="-40%" width="180%" height="180%">
+    <feGaussianBlur stdDeviation="4"/>
+  </filter>
+  <filter id="cast" x="-30%" y="-30%" width="160%" height="170%">
+    <feDropShadow dx="0" dy="14" stdDeviation="14" flood-color="#000" flood-opacity=".9"/>
+  </filter>
+</defs>
+<g filter="url(#cast)">
+  <path d="M118 182c0-74 62-130 138-130s138 56 138 130c0 28-8 46-20 54l-22 172c-2 24-42 42-96 42s-94-18-96-42l-22-172c-12-8-20-26-20-54z" fill="url(#auDome)"/>
+  <path d="M142 152h228M134 200h244M130 248h252" stroke="#1d4f8c" stroke-width="17" opacity=".92"/>
+  <path d="M142 160h228M134 208h244M130 256h252" stroke="#3f8fd0" stroke-width="5" opacity=".55"/>
+  <path d="M180 244c0-56 34-94 76-94s76 38 76 94c0 68-34 116-76 116s-76-48-76-116z" fill="url(#fleshD)"/>
+  <path d="M192 296c10 46 30 66 64 66s54-20 64-66c-18 24-38 34-64 34s-46-10-64-34z" fill="#8a5f34" opacity=".3" filter="url(#soft4)"/>
+  <ellipse cx="222" cy="258" rx="19" ry="13" fill="#f6efe0"/>
+  <ellipse cx="290" cy="258" rx="19" ry="13" fill="#f6efe0"/>
+  <circle cx="225" cy="259" r="8.5" fill="#12406f"/><circle cx="293" cy="259" r="8.5" fill="#12406f"/>
+  <circle cx="227" cy="256" r="3" fill="#fff"/><circle cx="295" cy="256" r="3" fill="#fff"/>
+  <path d="M196 236c14-16 36-18 50-9M266 227c14-9 36-7 50 9" stroke="#17508f" stroke-width="11" fill="none" stroke-linecap="round"/>
+  <path d="M256 282v28" stroke="#8a5f34" stroke-width="7" stroke-linecap="round" opacity=".6"/>
+  <path d="M230 330c16 11 36 11 52 0" stroke="#5d3b1c" stroke-width="8" fill="none" stroke-linecap="round" opacity=".75"/>
+  <ellipse cx="214" cy="232" rx="30" ry="18" fill="#fff" opacity="0.3" filter="url(#soft)" transform="rotate(-20 214 232)"/>
+  <path d="M242 98c0-20 28-20 28 0 0 15-15 19-15 36 0 11 11 15 19 9-4 19-36 19-36-7 0-19 4-25 4-38z" fill="#1f8f80"/>
+  <ellipse cx="250" cy="106" rx="8" ry="12" fill="#fff" opacity="0.45" filter="url(#soft)" transform="rotate(0 250 106)"/>
+  <path d="M206 392h100l-12 50h-76z" fill="url(#au)"/>
+  <path d="M206 392h100l-3 12h-94z" fill="#fff3c2" opacity=".5"/>
+  <ellipse cx="160" cy="150" rx="34" ry="60" fill="#fff" opacity="0.24" filter="url(#soft)" transform="rotate(-14 160 150)"/>
+</g></svg>

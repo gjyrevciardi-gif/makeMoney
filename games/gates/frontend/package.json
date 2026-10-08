@@ -1,0 +1,12 @@
+{
+  "name": "gates-frontend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --port 5174"
+  },
+  "dependencies": { "phaser": "^3.87.0" },
+  "devDependencies": { "typescript": "^5.7.2", "vite": "^6.0.7" }
+}

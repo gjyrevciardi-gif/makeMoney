@@ -1,0 +1,13 @@
+id: book-of-the-sands
+title: Book of the Sands
+theme: custom
+themePrompt: Ancient Egyptian tomb interior, dark sandstone temple walls carved
+  with hieroglyphs, gold and deep red ornament, torchlit, classic land-based
+  slot cabinet look
+layoutTemplate: classic-5x3-lines
+features:
+  - scatter-trigger
+  - free-spins
+  - retriggering-free-spins
+  - symbol-expansion
+  - gamble-feature

@@ -1,0 +1,660 @@
+{
+  "assets": [
+    {
+      "id": "high-1",
+      "mediaType": "image/svg+xml",
+      "path": "assets/high-1.svg",
+      "role": "symbol"
+    },
+    {
+      "id": "high-2",
+      "mediaType": "image/svg+xml",
+      "path": "assets/high-2.svg",
+      "role": "symbol"
+    },
+    {
+      "id": "high-3",
+      "mediaType": "image/svg+xml",
+      "path": "assets/high-3.svg",
+      "role": "symbol"
+    },
+    {
+      "id": "high-4",
+      "mediaType": "image/svg+xml",
+      "path": "assets/high-4.svg",
+      "role": "symbol"
+    },
+    {
+      "id": "low-1",
+      "mediaType": "image/svg+xml",
+      "path": "assets/low-1.svg",
+      "role": "symbol"
+    },
+    {
+      "id": "low-2",
+      "mediaType": "image/svg+xml",
+      "path": "assets/low-2.svg",
+      "role": "symbol"
+    },
+    {
+      "id": "low-3",
+      "mediaType": "image/svg+xml",
+      "path": "assets/low-3.svg",
+      "role": "symbol"
+    },
+    {
+      "id": "low-4",
+      "mediaType": "image/svg+xml",
+      "path": "assets/low-4.svg",
+      "role": "symbol"
+    },
+    {
+      "id": "low-5",
+      "mediaType": "image/svg+xml",
+      "path": "assets/low-5.svg",
+      "role": "symbol"
+    },
+    {
+      "id": "scatter",
+      "mediaType": "image/svg+xml",
+      "path": "assets/scatter.svg",
+      "role": "symbol"
+    },
+    {
+      "id": "background",
+      "mediaType": "image/svg+xml",
+      "path": "assets/background.svg",
+      "role": "background"
+    }
+  ],
+  "engineApi": "1.0",
+  "features": [
+    {
+      "config": {
+        "count": 3,
+        "countOn": "final-grid"
+      },
+      "enabled": true,
+      "id": "scatter-trigger"
+    },
+    {
+      "config": {
+        "spins": 10
+      },
+      "enabled": true,
+      "id": "free-spins"
+    },
+    {
+      "config": {
+        "countOn": "final-grid",
+        "scatterCount": 3,
+        "spins": 10
+      },
+      "enabled": true,
+      "id": "retriggering-free-spins"
+    },
+    {
+      "config": {
+        "symbolId": "high-1"
+      },
+      "enabled": true,
+      "id": "symbol-expansion"
+    },
+    {
+      "enabled": true,
+      "id": "gamble-feature"
+    }
+  ],
+  "id": "book-of-the-sands",
+  "jurisdiction": {
+    "profileId": "mt-mga-reference",
+    "reviewBy": "2026-12-18",
+    "reviewedAt": "2026-09-18",
+    "sourceUrls": [
+      "https://legislation.mt/eli/cap/583/eng",
+      "https://www.mga.org.mt/app/uploads/Player-Protection-Directive-Directive-2-of-2018.pdf",
+      "https://gaminglabs.com/wp-content/uploads/2024/06/GLI-19-Interactive-Gaming-Systems-v3.0.pdf"
+    ]
+  },
+  "layout": {
+    "maxVisibleCells": 100,
+    "orientation": "responsive",
+    "reels": 5,
+    "rows": 3
+  },
+  "locales": {
+    "default": "en",
+    "packs": {
+      "en": "locales/en.json",
+      "en-XA": "locales/en-XA.json"
+    }
+  },
+  "math": {
+    "evaluator": "paylines",
+    "featureWeights": {
+      "free-spins": 100,
+      "gamble-feature": 100,
+      "retriggering-free-spins": 100,
+      "scatter-trigger": 100,
+      "symbol-expansion": 100
+    },
+    "maxCascades": 1,
+    "outcomeGenerator": "weighted-grid",
+    "paylines": [
+      [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      [
+        0,
+        1,
+        2,
+        1,
+        0
+      ],
+      [
+        2,
+        1,
+        0,
+        1,
+        2
+      ],
+      [
+        0,
+        0,
+        1,
+        2,
+        2
+      ],
+      [
+        2,
+        2,
+        1,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        1,
+        2,
+        1
+      ],
+      [
+        1,
+        2,
+        1,
+        0,
+        1
+      ],
+      [
+        0,
+        1,
+        1,
+        1,
+        0
+      ]
+    ],
+    "paytable": [
+      {
+        "basis": "bet",
+        "count": 2,
+        "payout": {
+          "denominator": "10",
+          "numerator": "1"
+        },
+        "symbolId": "high-1"
+      },
+      {
+        "basis": "bet",
+        "count": 3,
+        "payout": {
+          "denominator": "1",
+          "numerator": "2"
+        },
+        "symbolId": "high-1"
+      },
+      {
+        "basis": "bet",
+        "count": 4,
+        "payout": {
+          "denominator": "1",
+          "numerator": "20"
+        },
+        "symbolId": "high-1"
+      },
+      {
+        "basis": "bet",
+        "count": 5,
+        "payout": {
+          "denominator": "1",
+          "numerator": "100"
+        },
+        "symbolId": "high-1"
+      },
+      {
+        "basis": "bet",
+        "count": 3,
+        "payout": {
+          "denominator": "2",
+          "numerator": "3"
+        },
+        "symbolId": "high-2"
+      },
+      {
+        "basis": "bet",
+        "count": 4,
+        "payout": {
+          "denominator": "1",
+          "numerator": "8"
+        },
+        "symbolId": "high-2"
+      },
+      {
+        "basis": "bet",
+        "count": 5,
+        "payout": {
+          "denominator": "1",
+          "numerator": "40"
+        },
+        "symbolId": "high-2"
+      },
+      {
+        "basis": "bet",
+        "count": 3,
+        "payout": {
+          "denominator": "1",
+          "numerator": "1"
+        },
+        "symbolId": "high-3"
+      },
+      {
+        "basis": "bet",
+        "count": 4,
+        "payout": {
+          "denominator": "1",
+          "numerator": "4"
+        },
+        "symbolId": "high-3"
+      },
+      {
+        "basis": "bet",
+        "count": 5,
+        "payout": {
+          "denominator": "1",
+          "numerator": "15"
+        },
+        "symbolId": "high-3"
+      },
+      {
+        "basis": "bet",
+        "count": 3,
+        "payout": {
+          "denominator": "1",
+          "numerator": "1"
+        },
+        "symbolId": "high-4"
+      },
+      {
+        "basis": "bet",
+        "count": 4,
+        "payout": {
+          "denominator": "1",
+          "numerator": "4"
+        },
+        "symbolId": "high-4"
+      },
+      {
+        "basis": "bet",
+        "count": 5,
+        "payout": {
+          "denominator": "1",
+          "numerator": "15"
+        },
+        "symbolId": "high-4"
+      },
+      {
+        "basis": "bet",
+        "count": 3,
+        "payout": {
+          "denominator": "2",
+          "numerator": "1"
+        },
+        "symbolId": "low-1"
+      },
+      {
+        "basis": "bet",
+        "count": 4,
+        "payout": {
+          "denominator": "1",
+          "numerator": "1"
+        },
+        "symbolId": "low-1"
+      },
+      {
+        "basis": "bet",
+        "count": 5,
+        "payout": {
+          "denominator": "1",
+          "numerator": "3"
+        },
+        "symbolId": "low-1"
+      },
+      {
+        "basis": "bet",
+        "count": 3,
+        "payout": {
+          "denominator": "2",
+          "numerator": "1"
+        },
+        "symbolId": "low-2"
+      },
+      {
+        "basis": "bet",
+        "count": 4,
+        "payout": {
+          "denominator": "1",
+          "numerator": "1"
+        },
+        "symbolId": "low-2"
+      },
+      {
+        "basis": "bet",
+        "count": 5,
+        "payout": {
+          "denominator": "1",
+          "numerator": "3"
+        },
+        "symbolId": "low-2"
+      },
+      {
+        "basis": "bet",
+        "count": 3,
+        "payout": {
+          "denominator": "4",
+          "numerator": "1"
+        },
+        "symbolId": "low-3"
+      },
+      {
+        "basis": "bet",
+        "count": 4,
+        "payout": {
+          "denominator": "5",
+          "numerator": "4"
+        },
+        "symbolId": "low-3"
+      },
+      {
+        "basis": "bet",
+        "count": 5,
+        "payout": {
+          "denominator": "1",
+          "numerator": "2"
+        },
+        "symbolId": "low-3"
+      },
+      {
+        "basis": "bet",
+        "count": 3,
+        "payout": {
+          "denominator": "4",
+          "numerator": "1"
+        },
+        "symbolId": "low-4"
+      },
+      {
+        "basis": "bet",
+        "count": 4,
+        "payout": {
+          "denominator": "5",
+          "numerator": "4"
+        },
+        "symbolId": "low-4"
+      },
+      {
+        "basis": "bet",
+        "count": 5,
+        "payout": {
+          "denominator": "1",
+          "numerator": "2"
+        },
+        "symbolId": "low-4"
+      },
+      {
+        "basis": "bet",
+        "count": 3,
+        "payout": {
+          "denominator": "4",
+          "numerator": "1"
+        },
+        "symbolId": "low-5"
+      },
+      {
+        "basis": "bet",
+        "count": 4,
+        "payout": {
+          "denominator": "5",
+          "numerator": "3"
+        },
+        "symbolId": "low-5"
+      },
+      {
+        "basis": "bet",
+        "count": 5,
+        "payout": {
+          "denominator": "2",
+          "numerator": "3"
+        },
+        "symbolId": "low-5"
+      },
+      {
+        "basis": "bet",
+        "count": 3,
+        "payout": {
+          "denominator": "1",
+          "numerator": "2"
+        },
+        "symbolId": "scatter"
+      },
+      {
+        "basis": "bet",
+        "count": 4,
+        "payout": {
+          "denominator": "1",
+          "numerator": "20"
+        },
+        "symbolId": "scatter"
+      },
+      {
+        "basis": "bet",
+        "count": 5,
+        "payout": {
+          "denominator": "1",
+          "numerator": "200"
+        },
+        "symbolId": "scatter"
+      }
+    ],
+    "symbolWeights": {
+      "high-1": 5,
+      "high-2": 7,
+      "high-3": 9,
+      "high-4": 9,
+      "low-1": 14,
+      "low-2": 14,
+      "low-3": 16,
+      "low-4": 16,
+      "low-5": 18,
+      "scatter": 3
+    },
+    "targets": {
+      "hitRateBps": [
+        2200,
+        3200
+      ],
+      "maxWinMultiplier": {
+        "denominator": "1",
+        "numerator": "5000"
+      },
+      "rtpBps": 9600,
+      "volatility": "high"
+    }
+  },
+  "presentation": {
+    "autoPlay": true,
+    "celebrateReturnAtOrBelowStake": false,
+    "cycleDurationMs": 2600,
+    "reducedMotionFallback": true,
+    "slamStop": true,
+    "symbolScale": 1.12,
+    "turbo": true
+  },
+  "providers": {
+    "audio": "elevenlabs",
+    "audit": "external-audit",
+    "image": "gemini-3.1-flash-image",
+    "jackpot": "external-jackpot",
+    "rng": "external-rng",
+    "session": "external-session",
+    "video": "veo-3.1-generate-preview",
+    "wallet": "external-wallet"
+  },
+  "schemaVersion": "2.0",
+  "symbols": [
+    {
+      "asset": "high-1",
+      "id": "high-1",
+      "kind": "normal",
+      "name": "Explorer",
+      "tags": [
+        "high"
+      ]
+    },
+    {
+      "asset": "high-2",
+      "id": "high-2",
+      "kind": "normal",
+      "name": "Pharaoh",
+      "tags": [
+        "high"
+      ]
+    },
+    {
+      "asset": "high-3",
+      "id": "high-3",
+      "kind": "normal",
+      "name": "Scarab",
+      "tags": [
+        "high"
+      ]
+    },
+    {
+      "asset": "high-4",
+      "id": "high-4",
+      "kind": "normal",
+      "name": "Guardian Statue",
+      "tags": [
+        "high"
+      ]
+    },
+    {
+      "asset": "low-1",
+      "id": "low-1",
+      "kind": "normal",
+      "name": "Ace",
+      "tags": [
+        "low"
+      ]
+    },
+    {
+      "asset": "low-2",
+      "id": "low-2",
+      "kind": "normal",
+      "name": "King",
+      "tags": [
+        "low"
+      ]
+    },
+    {
+      "asset": "low-3",
+      "id": "low-3",
+      "kind": "normal",
+      "name": "Queen",
+      "tags": [
+        "low"
+      ]
+    },
+    {
+      "asset": "low-4",
+      "id": "low-4",
+      "kind": "normal",
+      "name": "Jack",
+      "tags": [
+        "low"
+      ]
+    },
+    {
+      "asset": "low-5",
+      "id": "low-5",
+      "kind": "normal",
+      "name": "Ten",
+      "tags": [
+        "low"
+      ]
+    },
+    {
+      "asset": "scatter",
+      "id": "scatter",
+      "kind": "scatter",
+      "name": "Book of the Sands"
+    }
+  ],
+  "theme": {
+    "components": {
+      "effects": "renderer:canvas-overlay",
+      "hud": "renderer:default-hud",
+      "paytable": "renderer:default-paytable",
+      "reels": "renderer:dom-grid"
+    },
+    "effects": {
+      "feature-start": "light-radial-pulse",
+      "free-spins-end": "shine-starburst",
+      "free-spins-start": "light-rays",
+      "max-win": "fire-inferno",
+      "near-miss": "reel-anticipation",
+      "reel-stop": "reel-stop-impact",
+      "reel-transform": "symbol-wild-reveal",
+      "round-start": "reel-spin-blur",
+      "win": "symbol-win-pulse"
+    },
+    "id": "book-of-the-sands-theme",
+    "palette": [
+      "#150d07",
+      "#4a2f17",
+      "#e8b93c",
+      "#c0392b",
+      "#f3e2bd"
+    ],
+    "sounds": {}
+  },
+  "title": "Book of the Sands",
+  "version": "1.0.0"
+}

@@ -13,6 +13,8 @@ logs/
 !.env.example
 !.env.production.example
 *.db
+*.db-shm
+*.db-wal
 *.sqlite
 *.sqlite3
 *.dump
@@ -32,3 +34,8 @@ frontend/tsconfig.tsbuildinfo
 
 # graphify knowledge-graph output (local only)
 graphify-out/
+
+# generated visual-test output (references/baselines are committed, output is not)
+tests/visual/output/*
+!tests/visual/output/.gitkeep
+screenshots/
