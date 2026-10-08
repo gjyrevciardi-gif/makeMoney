@@ -7,6 +7,8 @@ import { AppShell } from '../../components/shell/app-shell';
 import { getJson } from '../../lib/api';
 import { formatDateTime, formatPoints, humanize } from '../../lib/format';
 import { useLogout, useSession, useWallet } from '../../lib/queries';
+import { canAccessAdminUi } from '../../lib/capabilities';
+import { displayName } from '../../lib/format';
 
 type LedgerEntry = {
   id: string;
@@ -49,14 +51,15 @@ export default function AccountPage() {
         <div className="page-head">
           <div>
             <p className="kicker">Account</p>
-            <h1>{session.data?.email ?? '—'}</h1>
+            <h1>{displayName(session.data)}</h1>
             <p>
               {session.data ? humanize(session.data.role) : ''}
               {session.data ? ` · member since ${formatDateTime(session.data.createdAt)}` : ''}
             </p>
           </div>
           <div className="admin-game-actions">
-            {session.data?.role === 'ADMIN' && <Link className="btn btn-sm" href="/admin">Admin</Link>}
+            <Link className="btn btn-sm" href="/account/password">Change password</Link>
+            {canAccessAdminUi(session.data?.role) && <Link className="btn btn-sm" href="/admin">Admin</Link>}
             <button
               type="button"
               className="btn btn-sm"

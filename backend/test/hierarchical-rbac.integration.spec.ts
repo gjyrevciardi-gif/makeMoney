@@ -99,6 +99,9 @@ describe('hierarchical RBAC (PostgreSQL + Redis)', () => {
       make(superEmail, Role.SUPER_ADMIN),
       make(super2Email, Role.SUPER_ADMIN),
     ]);
+    // Players belong to the administrator who funds them (an ADMIN manages only their own players).
+    const owner = await prisma.user.findUniqueOrThrow({ where: { email: adminEmail } });
+    await prisma.user.updateMany({ where: { role: Role.USER }, data: { createdById: owner.id } });
   });
 
   const idOf = async (mail: string) => (await prisma.user.findUniqueOrThrow({ where: { email: mail } })).id;

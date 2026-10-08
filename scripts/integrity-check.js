@@ -41,6 +41,23 @@ const checks = [
     `,
   },
   {
+    // A manager transfer is two entries that cancel. One without its partner means points appeared or vanished.
+    name: 'every transfer entry has its equal and opposite partner',
+    sample: 'id',
+    query: `
+      SELECT l.id
+      FROM "LedgerEntry" l
+      WHERE (l.type = 'TRANSFER_IN' AND NOT EXISTS (
+              SELECT 1 FROM "LedgerEntry" o
+              WHERE o.type = 'TRANSFER_OUT' AND o.amount = -l.amount
+                AND o."idempotencyKey" = regexp_replace(l."idempotencyKey", ':in$', ':out')))
+         OR (l.type = 'TRANSFER_OUT' AND NOT EXISTS (
+              SELECT 1 FROM "LedgerEntry" i
+              WHERE i.type = 'TRANSFER_IN' AND i.amount = -l.amount
+                AND i."idempotencyKey" = regexp_replace(l."idempotencyKey", ':out$', ':in')))
+    `,
+  },
+  {
     name: 'no duplicate SPORTS_WIN payouts per bet',
     sample: 'relatedBetId',
     // The NULL filter matters: grouping without it collects every win that has

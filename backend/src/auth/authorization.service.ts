@@ -8,7 +8,7 @@ import {
 import { Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import {
-  canManageRole,
+  canManageUser,
   capabilityForRoleGrant,
   hasCapability,
   isProtectedHighRole,
@@ -16,7 +16,7 @@ import {
 } from './capabilities';
 
 export type ActorIdentity = { id: string; role: Role };
-export type ManagedUser = { id: string; email: string; role: Role; disabled: boolean };
+export type ManagedUser = { id: string; email: string | null; username: string | null; role: Role; disabled: boolean };
 
 /** One shared advisory-lock key for every write that can remove protected capacity. */
 export const SUPER_ADMIN_LOCK_KEY = 'casino:rbac:super-admin';
@@ -65,7 +65,7 @@ export class AuthorizationService {
    *  - demoting the last active SUPER_ADMIN is refused.
    */
   async changeRole(actorId: string, targetUserId: string, newRole: Role): Promise<ManagedUser> {
-    if (![Role.USER, Role.ADMIN, Role.SUPER_ADMIN].includes(newRole)) {
+    if (![Role.USER, Role.MANAGER, Role.ADMIN, Role.SUPER_ADMIN].includes(newRole)) {
       throw new BadRequestException({ code: 'INVALID_ROLE', message: 'Unknown role.' });
     }
     // The actor must at least be able to manage users.
@@ -76,7 +76,7 @@ export class AuthorizationService {
         const actor = await tx.user.findUnique({ where: { id: actorId }, select: { id: true, role: true, disabled: true } });
         const target = await tx.user.findUnique({
           where: { id: targetUserId },
-          select: { id: true, email: true, role: true, disabled: true },
+          select: { id: true, email: true, username: true, role: true, disabled: true, createdById: true, createdBy: { select: { createdById: true } } },
         });
         if (!actor || actor.disabled) throw new ForbiddenException('FORBIDDEN');
         if (!target) throw new NotFoundException({ code: 'USER_NOT_FOUND', message: 'No such user.' });
@@ -87,7 +87,7 @@ export class AuthorizationService {
         }
         // Target must be within the actor's reach, and the actor must hold the
         // capability the *new* role requires.
-        if (!canManageRole(actor.role, target.role)) {
+        if (!canManageUser(actor, target)) {
           throw new ForbiddenException({ code: 'TARGET_ROLE_FORBIDDEN', message: 'You cannot manage that account.' });
         }
         if (!hasCapability(actor.role, capabilityForRoleGrant(newRole))) {
@@ -100,7 +100,7 @@ export class AuthorizationService {
         const updated = await tx.user.update({
           where: { id: target.id },
           data: { role: newRole },
-          select: { id: true, email: true, role: true, disabled: true },
+          select: { id: true, email: true, username: true, role: true, disabled: true },
         });
         await tx.auditLog.create({
           data: {
@@ -132,14 +132,14 @@ export class AuthorizationService {
         const actor = await tx.user.findUnique({ where: { id: actorId }, select: { id: true, role: true, disabled: true } });
         const target = await tx.user.findUnique({
           where: { id: targetUserId },
-          select: { id: true, email: true, role: true, disabled: true },
+          select: { id: true, email: true, username: true, role: true, disabled: true, createdById: true, createdBy: { select: { createdById: true } } },
         });
         if (!actor || actor.disabled) throw new ForbiddenException('FORBIDDEN');
         if (!target) throw new NotFoundException({ code: 'USER_NOT_FOUND', message: 'No such user.' });
         if (actor.id === target.id && disabled) {
           throw new ForbiddenException({ code: 'SELF_DISABLE_FORBIDDEN', message: 'You cannot disable your own account.' });
         }
-        if (!canManageRole(actor.role, target.role)) {
+        if (!canManageUser(actor, target)) {
           throw new ForbiddenException({ code: 'TARGET_ROLE_FORBIDDEN', message: 'You cannot manage that account.' });
         }
         if (disabled && !target.disabled && isProtectedHighRole(target.role)) {
@@ -148,7 +148,7 @@ export class AuthorizationService {
         const updated = await tx.user.update({
           where: { id: target.id },
           data: { disabled },
-          select: { id: true, email: true, role: true, disabled: true },
+          select: { id: true, email: true, username: true, role: true, disabled: true },
         });
         if (disabled) {
           // Same transaction as the status change: a disabled account can no
@@ -211,7 +211,8 @@ export async function withSerializationConflict<T>(work: () => Promise<T>): Prom
 }
 
 function roleRank(role: Role): number {
-  if (role === Role.SUPER_ADMIN) return 2;
-  if (role === Role.ADMIN) return 1;
+  if (role === Role.SUPER_ADMIN) return 3;
+  if (role === Role.ADMIN) return 2;
+  if (role === Role.MANAGER) return 1;
   return 0;
 }

@@ -28,7 +28,10 @@ export class RolesGuard implements CanActivate {
       context.getClass(),
     ]);
     if (required?.length) {
-      if (hasAnyCapability(request.actor.role, required)) return true;
+      if (hasAnyCapability(request.actor.role, required)) {
+        await this.assertMfaEnrolled(request);
+        return true;
+      }
       await this.recordDenial(request);
       throw new ForbiddenException('FORBIDDEN');
     }
@@ -39,6 +42,18 @@ export class RolesGuard implements CanActivate {
     if (allowed.includes(request.actor.role)) return true;
     await this.recordDenial(request);
     throw new ForbiddenException('FORBIDDEN');
+  }
+
+  /**
+   * With ADMIN_MFA_REQUIRED=true an administrator must have Google Authenticator on before any admin route
+   * works. The enrolment endpoints carry no capability metadata, so they stay reachable.
+   */
+  private async assertMfaEnrolled(request: AuthenticatedRequest) {
+    if (process.env.ADMIN_MFA_REQUIRED !== 'true' || request.actor.role === Role.USER) return;
+    const enrolled = await this.prisma.userTotp.findUnique({ where: { userId: request.actor.id }, select: { enabledAt: true } });
+    if (!enrolled?.enabledAt) {
+      throw new ForbiddenException({ code: 'MFA_ENROLLMENT_REQUIRED', message: 'Turn on Google Authenticator to use admin tools.' });
+    }
   }
 
   private recordDenial(request: AuthenticatedRequest) {

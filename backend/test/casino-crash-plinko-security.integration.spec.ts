@@ -82,6 +82,7 @@ describe('crash and plinko security boundaries (PostgreSQL + Redis)', () => {
     userId = user.id;
     otherId = other.id;
     adminId = admin.id;
+    await prisma.user.updateMany({ where: { role: 'USER' }, data: { createdById: admin.id } });
     await points.adminGrant(adminId, userId, 10_000n, 'M3 funding', randomUUID());
     await points.adminGrant(adminId, otherId, 10_000n, 'M3 funding', randomUUID());
   });

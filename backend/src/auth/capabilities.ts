@@ -20,6 +20,10 @@ export const CAPABILITIES = [
   'PLAYER_POINTS_MANAGE',
   /** Manage USER-level accounts (never higher roles). */
   'USER_MANAGE',
+  /** Move points the actor already holds to or from their own players (a manager). Creates none. */
+  'PLAYER_POINTS_TRANSFER',
+  /** Create and manage MANAGER-level accounts. */
+  'MANAGER_MANAGE',
   /** Manage ADMIN-level accounts. */
   'ADMIN_MANAGE',
   /** Manage SUPER_ADMIN accounts (promote/demote/disable). */
@@ -36,18 +40,23 @@ export type Capability = (typeof CAPABILITIES)[number];
 
 const USER_CAPABILITIES: readonly Capability[] = ['GAME_PLAY', 'SELF_SERVICE'];
 
+/** A manager runs their own players with points an administrator gave them. */
+const MANAGER_CAPABILITIES: readonly Capability[] = ['GAME_PLAY', 'USER_MANAGE', 'PLAYER_POINTS_TRANSFER', 'SELF_SERVICE'];
+
 const ADMIN_CAPABILITIES: readonly Capability[] = [
   'GAME_PLAY',
   'GAME_ADMIN',
   'GAME_MATH_MANAGE',
   'PLAYER_POINTS_MANAGE',
   'USER_MANAGE',
+  'MANAGER_MANAGE',
   'AUDIT_VIEW',
   'SELF_SERVICE',
 ];
 
 const ROLE_CAPABILITIES: Record<Role, readonly Capability[]> = {
   USER: USER_CAPABILITIES,
+  MANAGER: MANAGER_CAPABILITIES,
   ADMIN: ADMIN_CAPABILITIES,
   SUPER_ADMIN: CAPABILITIES,
 };
@@ -76,14 +85,36 @@ export function hasAnyCapability(role: Role | null | undefined, capabilities: re
  */
 export function canManageRole(actorRole: Role, targetRole: Role): boolean {
   if (actorRole === Role.SUPER_ADMIN) return true;
-  if (actorRole === Role.ADMIN) return targetRole === Role.USER;
+  if (actorRole === Role.ADMIN) return targetRole === Role.USER || targetRole === Role.MANAGER;
+  if (actorRole === Role.MANAGER) return targetRole === Role.USER;
   return false;
+}
+
+/** What `canManageUser` needs to know about a target: its role, its creator, and that creator's creator. */
+export type Reach = { role: Role; createdById: string | null; createdBy?: { createdById: string | null } | null };
+export const REACH_SELECT = { role: true, createdById: true, createdBy: { select: { createdById: true } } } as const;
+
+/**
+ * True when the actor may manage this specific account.
+ *
+ * SUPER_ADMIN: any account. ADMIN: only a USER they created themselves, so one administrator can never
+ * touch another administrator's players. An account with no creator is reachable by a SUPER_ADMIN only.
+ */
+export function canManageUser(actor: { id: string; role: Role }, target: Reach): boolean {
+  if (actor.role === Role.SUPER_ADMIN) return true;
+  if (actor.role === Role.ADMIN) {
+    if (target.role === Role.MANAGER) return target.createdById === actor.id;
+    // A player is reached directly, or through the manager the administrator created.
+    return target.role === Role.USER && (target.createdById === actor.id || target.createdBy?.createdById === actor.id);
+  }
+  return actor.role === Role.MANAGER && target.role === Role.USER && target.createdById === actor.id;
 }
 
 /** The privilege a role-change *requires* the actor to hold for the new role. */
 export function capabilityForRoleGrant(role: Role): Capability {
   if (role === Role.SUPER_ADMIN) return 'SUPER_ADMIN_MANAGE';
   if (role === Role.ADMIN) return 'ADMIN_MANAGE';
+  if (role === Role.MANAGER) return 'MANAGER_MANAGE';
   return 'USER_MANAGE';
 }
 

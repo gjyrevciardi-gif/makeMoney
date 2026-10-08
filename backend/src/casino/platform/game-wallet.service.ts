@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CasinoTransactionType, LedgerType, Prisma } from '@prisma/client';
+import { recordWinIfLarge } from '../../security/security-events';
 import { TransactionClient, WalletMovement } from './game-adapter.types';
 
 /**
@@ -100,6 +101,9 @@ export class GameWalletService {
         idempotencyKey: params.key,
       },
     });
+    if (transactionType === 'WIN') {
+      await recordWinIfLarge(tx, { userId: params.userId, amount: params.amount, balanceAfter: after, refType: 'CASINO_ROUND', refId: params.roundId });
+    }
   }
 }
 

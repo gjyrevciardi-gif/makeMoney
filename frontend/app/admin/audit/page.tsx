@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { adminGet } from '../../../lib/admin';
+import { AdminAccessGate } from '../../../components/admin/admin-access-gate';
 
 type AuditEntry = {
   id: string;
@@ -41,17 +42,7 @@ export default function AdminAuditPage() {
 
   useEffect(() => { void load(); }, [load]);
 
-  if (state === 'denied') {
-    return (
-      <main className="ops-page ops-centered">
-        <div className="ops-denied">
-          <p className="ops-kicker">RESTRICTED</p>
-          <h1>Administrators only</h1>
-          <Link className="ops-link" href="/">Back to the site</Link>
-        </div>
-      </main>
-    );
-  }
+  if (state === 'denied') return <AdminAccessGate area="The audit log" />;
 
   return (
     <main className="ops-page">

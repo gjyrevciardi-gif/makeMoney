@@ -34,6 +34,55 @@
   }
   @media (min-width: 1024px) { .ops-section-tabs { display: none; } }
 
+  .ops-frame { --header-h: 52px; min-height: 100dvh; }
+  .ops-topbar {
+    position: sticky; top: 0; z-index: 20; height: var(--header-h);
+    display: flex; align-items: center; gap: 12px; padding: 0 14px;
+    background: var(--color-surface); border-bottom: 1px solid var(--color-line);
+    font-size: 0.8125rem; color: var(--color-ink-muted);
+  }
+  .ops-topbar .brand { font-weight: 800; letter-spacing: 0.04em; color: var(--color-brand); margin-right: auto; white-space: nowrap; }
+  .ops-topbar .brand span { color: var(--color-ink-muted); font-weight: 650; margin-left: 4px; }
+  .ops-topbar .brand span { display: none; }
+  .ops-topbar .ops-link { display: none; }
+  .ops-role { white-space: nowrap; }
+  @media (min-width: 720px) { .ops-topbar .brand span { display: inline; } .ops-topbar .ops-link { display: inline; } }
+  .ops-topbar-user { display: none; }
+  @media (min-width: 720px) { .ops-topbar-user { display: inline; color: var(--color-ink); font-weight: 650; } }
+  .ops-role {
+    padding: 3px 9px; border-radius: 999px; font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.04em;
+    background: var(--color-surface-3); color: var(--color-ink-muted); border: 1px solid var(--color-line);
+  }
+  .ops-role.is-super { background: var(--color-brand); color: var(--color-brand-ink); border-color: var(--color-brand); }
+  .ops-signout {
+    padding: 5px 11px; border-radius: var(--radius-md); border: 1px solid var(--color-line-strong);
+    background: var(--color-surface-2); font-size: 0.8125rem; font-weight: 650;
+  }
+  .ops-signout:hover:not(:disabled) { background: var(--color-surface-hover); }
+
+  .ops-shell .ops-sidebar { padding-top: 16px; }
+  .ops-nav-group { margin-bottom: 16px; }
+  .ops-nav-title { padding: 0 10px 5px; font-size: 0.625rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-ink-faint); }
+  .ops-nav-link {
+    display: block; padding: 8px 10px; border-radius: var(--radius-md); border-left: 3px solid transparent;
+    color: var(--color-ink-muted);
+  }
+  .ops-nav-link > span { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 0.875rem; font-weight: 650; color: var(--color-ink); }
+  .ops-nav-link > small { display: block; font-size: 0.6875rem; color: var(--color-ink-faint); margin-top: 1px; }
+  .ops-nav-link:hover { background: var(--color-surface-2); }
+  .ops-nav-link[aria-current="page"] { background: var(--color-surface-3); border-left-color: var(--color-brand); }
+  .ops-nav-link[aria-current="page"] > span { color: var(--color-brand); }
+  .ops-nav-scope { margin: 6px 10px 0; padding-top: 12px; border-top: 1px solid var(--color-line); font-size: 0.75rem; color: var(--color-ink-faint); }
+  .ops-badge {
+    min-width: 20px; padding: 1px 6px; border-radius: 999px; text-align: center;
+    background: var(--color-bad); color: #fff; font-size: 0.6875rem; font-weight: 800; margin-left: 6px;
+  }
+  .ops-section-tabs a { display: inline-flex; align-items: center; }
+
+  /* The frame carries identity and navigation, so each page's own breadcrumb bar is redundant here. */
+  .ops-body .ops-header { display: none; }
+  .ops-body .ops-content { padding: 0; max-width: 1100px; margin: 0; }
+
   .ops-body { min-width: 0; padding: 16px 14px 32px; }
   .ops-centered { display: grid; place-items: center; min-height: 60dvh; }
   .ops-denied { text-align: center; display: flex; flex-direction: column; gap: 7px; align-items: center; }

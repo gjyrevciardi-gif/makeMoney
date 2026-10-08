@@ -9,6 +9,7 @@ datasource db {
 
 enum Role {
   USER
+  MANAGER
   ADMIN
   SUPER_ADMIN
 }
@@ -22,6 +23,8 @@ enum LedgerType {
   SPORTS_BET
   CASINO_BET
   ADMIN_REMOVE
+  TRANSFER_OUT
+  TRANSFER_IN
 }
 
 enum BetStatus {
@@ -108,6 +111,18 @@ enum AuditAction {
   CASINO_MATH_PROFILE_ACTIVATED
   CASINO_MATH_PAYOUT_LIFECYCLE
   ADMIN_USER_STATUS_CHANGED
+  USER_CREATED
+  PASSWORD_SET_BY_ADMIN
+  PASSWORD_REVEALED
+  PASSWORD_CHANGED
+  USER_USERNAME_CHANGED
+  USER_OWNER_CHANGED
+  PTS_TRANSFER
+  MFA_ENABLED
+  MFA_RECOVERY_USED
+  MFA_LOGIN_FAILED
+  MFA_RESET
+  SECURITY_EVENT_ACKNOWLEDGED
 }
 
 enum CasinoConfigStatus {
@@ -140,7 +155,22 @@ enum SettlementAttemptStatus {
 
 model User {
   id                    String                    @id @default(uuid()) @db.Uuid
-  email                 String                    @unique
+  /// Optional: accounts are identified by `username`; email remains for accounts
+  /// created before usernames existed and for operators who want one on file.
+  email                 String?                   @unique
+  /// Lowercase login name (3-32 of a-z 0-9 . _ -), enforced by a CHECK constraint.
+  username              String?                   @unique
+  /// The administrator who created this account (null for self-registered or system accounts).
+  createdById           String?                   @db.Uuid
+  createdBy             User?                     @relation("UserCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdUsers          User[]                    @relation("UserCreatedBy")
+  securityEventsAbout   SecurityEvent[]           @relation("SecurityEventSubject")
+  securityEventsActed   SecurityEvent[]           @relation("SecurityEventActor")
+  securityEventsOwned   SecurityEvent[]           @relation("SecurityEventOwner")
+  securityEventsTop     SecurityEvent[]           @relation("SecurityEventTop")
+  passwordVault         UserPasswordVault?
+  totp                  UserTotp?
+  recoveryCodes         UserRecoveryCode[]
   passwordHash          String
   role                  Role                      @default(USER)
   /// Account status. A disabled account's live tokens stop being accepted and
@@ -159,6 +189,47 @@ model User {
   gameLaunches          GameLaunchCapability[]     @relation("GameLaunchCapabilityOwner")
   gameSessions          GameSession[]              @relation("GameSessionOwner")
   gamePreparedOutcomes  GamePreparedOutcome[]      @relation("GamePreparedOutcomeOwner")
+}
+
+/// Encrypted, revealable copy of a user's password, kept ONLY so an ADMIN or
+/// SUPER_ADMIN can read it back. Login never uses it (login verifies the argon2
+/// hash). AES-256-GCM, bound to the owning user id, with the key held outside the
+/// database. Kept in its own table so ordinary user queries never touch it.
+model UserPasswordVault {
+  userId      String   @id @db.Uuid
+  ciphertext  String
+  iv          String
+  authTag     String
+  keyId       String
+  updatedAt   DateTime @updatedAt
+  updatedById String?  @db.Uuid
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// Google Authenticator secret, encrypted with the vault key. `enabledAt` null means enrolment was started
+/// but not confirmed. `lastStep` is the last accepted 30-second step, so a code cannot be replayed.
+model UserTotp {
+  userId     String    @id @db.Uuid
+  ciphertext String
+  iv         String
+  authTag    String
+  keyId      String
+  enabledAt  DateTime?
+  lastStep   Int?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserRecoveryCode {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  codeHash  String
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, usedAt])
 }
 
 model Wallet {
@@ -755,4 +826,51 @@ model AuditLog {
   @@index([actorId, createdAt])
   @@index([action, createdAt])
   @@index([targetId, createdAt])
+}
+
+enum SecurityEventType {
+  PTS_GRANTED
+  PTS_REMOVED
+  BIG_WIN
+  HUGE_WIN
+  PASSWORD_CHANGED
+  PTS_TRANSFERRED
+  PTS_RECLAIMED
+}
+
+enum SecuritySeverity {
+  INFO
+  WARNING
+  ALERT
+}
+
+/// A notification for the security page. Written in the same transaction as the money movement it
+/// describes, so it cannot be skipped. `ownerAdminId` is the subject's owner at that moment: an ADMIN
+/// sees only events about their own users, a SUPER_ADMIN sees all.
+model SecurityEvent {
+  id               String            @id @default(uuid()) @db.Uuid
+  type             SecurityEventType
+  severity         SecuritySeverity
+  subjectUserId    String            @db.Uuid
+  actorId          String?           @db.Uuid
+  ownerAdminId     String?           @db.Uuid
+  topOwnerId       String?           @db.Uuid
+  amount           BigInt
+  balanceAfter     BigInt?
+  reason           String?
+  refType          String?
+  refId            String?
+  createdAt        DateTime          @default(now())
+  acknowledgedAt   DateTime?
+  acknowledgedById String?           @db.Uuid
+  subject          User              @relation("SecurityEventSubject", fields: [subjectUserId], references: [id], onDelete: Restrict)
+  actor            User?             @relation("SecurityEventActor", fields: [actorId], references: [id], onDelete: SetNull)
+  owner            User?             @relation("SecurityEventOwner", fields: [ownerAdminId], references: [id], onDelete: SetNull)
+  top              User?             @relation("SecurityEventTop", fields: [topOwnerId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([ownerAdminId, createdAt])
+  @@index([topOwnerId, createdAt])
+  @@index([subjectUserId, createdAt])
+  @@index([acknowledgedAt])
 }

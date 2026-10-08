@@ -1,7 +1,8 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
-import { canManageRole, hasCapability } from '../auth/capabilities';
+import { canManageUser, hasCapability, REACH_SELECT } from '../auth/capabilities';
+import { recordSecurityEvent, recordWinIfLarge } from '../security/security-events';
 
 const MAX_MUTATION = 1_000_000_000n;
 
@@ -30,7 +31,8 @@ export class PointsService {
         return { ledgerEntryId: existing.id, duplicate: true };
       }
       const entry = await tx.ledgerEntry.create({ data: { walletId: wallet.id, type: 'ADMIN_GRANT', amount, reason: reason.trim(), actorId, idempotencyKey } });
-      await tx.wallet.update({ where: { id: wallet.id }, data: { balance: { increment: amount } } });
+      const credited = await tx.wallet.update({ where: { id: wallet.id }, data: { balance: { increment: amount } } });
+      await recordSecurityEvent(tx, { type: 'PTS_GRANTED', subjectUserId: targetUserId, actorId, amount, balanceAfter: credited.balance, reason: reason.trim(), refType: 'LEDGER', refId: entry.id });
       await tx.auditLog.create({ data: { actorId, targetId: targetUserId, action: 'ADMIN_COIN_GRANT', result: 'SUCCESS', metadata: { amount: amount.toString(), reason: reason.trim(), idempotencyKey } } });
       return { ledgerEntryId: entry.id, duplicate: false };
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
@@ -63,8 +65,76 @@ export class PointsService {
       const debited = await tx.wallet.updateMany({ where: { id: wallet.id, balance: { gte: amount } }, data: { balance: { decrement: amount } } });
       if (debited.count !== 1) throw new ConflictException('INSUFFICIENT_VIRTUAL_BALANCE');
       const entry = await tx.ledgerEntry.create({ data: { walletId: wallet.id, type: 'ADMIN_REMOVE', amount: -amount, reason: reason.trim(), actorId, idempotencyKey } });
+      const after = await tx.wallet.findUnique({ where: { id: wallet.id }, select: { balance: true } });
+      await recordSecurityEvent(tx, { type: 'PTS_REMOVED', subjectUserId: targetUserId, actorId, amount, balanceAfter: after?.balance, reason: reason.trim(), refType: 'LEDGER', refId: entry.id });
       await tx.auditLog.create({ data: { actorId, targetId: targetUserId, action: 'ADMIN_COIN_REMOVE', result: 'SUCCESS', metadata: { amount: amount.toString(), reason: reason.trim(), idempotencyKey } } });
       return { ledgerEntryId: entry.id, duplicate: false };
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+  }
+
+  /**
+   * A manager moves points they already hold. `give` pays one of their players from the manager's own
+   * balance; `take` returns points from that player to the manager. No point is created or destroyed:
+   * the two ledger entries cancel, both wallets are locked in a fixed order, and the paying wallet can
+   * never go negative. A retry with the same key is a no-op.
+   */
+  async managerTransfer(
+    actorId: string,
+    targetUserId: string,
+    amount: bigint,
+    reason: string,
+    idempotencyKey: string,
+    direction: 'give' | 'take',
+  ) {
+    if (amount <= 0n || amount > MAX_MUTATION) throw new BadRequestException('INVALID_AMOUNT');
+    if (!reason.trim()) throw new BadRequestException('REASON_REQUIRED');
+    const note = reason.trim();
+    return this.prisma.$transaction(async (tx) => {
+      const actor = await tx.user.findUnique({ where: { id: actorId }, select: { id: true, role: true, disabled: true } });
+      const denied = async (why: string, extra: Record<string, unknown> = {}) => {
+        await tx.auditLog.create({ data: { actorId, targetType: 'USER', targetId: targetUserId, action: 'PERMISSION_DENIED', result: 'DENIED', metadata: { operation: 'PTS_TRANSFER', reason: why, ...extra } } });
+        throw new ForbiddenException(why);
+      };
+      if (!actor || actor.disabled || !hasCapability(actor.role, 'PLAYER_POINTS_TRANSFER')) return denied('MANAGER_REQUIRED');
+      const target = await tx.user.findUnique({ where: { id: targetUserId }, select: { id: true, ...REACH_SELECT } });
+      if (!target) throw new NotFoundException('USER_NOT_FOUND');
+      if (target.role !== Role.USER || !canManageUser(actor, target)) return denied('TARGET_ROLE_FORBIDDEN', { targetRole: target.role });
+      const [managerWallet, playerWallet] = await Promise.all([
+        tx.wallet.findUnique({ where: { userId: actorId } }),
+        tx.wallet.findUnique({ where: { userId: targetUserId } }),
+      ]);
+      if (!managerWallet || !playerWallet) throw new NotFoundException('WALLET_NOT_FOUND');
+      const from = direction === 'give' ? managerWallet : playerWallet;
+      const to = direction === 'give' ? playerWallet : managerWallet;
+      const outKey = `${idempotencyKey}:out`;
+      const inKey = `${idempotencyKey}:in`;
+
+      const existing = await tx.ledgerEntry.findUnique({ where: { idempotencyKey: outKey } });
+      if (existing) {
+        this.assertIdempotentReplay(existing, { actorId, walletId: from.id, type: 'TRANSFER_OUT', amount: -amount, reason: note });
+        return { duplicate: true };
+      }
+      // Fixed order, so two opposite transfers can never wait on each other.
+      await tx.$queryRaw`SELECT "id" FROM "Wallet" WHERE "id" IN (${from.id}::uuid, ${to.id}::uuid) ORDER BY "id" FOR UPDATE`;
+      const debited = await tx.wallet.updateMany({ where: { id: from.id, balance: { gte: amount } }, data: { balance: { decrement: amount } } });
+      if (debited.count !== 1) throw new ConflictException('INSUFFICIENT_VIRTUAL_BALANCE');
+      const credited = await tx.wallet.update({ where: { id: to.id }, data: { balance: { increment: amount } } });
+      const out = await tx.ledgerEntry.create({ data: { walletId: from.id, type: 'TRANSFER_OUT', amount: -amount, reason: note, actorId, idempotencyKey: outKey } });
+      await tx.ledgerEntry.create({ data: { walletId: to.id, type: 'TRANSFER_IN', amount, reason: note, actorId, idempotencyKey: inKey } });
+
+      const playerBalance = direction === 'give' ? credited.balance : (await tx.wallet.findUniqueOrThrow({ where: { id: from.id } })).balance;
+      await recordSecurityEvent(tx, {
+        type: direction === 'give' ? 'PTS_TRANSFERRED' : 'PTS_RECLAIMED',
+        subjectUserId: targetUserId,
+        actorId,
+        amount,
+        balanceAfter: playerBalance,
+        reason: note,
+        refType: 'LEDGER',
+        refId: out.id,
+      });
+      await tx.auditLog.create({ data: { actorId, targetType: 'USER', targetId: targetUserId, action: 'PTS_TRANSFER', result: 'SUCCESS', metadata: { direction, amount: amount.toString(), reason: note, idempotencyKey } } });
+      return { ledgerEntryId: out.id, duplicate: false };
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
   }
 
@@ -88,9 +158,9 @@ export class PointsService {
       await tx.auditLog.create({ data: { actorId, targetType: 'USER', targetId: targetUserId, action: 'PERMISSION_DENIED', result: 'DENIED', metadata: { operation: action } } });
       throw new ForbiddenException('ADMIN_REQUIRED');
     }
-    const target = await tx.user.findUnique({ where: { id: targetUserId }, select: { id: true, role: true } });
+    const target = await tx.user.findUnique({ where: { id: targetUserId }, select: { id: true, ...REACH_SELECT } });
     if (!target) throw new NotFoundException('USER_NOT_FOUND');
-    if (!canManageRole(actor.role, target.role)) {
+    if (!canManageUser(actor, target)) {
       await tx.auditLog.create({ data: { actorId, targetType: 'USER', targetId: targetUserId, action: 'PERMISSION_DENIED', result: 'DENIED', metadata: { operation: action, reason: 'TARGET_ROLE_FORBIDDEN', targetRole: target.role } } });
       throw new ForbiddenException('TARGET_ROLE_FORBIDDEN');
     }
@@ -145,6 +215,8 @@ export class PointsService {
       const entry = await tx.ledgerEntry.create({ data: { walletId: bet.user.wallet.id, type: 'SPORTS_WIN', amount: bet.potentialPayout, reason: 'Sportsbook winning payout', relatedBetId: bet.id, idempotencyKey } });
       await tx.wallet.update({ where: { id: bet.user.wallet.id }, data: { balance: { increment: bet.potentialPayout } } });
       await tx.bet.update({ where: { id: bet.id }, data: { status: 'WON', settledAt: new Date() } });
+      const credited = await tx.wallet.findUnique({ where: { id: bet.user.wallet.id }, select: { balance: true } });
+      await recordWinIfLarge(tx, { userId: bet.userId, amount: bet.potentialPayout, balanceAfter: credited?.balance, refType: 'BET', refId: bet.id });
       await tx.auditLog.create({ data: { targetId: bet.id, action: 'BET_SETTLED', result: 'WON' } });
       return { ledgerEntryId: entry.id, duplicate: false };
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });

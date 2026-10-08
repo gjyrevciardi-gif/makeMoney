@@ -134,7 +134,7 @@ describe('P1: snapshot transaction under concurrent NEW paid rounds (isolated Po
       const users: string[] = [];
       for (let index = 0; index < count; index += 1) {
         const user = await admin.user.create({
-          data: { email: uniqueTestEmail(`p1-conc-${label}-${index}`), passwordHash: 'x', wallet: { create: {} } },
+          data: { email: uniqueTestEmail(`p1-conc-${label}-${index}`), passwordHash: 'x', createdById: adminId, wallet: { create: {} } },
         });
         await points.adminGrant(adminId, user.id, 100_000n, 'p1 concurrency funding', `p1-fund-${label}-${index}`);
         users.push(user.id);

@@ -1,0 +1,79 @@
+
+> test
+> node -e "const raw=process.env.DATABASE_URL||''; if(!raw) throw new Error('DATABASE_URL is required for backend tests'); const name=new URL(raw).pathname.replace(/^\/+/, '').split('/')[0]||''; const safe=name.toLowerCase().includes('_test'); if(!safe || name.toLowerCase()==='fools_gold' || name.toLowerCase()==='postgres') throw new Error('Unsafe test database: ' + name);" && node --experimental-vm-modules ../node_modules/jest/bin/jest.js --runInBand test/manager-role --verbose
+
+{"event":"HTTP_REQUEST","requestId":"4d9e5296-42d1-4b1e-82b8-17ab54d54dce","method":"POST","route":"/admin/users","statusCode":201,"durationMs":149}
+{"event":"HTTP_REQUEST","requestId":"168d520b-d3ff-45e3-9f42-8c3801d079a6","method":"POST","route":"/admin/users","statusCode":201,"durationMs":332}
+{"event":"HTTP_REQUEST","requestId":"c214f998-014c-4e2a-96e5-ddde9a12da8d","method":"POST","route":"/admin/users","statusCode":201,"durationMs":164}
+{"event":"HTTP_REQUEST","requestId":"bdc6e194-31fc-4328-96f9-78bea2e1e605","method":"POST","route":"/admin/users","statusCode":201,"durationMs":152}
+{"event":"HTTP_REQUEST","requestId":"f429fa8a-67bd-4323-8e54-3a31e6ae2802","method":"GET","route":"/admin/users","statusCode":200,"durationMs":21}
+{"event":"HTTP_REQUEST","requestId":"0661893b-63c8-4ccc-99d6-cffa6bfd5abd","method":"GET","route":"/admin/users","statusCode":200,"durationMs":19}
+{"event":"HTTP_REQUEST","requestId":"809d1bb4-60a9-4d17-a982-8e855ac42a52","method":"GET","route":"/admin/users","statusCode":200,"durationMs":11}
+{"event":"HTTP_REQUEST","requestId":"edc98b9e-13d7-44bc-bc7c-0768e93e0fdd","method":"GET","route":"/admin/users","statusCode":200,"durationMs":18}
+{"event":"HTTP_REQUEST","requestId":"172c8e28-15c2-4e1d-a40a-88729323d6b8","method":"GET","route":"/admin/users/:userId/detail","statusCode":200,"durationMs":10}
+{"event":"HTTP_REQUEST","requestId":"024c7e07-d7e0-42a9-844c-cc2350da43d7","method":"GET","route":"/admin/users/:userId/detail","statusCode":200,"durationMs":4}
+{"event":"HTTP_REQUEST","requestId":"ada0f484-ac9d-4dad-a7e5-0d562014532d","method":"GET","route":"/admin/users/:userId/detail","statusCode":200,"durationMs":45}
+{"event":"HTTP_REQUEST","requestId":"1bcb7806-2bd9-470b-8317-9c3d1641d2ea","method":"GET","route":"/admin/users/:userId/detail","statusCode":200,"durationMs":7}
+{"event":"HTTP_REQUEST","requestId":"7205466e-05ef-404e-9d0a-9d02fbc80376","method":"POST","route":"/admin/users/:userId/password","statusCode":201,"durationMs":112}
+{"event":"HTTP_REQUEST","requestId":"3afd1ae6-93a4-4cc2-a711-0293fab4d9f9","method":"POST","route":"/admin/users/:userId/password/reveal","statusCode":201,"durationMs":14}
+{"event":"HTTP_REQUEST","requestId":"27d4402b-db81-469e-8562-ad46ec2481eb","method":"POST","route":"/admin/users/:userId/password","statusCode":201,"durationMs":136}
+{"event":"HTTP_REQUEST","requestId":"7530bbfe-3593-4506-a6ed-e4750814100d","method":"POST","route":"/admin/users/:userId/password","statusCode":201,"durationMs":152}
+{"event":"HTTP_REQUEST","requestId":"a3e81d84-a3c5-44ee-adb5-1c839a3ed5ff","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":40}
+{"event":"HTTP_REQUEST","requestId":"0d415d1d-8fbb-45d1-b8ed-b2bd011549e8","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":29}
+{"event":"HTTP_REQUEST","requestId":"518ef525-23ef-4191-8534-cc056ec6fab2","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":42}
+{"event":"HTTP_REQUEST","requestId":"56a3a469-f129-4f20-806e-16463e2bb894","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":37}
+{"event":"HTTP_REQUEST","requestId":"d4ae5dc8-be03-48ed-97a5-ed8ecaa5b982","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":19}
+{"event":"HTTP_REQUEST","requestId":"090e6c01-26f1-4756-829c-2f3f0f436bea","method":"POST","route":"/admin/users/:userId/coins/take","statusCode":201,"durationMs":39}
+{"event":"HTTP_REQUEST","requestId":"5aa00b1a-cd62-40c9-b702-4a04491fe3cd","method":"POST","route":"/admin/users/:userId/coins/take","statusCode":201,"durationMs":18}
+{"event":"HTTP_REQUEST","requestId":"cbe31cfd-b710-4461-b233-efa790ebf97e","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":32}
+{"event":"HTTP_REQUEST","requestId":"77899951-9ce2-4c5e-a772-ecde0f1e6798","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":29}
+{"event":"HTTP_REQUEST","requestId":"10f300b3-1bc9-4fea-9025-f4559613dfa2","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":13}
+{"event":"HTTP_REQUEST","requestId":"210670bd-d63d-4bab-8e25-7cc8c1026aff","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":15}
+{"event":"HTTP_REQUEST","requestId":"fb035311-661d-463f-ba0d-06d4956e272b","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":38}
+{"event":"HTTP_REQUEST","requestId":"7f13a825-de46-4623-85ad-5b93415f3b6d","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":22}
+{"event":"HTTP_REQUEST","requestId":"0ead7175-f24a-4cc1-bc52-53841bebf206","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":35}
+{"event":"HTTP_REQUEST","requestId":"2e9ef571-974c-4316-bfd6-abdc1b13f616","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":24}
+{"event":"HTTP_REQUEST","requestId":"b3ba0d36-2128-469e-acf9-59ba13624d6b","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":17}
+{"event":"HTTP_REQUEST","requestId":"c37c9d6b-2f24-4d7b-beb6-ec6a795082a7","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":13}
+{"event":"HTTP_REQUEST","requestId":"00c8fb68-c701-4a1e-b3f8-0ff867855c55","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":18}
+{"event":"HTTP_REQUEST","requestId":"71cae39c-431b-4f93-bcc2-7b02eb128bd2","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":42}
+{"event":"HTTP_REQUEST","requestId":"a84442c5-9e4e-4c2d-a3c4-617ed2533911","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":55}
+{"event":"HTTP_REQUEST","requestId":"7c8b56b4-4113-4906-8d41-c602d7c02909","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":71}
+{"event":"HTTP_UNHANDLED_EXCEPTION","requestId":"7c8b56b4-4113-4906-8d41-c602d7c02909","method":"POST","route":"/admin/users/133756cf-90f6-4a2a-8f06-d0b3736ad4a1/coins/give","errorType":"PrismaClientKnownRequestError"}
+{"event":"HTTP_REQUEST","requestId":"0598d596-2caf-4efb-8fe3-c3a46d986eb9","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":91}
+{"event":"HTTP_UNHANDLED_EXCEPTION","requestId":"0598d596-2caf-4efb-8fe3-c3a46d986eb9","method":"POST","route":"/admin/users/133756cf-90f6-4a2a-8f06-d0b3736ad4a1/coins/give","errorType":"PrismaClientKnownRequestError"}
+{"event":"HTTP_REQUEST","requestId":"2168ec63-aff9-4857-818b-89d826d6ef6c","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":94}
+{"event":"HTTP_UNHANDLED_EXCEPTION","requestId":"2168ec63-aff9-4857-818b-89d826d6ef6c","method":"POST","route":"/admin/users/133756cf-90f6-4a2a-8f06-d0b3736ad4a1/coins/give","errorType":"PrismaClientKnownRequestError"}
+{"event":"HTTP_REQUEST","requestId":"df712595-d31f-4919-9c24-ab3b9958400b","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":78}
+{"event":"HTTP_UNHANDLED_EXCEPTION","requestId":"df712595-d31f-4919-9c24-ab3b9958400b","method":"POST","route":"/admin/users/133756cf-90f6-4a2a-8f06-d0b3736ad4a1/coins/give","errorType":"PrismaClientKnownRequestError"}
+{"event":"HTTP_REQUEST","requestId":"42005a8e-c5e5-477f-9fda-d375699d486c","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":74}
+{"event":"HTTP_UNHANDLED_EXCEPTION","requestId":"42005a8e-c5e5-477f-9fda-d375699d486c","method":"POST","route":"/admin/users/133756cf-90f6-4a2a-8f06-d0b3736ad4a1/coins/give","errorType":"PrismaClientKnownRequestError"}
+{"event":"HTTP_REQUEST","requestId":"a3c6c9ae-8c6b-4fbf-bb5c-fa1848b0f956","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":43}
+{"event":"HTTP_REQUEST","requestId":"16d77f9e-fa4b-46d9-86db-03127fe32ca8","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":48}
+{"event":"HTTP_REQUEST","requestId":"6825855a-a44b-4f41-9737-2459b9be23a6","method":"POST","route":"/admin/users/:userId/coins/take","statusCode":201,"durationMs":41}
+{"event":"HTTP_REQUEST","requestId":"40bf26ad-c155-425b-a70a-20206f7199eb","method":"GET","route":"/admin/security/events","statusCode":200,"durationMs":14}
+{"event":"HTTP_REQUEST","requestId":"19880c35-2f06-4c77-846c-0a5eb8dda321","method":"GET","route":"/admin/security/events","statusCode":200,"durationMs":11}
+{"event":"HTTP_REQUEST","requestId":"fb3d180c-f1cc-4505-a797-c85f04fe3a11","method":"GET","route":"/admin/security/events","statusCode":200,"durationMs":7}
+{"event":"HTTP_REQUEST","requestId":"e5a15e83-d69c-400e-83ac-0e0c7b2df0fb","method":"GET","route":"/admin/security/events","statusCode":200,"durationMs":14}
+FAIL test/manager-role.integration.spec.ts (37.767 s)
+  ● manager role and point transfers (PostgreSQL + Redis) › lets an administrator control a manager and the manager's players, and nobody else
+
+    UnauthorizedException: INVALID_CREDENTIALS
+
+      at AuthService.verifyCredentials (src/auth/C:/Users/Admin/orca/workspaces/toto/toto-game-adapter-template/backend/src/auth/auth.service.ts:45:13)
+      at AuthService.login (src/auth/C:/Users/Admin/orca/workspaces/toto/toto-game-adapter-template/backend/src/auth/auth.service.ts:68:30)
+      at tokenFor (test/C:/Users/Admin/orca/workspaces/toto/toto-game-adapter-template/backend/test/manager-role.integration.spec.ts:32:45)
+      at Object.<anonymous> (test/C:/Users/Admin/orca/workspaces/toto/toto-game-adapter-template/backend/test/manager-role.integration.spec.ts:129:18)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 9 passed, 10 total
+Snapshots:   0 total
+Time:        38.298 s
+Ran all test suites matching test/manager-role.
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path C:\Users\Admin\orca\workspaces\toto\toto-game-adapter-template\backend
+npm error workspace backend
+npm error location C:\Users\Admin\orca\workspaces\toto\toto-game-adapter-template\backend
+npm error command failed
+npm error command C:\WINDOWS\SYSTEM32\cmd.exe /d /s /c node -e "const raw=process.env.DATABASE_URL||''; if(!raw) throw new Error('DATABASE_URL is required for backend tests'); const name=new URL(raw).pathname.replace(/^\/+/, '').split('/')[0]||''; const safe=name.toLowerCase().includes('_test'); if(!safe || name.toLowerCase()==='fools_gold' || name.toLowerCase()==='postgres') throw new Error('Unsafe test database: ' + name);" && node --experimental-vm-modules ../node_modules/jest/bin/jest.js --runInBand test/manager-role --verbose

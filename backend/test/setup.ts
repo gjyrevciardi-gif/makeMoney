@@ -49,3 +49,7 @@ process.env.JWT_ACCESS_SECRET ??= 'integration-test-secret-not-for-production';
 // Crash sweeps are driven explicitly through runOnce() with an injected clock,
 // so the background timer stays off in tests.
 process.env.CASINO_CRASH_WORKER_ENABLED ??= 'false';
+// Revealable-password vault key for tests only (32 bytes, base64). Never a real key.
+process.env.PASSWORD_VAULT_KEY ??= 'BwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAhIiMkJSY=';
+// Existing suites register users through the public endpoint; production defaults it off.
+process.env.REGISTRATION_ENABLED ??= 'true';

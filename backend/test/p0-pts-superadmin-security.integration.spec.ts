@@ -89,6 +89,8 @@ describe('P0: PTS ledger security, SUPER_ADMIN protection, disabled accounts (Po
       });
       ids[name] = user.id;
     }
+    // Players belong to the administrator who funds them (an ADMIN manages only their own players).
+    await prisma.user.updateMany({ where: { role: Role.USER }, data: { createdById: ids.admin } });
   });
 
   it('refuses USER for administrative PTS on both grant and remove, with no ledger movement', async () => {

@@ -3,8 +3,9 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { initialOf } from '../../lib/format';
+import { displayName, initialOf, roleLabel as roleName } from '../../lib/format';
 import { useLogout, useSession } from '../../lib/queries';
+import { canAccessAdminUi } from '../../lib/capabilities';
 import { IconChevron, IconShield } from './icons';
 
 /**
@@ -41,7 +42,8 @@ export function UserMenu() {
     return <Link className="btn btn-primary btn-sm" href="/login">Sign in</Link>;
   }
 
-  const isAdmin = session.data.role === 'ADMIN';
+  const canAdmin = canAccessAdminUi(session.data.role);
+  const roleLabel = roleName(session.data.role);
 
   return (
     <div className="user-menu" ref={container}>
@@ -52,20 +54,21 @@ export function UserMenu() {
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
       >
-        <span className="avatar" aria-hidden="true">{initialOf(session.data.email)}</span>
+        <span className="avatar" aria-hidden="true">{initialOf(displayName(session.data))}</span>
         <IconChevron className="league-chevron" />
-        <span className="sr-only">Account menu for {session.data.email}</span>
+        <span className="sr-only">Account menu for {displayName(session.data)}</span>
       </button>
 
       {open && (
         <div className="user-menu-panel" role="menu">
           <div className="user-menu-id">
-            <strong>{session.data.email}</strong>
-            <span>{isAdmin ? 'Administrator' : 'Player'}</span>
+            <strong>{displayName(session.data)}</strong>
+            <span>{roleLabel}</span>
           </div>
+          <Link role="menuitem" href="/account/password" onClick={() => setOpen(false)}>Change password</Link>
           <Link role="menuitem" href="/my-bets" onClick={() => setOpen(false)}>My bets</Link>
           <Link role="menuitem" href="/casino/history" onClick={() => setOpen(false)}>Casino history</Link>
-          {isAdmin && (
+          {canAdmin && (
             <Link role="menuitem" href="/admin" onClick={() => setOpen(false)}>
               Admin <IconShield className="league-chevron" />
             </Link>

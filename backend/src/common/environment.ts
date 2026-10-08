@@ -19,6 +19,8 @@ const productionEnvironment = z.object({
   COOKIE_SECURE: z.literal('true'),
   TRUST_PROXY: z.literal('true'),
   REGISTRATION_ENABLED: z.enum(['true', 'false']),
+  /** AES-256-GCM key for the revealable-password vault: 32 bytes, base64. */
+  PASSWORD_VAULT_KEY: z.string().min(1),
 }).passthrough();
 
 /**
@@ -154,6 +156,9 @@ export function validateProductionEnvironment(): void {
   }
   if (process.env.JWT_ACCESS_SECRET === process.env.JWT_REFRESH_SECRET) {
     fail('JWT secrets must be unique');
+  }
+  if (Buffer.from(process.env.PASSWORD_VAULT_KEY!, 'base64').length !== 32) {
+    fail('PASSWORD_VAULT_KEY must be 32 bytes, base64 encoded');
   }
 
   for (const name of ['DATABASE_URL', 'REDIS_URL'] as const) {

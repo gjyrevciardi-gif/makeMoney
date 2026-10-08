@@ -85,6 +85,7 @@ describe('game integration layer - second adapter readiness (PostgreSQL)', () =>
     userId = player.id;
     rivalId = rival.id;
     adminId = admin.id;
+    await prisma.user.updateMany({ where: { role: 'USER' }, data: { createdById: admin.id } });
   });
 
   const fund = (amount = 1_000n, target = userId) =>

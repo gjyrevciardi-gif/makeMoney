@@ -91,8 +91,9 @@ describe('lucky lady payout panel (PostgreSQL + Redis)', () => {
       prisma.user.create({ data: { email: userEmail, passwordHash: hash, wallet: { create: {} } } }),
       prisma.user.create({ data: { email: adminEmail, passwordHash: hash, role: 'ADMIN', wallet: { create: {} } } }),
     ]);
-    userToken = (await auth.login(player.email, password)).pair.accessToken;
-    adminToken = (await auth.login(admin.email, password)).pair.accessToken;
+    await prisma.user.update({ where: { id: player.id }, data: { createdById: admin.id } });
+    userToken = (await auth.login(player.email as string, password)).pair.accessToken;
+    adminToken = (await auth.login(admin.email as string, password)).pair.accessToken;
   });
 
   const adminId = async () => (await prisma.user.findUniqueOrThrow({ where: { email: adminEmail } })).id;

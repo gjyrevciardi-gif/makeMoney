@@ -55,6 +55,7 @@ describe('server-authoritative mines (PostgreSQL)', () => {
     userId = user.id;
     otherUserId = other.id;
     adminId = admin.id;
+    await prisma.user.updateMany({ where: { role: 'USER' }, data: { createdById: admin.id } });
   });
 
   const fund = (target = userId, amount = 10_000n) =>

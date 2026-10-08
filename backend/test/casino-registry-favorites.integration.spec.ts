@@ -91,6 +91,7 @@ describe('casino registry, search, favorites and recent games (PostgreSQL + Redi
     userId = user.id;
     otherId = other.id;
     adminId = admin.id;
+    await prisma.user.updateMany({ where: { role: 'USER' }, data: { createdById: admin.id } });
     await points.adminGrant(adminId, userId, 50_000n, 'Lobby funding', randomUUID());
   });
 

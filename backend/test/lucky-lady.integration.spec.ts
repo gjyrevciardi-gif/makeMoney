@@ -201,6 +201,7 @@ describe('Lucky Lady platform integration (PostgreSQL)', () => {
     userId = player.id;
     rivalId = rival.id;
     adminId = admin.id;
+    await prisma.user.updateMany({ where: { role: 'USER' }, data: { createdById: admin.id } });
   });
 
   const fund = (amount = 100_000n, target = userId) =>
@@ -1132,6 +1133,7 @@ describe('Lucky Lady platform integration (PostgreSQL)', () => {
         prisma.user.create({ data: { email: httpEmail, passwordHash: hash, wallet: { create: {} } } }),
         prisma.user.create({ data: { email: httpAdminEmail, passwordHash: hash, role: 'ADMIN', wallet: { create: {} } } }),
       ]);
+      await prisma.user.update({ where: { id: player.id }, data: { createdById: admin.id } });
       await points.adminGrant(admin.id, player.id, 1_000n, 'HTTP funding', nextRequestId());
       const playerToken = (await auth.login(httpEmail, password)).pair.accessToken;
       const adminToken = (await auth.login(httpAdminEmail, password)).pair.accessToken;

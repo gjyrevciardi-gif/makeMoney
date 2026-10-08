@@ -104,6 +104,7 @@ describe('super admin casino configuration (PostgreSQL + Redis)', () => {
     ]);
     userId = user.id;
     adminId = admin.id;
+    await prisma.user.updateMany({ where: { role: 'USER' }, data: { createdById: admin.id } });
     await points.adminGrant(adminId, userId, 200_000n, 'Config funding', randomUUID());
   });
 

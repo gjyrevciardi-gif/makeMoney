@@ -73,6 +73,7 @@ describe('slots security and platform integration (PostgreSQL + Redis)', () => {
     });
     userId = user.id;
     adminId = admin.id;
+    await prisma.user.updateMany({ where: { role: 'USER' }, data: { createdById: admin.id } });
     await points.adminGrant(adminId, userId, 10_000n, 'Slot funding', randomUUID());
   });
 

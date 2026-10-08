@@ -22,7 +22,9 @@ export class AccessGuard implements CanActivate {
     }
     const token = parts[1];
     try {
-      const payload = await this.jwt.verifyAsync<{ sub: string }>(token);
+      const payload = await this.jwt.verifyAsync<{ sub: string; typ?: string }>(token);
+      // A second-factor challenge proves only the password step; it is never an access token.
+      if (payload.typ) throw new Error('not an access token');
       const user = await this.prisma.user.findUnique({
         where: { id: payload.sub },
         select: { id: true, role: true, disabled: true },

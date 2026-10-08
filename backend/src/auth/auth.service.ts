@@ -35,11 +35,13 @@ export class AuthService {
     }
   }
 
-  async login(email: string, password: string) {
-    const normalized = email.trim().toLowerCase();
-    const user = await this.prisma.user.findUnique({ where: { email: normalized }, include: { wallet: true } });
+  /** `identifier` is a username or an email address (both stored lowercase). */
+  /** Password check only. Callers that support a second factor decide what happens next. */
+  async verifyCredentials(identifier: string, password: string) {
+    const normalized = identifier.trim().toLowerCase();
+    const user = await this.prisma.user.findFirst({ where: { OR: [{ username: normalized }, { email: normalized }] }, include: { wallet: true } });
     if (!user || !(await argon2.verify(user.passwordHash, password))) {
-      await this.prisma.auditLog.create({ data: { targetType: 'LOGIN', action: 'LOGIN_FAILED', result: 'INVALID_CREDENTIALS', metadata: { email: normalized } } });
+      await this.prisma.auditLog.create({ data: { targetType: 'LOGIN', action: 'LOGIN_FAILED', result: 'INVALID_CREDENTIALS', metadata: { identifier: normalized } } });
       throw new UnauthorizedException('INVALID_CREDENTIALS');
     }
     // Checked after the password so account state is never disclosed to someone
@@ -48,12 +50,38 @@ export class AuthService {
       await this.prisma.auditLog.create({ data: { actorId: user.id, targetType: 'LOGIN', action: 'LOGIN_FAILED', result: 'ACCOUNT_DISABLED' } });
       throw new ForbiddenException('ACCOUNT_DISABLED');
     }
+    return user;
+  }
+
+  /** Short-lived proof that the password step passed. It is not an access token and the guard refuses it. */
+  issueMfaChallenge(userId: string) { return this.jwt.signAsync({ sub: userId, typ: 'mfa' }, { expiresIn: '5m' }); }
+
+  async readMfaChallenge(token: string): Promise<string> {
+    try {
+      const payload = await this.jwt.verifyAsync<{ sub: string; typ?: string }>(token);
+      if (payload.typ === 'mfa') return payload.sub;
+    } catch { /* fall through */ }
+    throw new UnauthorizedException({ code: 'INVALID_MFA_CHALLENGE', message: 'The sign-in expired.' });
+  }
+
+  async login(identifier: string, password: string) {
+    return this.startSession(await this.verifyCredentials(identifier, password));
+  }
+
+  async startSessionFor(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId }, include: { wallet: true } });
+    if (!user) throw new UnauthorizedException({ code: 'INVALID_MFA_CHALLENGE', message: 'The sign-in expired.' });
+    if (user.disabled) throw new ForbiddenException('ACCOUNT_DISABLED');
+    return this.startSession(user);
+  }
+
+  private async startSession(user: Prisma.UserGetPayload<{ include: { wallet: true } }>) {
     const pair = await this.prisma.$transaction(async (tx) => {
       const issued = await this.createPair(tx, user.id, user.role);
       await tx.auditLog.create({ data: { actorId: user.id, targetType: 'USER', targetId: user.id, action: 'LOGIN_SUCCESS', result: 'SUCCESS' } });
       return issued;
     });
-    return { pair, user: { id: user.id, email: user.email, role: user.role, balance: (user.wallet?.balance ?? 0n).toString() } };
+    return { pair, user: { id: user.id, username: user.username, email: user.email, role: user.role, balance: (user.wallet?.balance ?? 0n).toString() } };
   }
 
   async rotateRefreshToken(rawToken: string): Promise<TokenPair> {

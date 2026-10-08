@@ -3,7 +3,12 @@ import { AdminController } from './admin/admin.controller';
 import { AuthController } from './auth/auth.controller';
 import { AuthService } from './auth/auth.service';
 import { AuthorizationService } from './auth/authorization.service';
+import { PasswordVaultService } from './auth/password-vault.service';
+import { UserAccountsService } from './auth/user-accounts.service';
 import { UserAdminController } from './auth/user-admin.controller';
+import { SecurityController } from './security/security.controller';
+import { MfaController } from './auth/mfa.controller';
+import { MfaService } from './auth/mfa.service';
 import { PrismaService } from './prisma.service';
 import { PointsService } from './wallet/points.service';
 import { JwtModule } from '@nestjs/jwt';
@@ -27,8 +32,8 @@ import { MiddlewareConsumer, NestModule } from '@nestjs/common';
 
 @Module({
   imports: [JwtModule.register({ secret: process.env.JWT_ACCESS_SECRET }), SportsModule, BetsModule, SettlementModule, SportsOperationsModule, CasinoModule],
-  controllers: [AuthController, AdminController, UserAdminController, PrivateController, ProductionHealthController],
-  providers: [PrismaService, AuthService, AuthorizationService, PointsService, AccessGuard, RolesGuard, RedisService, RateLimitService, RequestIdMiddleware, { provide: APP_INTERCEPTOR, useClass: BigIntInterceptor }, { provide: APP_INTERCEPTOR, useClass: RequestLoggingInterceptor }, { provide: APP_FILTER, useClass: SafeExceptionFilter }],
+  controllers: [AuthController, AdminController, UserAdminController, SecurityController, MfaController, PrivateController, ProductionHealthController],
+  providers: [PrismaService, AuthService, AuthorizationService, PasswordVaultService, UserAccountsService, MfaService, PointsService, AccessGuard, RolesGuard, RedisService, RateLimitService, RequestIdMiddleware, { provide: APP_INTERCEPTOR, useClass: BigIntInterceptor }, { provide: APP_INTERCEPTOR, useClass: RequestLoggingInterceptor }, { provide: APP_FILTER, useClass: SafeExceptionFilter }],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

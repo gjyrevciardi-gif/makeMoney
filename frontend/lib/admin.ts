@@ -82,8 +82,11 @@ export type Analytics = {
 
 export type AdminUser = {
   id: string;
-  email: string;
+  username: string | null;
+  email: string | null;
   role: string;
+  disabled?: boolean;
+  createdById?: string | null;
   createdAt: string;
   wallet: { balance: string } | null;
 };
@@ -122,6 +125,21 @@ const MESSAGES: Record<string, string> = {
   BLACKJACK_RTP_IS_RULE_BASED: 'Blackjack return follows its rules, not a dial.',
   UNKNOWN_SLOT_PROFILE: 'Choose one of the approved slot profiles.',
   SLOT_PROFILE_RTP_MISMATCH: 'That profile failed its exact return check.',
+  USERNAME_TAKEN: 'That username is already in use.',
+  USERNAME_INVALID: 'A username is 3-32 characters: letters, digits, dot, underscore or hyphen.',
+  PASSWORD_INVALID: 'A password is 8-128 characters.',
+  PASSWORD_NOT_AVAILABLE: 'This password was set before the vault existed. Set a new password to make it viewable.',
+  PASSWORD_VAULT_NOT_CONFIGURED: 'The password vault is not configured on the server.',
+  ROLE_GRANT_FORBIDDEN: 'Only a super administrator can create an administrator.',
+  ROLE_NOT_CREATABLE: 'That role cannot be created here.',
+  USER_NOT_FOUND: 'User not found.',
+  TARGET_ROLE_FORBIDDEN: 'That account is not one of your players.',
+  OWNER_INVALID: 'Choose an active administrator as the owner.',
+  OWNER_TARGET_NOT_USER: 'Only a player can be assigned to an administrator.',
+  MFA_CODE_INVALID: 'That code is not correct. Check the time on your phone and try the next code.',
+  MFA_ALREADY_ENABLED: 'Google Authenticator is already on.',
+  MFA_SETUP_NOT_STARTED: 'Start the setup again.',
+  EVENT_NOT_FOUND: 'That notification was already marked as seen.',
 };
 
 export function describeAdminError(error: AdminError | undefined) {

@@ -75,6 +75,8 @@ describe('P1: disabled-account auth, user-admin rate limit, audit semantics (Pos
       mails[name] = uniqueTestEmail(`p1-${name}`);
       ids[name] = (await prisma.user.create({ data: { email: mails[name], passwordHash: hash, role, wallet: { create: {} } } })).id;
     }
+    // Players belong to the administrator who funds them (an ADMIN manages only their own players).
+    await prisma.user.updateMany({ where: { role: Role.USER }, data: { createdById: ids.admin } });
   });
 
   it('gives a disabled account no new session, without disclosing status to a wrong password', async () => {

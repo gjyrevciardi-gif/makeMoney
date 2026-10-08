@@ -53,6 +53,7 @@ describe('roulette and blackjack (PostgreSQL)', () => {
     userId = user.id;
     otherId = other.id;
     adminId = admin.id;
+    await prisma.user.updateMany({ where: { role: 'USER' }, data: { createdById: admin.id } });
   });
 
   const fund = (target = userId, amount = 100_000n) =>

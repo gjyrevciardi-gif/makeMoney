@@ -1,0 +1,2792 @@
+
+> test
+> node -e "const raw=process.env.DATABASE_URL||''; if(!raw) throw new Error('DATABASE_URL is required for backend tests'); const name=new URL(raw).pathname.replace(/^\/+/, '').split('/')[0]||''; const safe=name.toLowerCase().includes('_test'); if(!safe || name.toLowerCase()==='fools_gold' || name.toLowerCase()==='postgres') throw new Error('Unsafe test database: ' + name);" && node --experimental-vm-modules ../node_modules/jest/bin/jest.js --runInBand --verbose
+
+(node:5588) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"event":"HTTP_REQUEST","requestId":"31a690b7-98bf-4a86-97d3-e670b26846f4","method":"POST","route":"/admin/casino/math/lucky-lady/payout/generate","statusCode":201,"durationMs":11}
+{"event":"HTTP_REQUEST","requestId":"dc8f3c77-64b0-45c1-a93e-4711cf632aba","method":"POST","route":"/admin/casino/math/lucky-lady/payout/generate","statusCode":201,"durationMs":86580}
+{"event":"HTTP_REQUEST","requestId":"c3ec1ded-068d-4fc2-a4e0-4222f8a9fd17","method":"GET","route":"/admin/casino/math/lucky-lady/payout/candidates/:candidateId","statusCode":200,"durationMs":22}
+  console.log
+    P1_CONCURRENCY_RESULTS [
+      {
+        "scenario": "baseline-pool17-n12",
+        "pool": 17,
+        "concurrentRounds": 12,
+        "flipping": false,
+        "completed": 12,
+        "failed": 0,
+        "poolOrTransactionStartErrors": 0,
+        "otherErrors": 0,
+        "errorSamples": [],
+        "durationMs": 501,
+        "roundsWritten": 12,
+        "usersWithMoreThanOneRound": 0,
+        "duplicateDebits": 0,
+        "duplicateActionRows": 0,
+        "coherentDefault": 0,
+        "coherentCustom": 12,
+        "mixedSnapshots": 0,
+        "balanceLedgerMismatches": 0,
+        "failedRoundsWithSideEffects": 0,
+        "replays": 12,
+        "replayResponseMismatches": 0,
+        "replayNewLedgerRows": 0,
+        "flips": 0
+      },
+      {
+        "scenario": "flipping-pool17-n40",
+        "pool": 17,
+        "concurrentRounds": 40,
+        "flipping": true,
+        "completed": 40,
+        "failed": 0,
+        "poolOrTransactionStartErrors": 0,
+        "otherErrors": 0,
+        "errorSamples": [],
+        "durationMs": 1502,
+        "roundsWritten": 40,
+        "usersWithMoreThanOneRound": 0,
+        "duplicateDebits": 0,
+        "duplicateActionRows": 0,
+        "coherentDefault": 0,
+        "coherentCustom": 40,
+        "mixedSnapshots": 0,
+        "balanceLedgerMismatches": 0,
+        "failedRoundsWithSideEffects": 0,
+        "replays": 40,
+        "replayResponseMismatches": 0,
+        "replayNewLedgerRows": 0,
+        "flips": 3
+      },
+      {
+        "scenario": "probe-pool5-n12",
+        "pool": 5,
+        "concurrentRounds": 12,
+        "flipping": true,
+        "completed": 12,
+        "failed": 0,
+        "poolOrTransactionStartErrors": 0,
+        "otherErrors": 0,
+        "errorSamples": [],
+        "durationMs": 383,
+        "roundsWritten": 12,
+        "usersWithMoreThanOneRound": 0,
+        "duplicateDebits": 0,
+        "duplicateActionRows": 0,
+        "coherentDefault": 12,
+        "coherentCustom": 0,
+        "mixedSnapshots": 0,
+        "balanceLedgerMismatches": 0,
+        "failedRoundsWithSideEffects": 0,
+        "replays": 12,
+        "replayResponseMismatches": 0,
+        "replayNewLedgerRows": 0,
+        "flips": 2
+      },
+      {
+        "scenario": "proof-pool1-n3",
+        "pool": 1,
+        "concurrentRounds": 3,
+        "flipping": false,
+        "completed": 3,
+        "failed": 0,
+        "poolOrTransactionStartErrors": 0,
+        "otherErrors": 0,
+        "errorSamples": [],
+        "durationMs": 418,
+        "roundsWritten": 3,
+        "usersWithMoreThanOneRound": 0,
+        "duplicateDebits": 0,
+        "duplicateActionRows": 0,
+        "coherentDefault": 0,
+        "coherentCustom": 3,
+        "mixedSnapshots": 0,
+        "balanceLedgerMismatches": 0,
+        "failedRoundsWithSideEffects": 0,
+        "replays": 3,
+        "replayResponseMismatches": 0,
+        "replayNewLedgerRows": 0,
+        "flips": 0
+      }
+    ]
+
+      at Object.<anonymous> (test/C:/Users/Admin/orca/workspaces/toto/toto-game-adapter-template/backend/test/p1-snapshot-concurrency.integration.spec.ts:119:13)
+
+{"event":"HTTP_REQUEST","requestId":"7df08fc0-1043-4b82-9ea8-1e7dab39dc67","method":"GET","route":"/admin/casino/config","statusCode":200,"durationMs":317}
+{"event":"HTTP_REQUEST","requestId":"ffac0567-b618-4bc2-8606-917d17462480","method":"GET","route":"/admin/casino/config","statusCode":200,"durationMs":449}
+{"event":"HTTP_REQUEST","requestId":"c6ad22e2-b779-4716-ad98-a19cac9f70f7","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":85}
+{"event":"HTTP_REQUEST","requestId":"d88c8086-df4a-4e15-8061-99796dd44d8a","method":"POST","route":"/admin/casino/config/:gameId/versions/:versionId/activate","statusCode":201,"durationMs":52}
+{"event":"HTTP_REQUEST","requestId":"95840b52-3393-4321-aa07-e02b985f2fa5","method":"GET","route":"/admin/casino/config/:gameId/versions","statusCode":200,"durationMs":19}
+{"event":"HTTP_REQUEST","requestId":"24af8be2-979c-4ce8-9f00-c8501e2068a5","method":"GET","route":"/admin/casino/config","statusCode":200,"durationMs":245}
+{"event":"HTTP_REQUEST","requestId":"1e074d0a-177c-4333-a838-d6ac19d6bc70","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":3}
+{"event":"HTTP_REQUEST","requestId":"4cb21311-2e58-44ae-9a30-82de3170cfd8","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"ff4918c5-fb3c-4638-886a-b8446aabb3c0","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"8bd9fcf3-e512-41ff-bd21-5dea36768c8e","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"0f9a4f1d-62e0-4fe2-8548-131a5722116e","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"b6e01d0b-bb50-4040-a09f-ba610a0a5c78","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"7b77a619-749f-436f-ab6c-8fb858d4c080","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"dfce8dea-8ed7-49c4-9b34-d1d1d8861d7b","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"d3e5b100-e9c8-4585-b760-8d96a8f7961c","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":3}
+{"event":"HTTP_REQUEST","requestId":"def1336c-5b6b-4430-8d60-a6c3e281ff46","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":6}
+{"event":"HTTP_REQUEST","requestId":"751f0597-be70-49b4-bcb6-fcaaba27ce11","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":5}
+{"event":"HTTP_REQUEST","requestId":"8e6ed39a-9770-4b2b-9fc2-228a63015248","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":6}
+{"event":"HTTP_REQUEST","requestId":"672f88b6-47c2-4318-9938-5c922068da33","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":5}
+{"event":"HTTP_REQUEST","requestId":"9bc4b732-18f0-4c3e-b494-f01d40ef005d","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":6}
+{"event":"HTTP_REQUEST","requestId":"98840b01-3e92-441d-98c9-005c435d343d","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":8}
+{"event":"HTTP_REQUEST","requestId":"c71d28dc-8988-4b08-bdae-3e25e81afd3b","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":6}
+{"event":"HTTP_REQUEST","requestId":"ff831bf4-6184-48a0-bf8d-fd357d074910","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":10}
+{"event":"HTTP_REQUEST","requestId":"90e19641-0175-4a2c-89b8-92636b05705f","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":6}
+{"event":"HTTP_REQUEST","requestId":"6be119bc-0188-4932-a16a-2194c5e41165","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":4}
+{"event":"HTTP_REQUEST","requestId":"9625ff85-0c1e-466e-8f4b-c34f7b6421c0","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":8}
+{"event":"HTTP_REQUEST","requestId":"e73bce20-4092-4d88-b313-3eccb1ae3b02","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":6}
+{"event":"HTTP_REQUEST","requestId":"ab4fc41f-6a63-45c9-81f5-2408eddf0657","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":12}
+{"event":"HTTP_REQUEST","requestId":"a2bc41fe-0687-4bd1-a291-3097dd9f0842","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":5}
+{"event":"HTTP_REQUEST","requestId":"73b68189-2a5e-4cbb-b890-9d18ee3592c9","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":5}
+{"event":"HTTP_REQUEST","requestId":"a8cacca9-1046-4ae8-b148-5aebc2ab6152","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":10}
+{"event":"HTTP_REQUEST","requestId":"b044fbaa-6992-4131-b540-e590299d8393","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":5}
+{"event":"HTTP_REQUEST","requestId":"1b02208d-da0d-4cd8-a6b3-6f470eb51976","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":8}
+{"event":"HTTP_REQUEST","requestId":"f4d6c248-6829-432c-b65c-d9a313f10066","method":"POST","route":"/admin/casino/config/:gameId/preview","statusCode":201,"durationMs":28}
+{"event":"HTTP_REQUEST","requestId":"d171357e-2607-4a2d-973e-5a01fbbf27d0","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":41}
+{"event":"HTTP_REQUEST","requestId":"f6463127-ef3f-424c-9ebe-c12e5e76d6a4","method":"POST","route":"/admin/casino/config/:gameId/versions/:versionId/activate","statusCode":201,"durationMs":30}
+{"event":"HTTP_REQUEST","requestId":"e75bcccb-8631-40ea-82ce-00ba453840b4","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":41}
+{"event":"HTTP_REQUEST","requestId":"dc94b0e4-3eda-4a10-9c3f-a070d833b2f4","method":"POST","route":"/admin/casino/config/:gameId/versions/:versionId/activate","statusCode":201,"durationMs":32}
+{"event":"HTTP_REQUEST","requestId":"63a8bd99-15f9-444a-a8bd-9fb1e99bbde7","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":27}
+{"event":"HTTP_REQUEST","requestId":"f5d3e5e8-fdcb-4a99-a39b-44d452cb3a46","method":"POST","route":"/admin/casino/config/:gameId/versions/:versionId/activate","statusCode":201,"durationMs":41}
+{"event":"HTTP_REQUEST","requestId":"d6f50749-e363-4898-9ac2-ebd104812c6e","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":46}
+{"event":"HTTP_REQUEST","requestId":"11b7ad3a-35c7-47bc-a04f-1959e97603d0","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":27}
+{"event":"HTTP_REQUEST","requestId":"00270b18-ca46-4f61-a6ce-2cf44f7aab5d","method":"POST","route":"/admin/casino/config/:gameId/versions/:versionId/activate","statusCode":201,"durationMs":33}
+{"event":"HTTP_REQUEST","requestId":"fd250e62-d5c9-4e98-bf8a-166151ff0b7f","method":"POST","route":"/admin/casino/config/:gameId/versions/:versionId/activate","statusCode":201,"durationMs":24}
+{"event":"HTTP_REQUEST","requestId":"6f240fdd-6839-4977-9ca1-7dbf49769ee4","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":46}
+{"event":"HTTP_REQUEST","requestId":"115d1340-80af-491b-9c44-cea909e3c555","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":62}
+{"event":"HTTP_REQUEST","requestId":"fb69f07e-9f83-4f9d-81b6-2e811938a330","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":60}
+{"event":"HTTP_REQUEST","requestId":"3d326dc3-29b5-4f48-a633-c5b7f4be8954","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":71}
+{"event":"HTTP_REQUEST","requestId":"4bef37dc-0eda-4c7b-8c6b-bc6e6813e22c","method":"POST","route":"/admin/casino/config/:gameId/versions/:versionId/activate","statusCode":201,"durationMs":46}
+{"event":"HTTP_REQUEST","requestId":"181a931d-3a73-4d6d-864a-cd27c35b91d6","method":"POST","route":"/admin/casino/config/:gameId/versions/:versionId/activate","statusCode":201,"durationMs":72}
+{"event":"HTTP_REQUEST","requestId":"4021b269-1a07-4ed6-adfd-d047230e145c","method":"POST","route":"/admin/casino/config/:gameId/versions/:versionId/activate","statusCode":201,"durationMs":103}
+{"event":"HTTP_REQUEST","requestId":"fa423aa0-d59c-41d0-9400-0c8488c1d468","method":"POST","route":"/admin/casino/config/:gameId/versions/:versionId/activate","statusCode":201,"durationMs":131}
+{"event":"HTTP_REQUEST","requestId":"259545d3-7bad-4958-b0c8-d148581cea47","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":87}
+{"event":"HTTP_REQUEST","requestId":"1fa71ad7-098c-4622-be29-d190559408f1","method":"POST","route":"/admin/casino/config/:gameId/versions/:versionId/activate","statusCode":201,"durationMs":65}
+{"event":"HTTP_REQUEST","requestId":"cc47995f-5a7c-460e-a18d-1b74de168255","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":19}
+{"event":"HTTP_REQUEST","requestId":"8405e452-f15a-4b44-ba16-291f89664f4b","method":"POST","route":"/admin/casino/config/:gameId/versions/:versionId/activate","statusCode":201,"durationMs":32}
+{"event":"HTTP_REQUEST","requestId":"c2728ce8-a293-4aec-9d57-9fe814e790d1","method":"POST","route":"/admin/casino/config/:gameId/versions/:versionId/activate","statusCode":201,"durationMs":18}
+{"event":"HTTP_REQUEST","requestId":"fc85ab68-a8e8-4f5c-85c5-f502d326f2ad","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":48}
+{"event":"HTTP_REQUEST","requestId":"ff0e0b18-9534-408d-966d-563bd7ef2794","method":"POST","route":"/admin/casino/config/:gameId/versions/:versionId/activate","statusCode":201,"durationMs":36}
+{"event":"HTTP_REQUEST","requestId":"93e156c8-b53f-4da1-9ca6-c6ee4d4e6cec","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":23}
+{"event":"HTTP_REQUEST","requestId":"7d9a9a4f-421e-49c8-a5ea-0bbe224bca3c","method":"POST","route":"/admin/casino/config/:gameId/versions/:versionId/activate","statusCode":201,"durationMs":45}
+{"event":"HTTP_REQUEST","requestId":"1bf7f9b9-ebb7-4e3e-8ca2-6f356f37593d","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":172}
+{"event":"HTTP_REQUEST","requestId":"2d251099-d08c-436a-99a0-c3d0097b4756","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":30}
+{"event":"HTTP_REQUEST","requestId":"63f85766-54b3-4b9e-8650-10fb283d8e4d","method":"POST","route":"/admin/casino/config/:gameId/versions/:versionId/activate","statusCode":201,"durationMs":52}
+{"event":"HTTP_REQUEST","requestId":"c8f24cff-f055-4303-8e7d-9d092a087e09","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":65}
+{"event":"HTTP_REQUEST","requestId":"31b7955c-cb59-4531-bcf2-8b3d4808a68e","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":69}
+{"event":"HTTP_REQUEST","requestId":"b8b4ca2c-c556-4308-8b5e-8719f95486f4","method":"POST","route":"/admin/casino/config/:gameId/versions/:versionId/activate","statusCode":201,"durationMs":43}
+{"event":"HTTP_REQUEST","requestId":"53c79446-8710-4d16-b21c-7854ddceed4e","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":81}
+{"event":"HTTP_REQUEST","requestId":"ebd3d18b-8092-4f52-a6bd-ec54f142d369","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":23}
+{"event":"HTTP_REQUEST","requestId":"e0e7ca32-4d05-4bd7-a551-f2eb72be29de","method":"POST","route":"/admin/casino/config/:gameId/versions/:versionId/activate","statusCode":201,"durationMs":32}
+{"event":"HTTP_REQUEST","requestId":"f71e0b3f-b9ca-4492-a1bb-8a1ee4632702","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":23}
+{"event":"HTTP_REQUEST","requestId":"25d8e5a7-986a-4c93-b4f4-6ab10b45a6ee","method":"POST","route":"/admin/casino/config/:gameId/versions/:versionId/activate","statusCode":201,"durationMs":42}
+{"event":"HTTP_REQUEST","requestId":"f893783a-e80b-4871-8372-42c06aabfc94","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":141}
+{"event":"HTTP_REQUEST","requestId":"b3eae4b0-a56c-4203-bae8-a3033db03cf5","method":"POST","route":"/admin/casino/config/:gameId/versions/:versionId/activate","statusCode":201,"durationMs":75}
+{"event":"HTTP_REQUEST","requestId":"45699ccd-93df-42c7-b944-51f3858bb573","method":"GET","route":"/admin/casino/config/:gameId","statusCode":200,"durationMs":8}
+{"event":"HTTP_REQUEST","requestId":"79767c1f-fd89-4b96-9af0-a8c767d1e246","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":74}
+{"event":"HTTP_REQUEST","requestId":"53bbc4c2-e61c-49e7-8069-000cf6d4e473","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":124}
+{"event":"HTTP_REQUEST","requestId":"30d9cda7-705f-4a49-ac46-3e3099300af6","method":"POST","route":"/admin/casino/config/:gameId/versions/:versionId/activate","statusCode":201,"durationMs":97}
+{"event":"HTTP_REQUEST","requestId":"9ce97505-540b-47bc-9c8c-13b85d1a3f28","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":59}
+{"event":"HTTP_REQUEST","requestId":"64e3ccd0-0be4-4d3f-9f79-1a9790af0e9d","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":64}
+{"event":"HTTP_REQUEST","requestId":"95856bde-8669-40ef-bb44-96df0e314071","method":"POST","route":"/admin/casino/config/:gameId/versions/:versionId/activate","statusCode":201,"durationMs":36}
+{"event":"HTTP_REQUEST","requestId":"4cd0ac56-4ee6-4596-bd7e-29d8f0ca517e","method":"GET","route":"/admin/casino/config/:gameId","statusCode":200,"durationMs":7}
+{"event":"HTTP_REQUEST","requestId":"9b7961a0-843d-4f00-bc81-d7c51b743dda","method":"PATCH","route":"/admin/casino/config/:gameId/status","statusCode":200,"durationMs":61}
+{"event":"HTTP_REQUEST","requestId":"4cd796c6-63d9-4a4c-87ad-efabd99e1c3b","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":21}
+{"event":"HTTP_UNHANDLED_EXCEPTION","requestId":"4cd796c6-63d9-4a4c-87ad-efabd99e1c3b","method":"POST","route":"/casino/dice/play","errorType":"ServiceUnavailableException"}
+{"event":"HTTP_REQUEST","requestId":"b506a7f3-829e-4319-abf8-fb73ec52c3da","method":"PATCH","route":"/admin/casino/config/:gameId/status","statusCode":200,"durationMs":16}
+{"event":"HTTP_REQUEST","requestId":"d0e7b686-9811-43b2-b71a-a3f3e76ca4b3","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":89}
+{"event":"HTTP_REQUEST","requestId":"4fcbbebd-f4c1-4ab9-bc07-7491e305aae2","method":"PATCH","route":"/admin/casino/config/:gameId/status","statusCode":200,"durationMs":25}
+{"event":"HTTP_REQUEST","requestId":"2999c6d2-8d42-44cc-ae15-d9ad5ba81119","method":"PATCH","route":"/admin/casino/config/:gameId/status","statusCode":200,"durationMs":23}
+{"event":"HTTP_REQUEST","requestId":"ca53170f-e98a-4db4-8378-1dd2d3cf4fb6","method":"PATCH","route":"/admin/platform/maintenance","statusCode":200,"durationMs":43}
+{"event":"HTTP_REQUEST","requestId":"c610b038-5747-490c-9215-93867642c65c","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":7}
+{"event":"HTTP_UNHANDLED_EXCEPTION","requestId":"c610b038-5747-490c-9215-93867642c65c","method":"POST","route":"/casino/dice/play","errorType":"ServiceUnavailableException"}
+{"event":"HTTP_REQUEST","requestId":"c83a3647-b074-47d2-84dd-7a752a18eeb2","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":7}
+{"event":"HTTP_UNHANDLED_EXCEPTION","requestId":"c83a3647-b074-47d2-84dd-7a752a18eeb2","method":"POST","route":"/casino/plinko/play","errorType":"ServiceUnavailableException"}
+{"event":"HTTP_REQUEST","requestId":"f80033ba-0767-40cb-a7c3-306c2c5e0cc5","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":7}
+{"event":"HTTP_UNHANDLED_EXCEPTION","requestId":"f80033ba-0767-40cb-a7c3-306c2c5e0cc5","method":"POST","route":"/casino/slots/fools-gold-rush/spin","errorType":"ServiceUnavailableException"}
+{"event":"HTTP_REQUEST","requestId":"b35f5ccf-c7ef-44fc-a770-7a2c4f83cfb7","method":"PATCH","route":"/admin/platform/maintenance","statusCode":200,"durationMs":19}
+{"event":"HTTP_REQUEST","requestId":"7510bb53-40b6-4060-a6b5-cae615252e69","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":96}
+{"event":"HTTP_REQUEST","requestId":"902c4572-6798-4d42-812f-818a5dfec3da","method":"PATCH","route":"/admin/platform/maintenance","statusCode":200,"durationMs":21}
+{"event":"HTTP_REQUEST","requestId":"86cab3d2-ad84-422a-834f-a3d44c277385","method":"PATCH","route":"/admin/platform/maintenance","statusCode":200,"durationMs":14}
+{"event":"HTTP_REQUEST","requestId":"9285e3a2-d47e-4a1b-8e2e-f2496f0459ab","method":"POST","route":"/admin/casino/config/:gameId/versions","statusCode":201,"durationMs":39}
+{"event":"HTTP_REQUEST","requestId":"d867bda9-4de4-4a04-8750-301c16435c78","method":"POST","route":"/admin/casino/config/:gameId/versions/:versionId/activate","statusCode":201,"durationMs":28}
+{"event":"HTTP_REQUEST","requestId":"a2b393c6-dcea-4ea0-bb50-94e1faebeb7e","method":"PATCH","route":"/admin/casino/config/:gameId/status","statusCode":200,"durationMs":14}
+{"event":"HTTP_REQUEST","requestId":"b0d7bac4-b894-412f-80fa-66fc70b529dc","method":"PATCH","route":"/admin/platform/maintenance","statusCode":200,"durationMs":25}
+{"event":"HTTP_REQUEST","requestId":"0a5b8264-7eed-45bf-b724-38dd9b558a9b","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":92}
+{"event":"HTTP_REQUEST","requestId":"50f54e42-25ca-4cc6-86ab-5f15576f4fef","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":79}
+{"event":"HTTP_REQUEST","requestId":"7dcc5cb8-1df0-4fb7-a01d-05630c0b6410","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":55}
+{"event":"HTTP_REQUEST","requestId":"a7c66c6d-2adc-4811-b942-dee4f5024e15","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":71}
+{"event":"HTTP_REQUEST","requestId":"f3f7d9fd-21e7-4239-aa1f-9b4709d045fc","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":40}
+{"event":"HTTP_REQUEST","requestId":"59406bfd-fe2d-4f89-a7cc-1a1216d1a5fd","method":"GET","route":"/admin/casino/analytics","statusCode":200,"durationMs":29}
+{"event":"HTTP_REQUEST","requestId":"7c7b6c3a-d623-4205-a539-40cff0626a89","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":117}
+{"event":"HTTP_REQUEST","requestId":"05994f13-7756-4b32-914a-c3ed835adf70","method":"GET","route":"/admin/casino/analytics","statusCode":200,"durationMs":20}
+{"event":"HTTP_REQUEST","requestId":"af2cbe28-3b61-45b5-9a65-85a88ff40d97","method":"GET","route":"/admin/casino/analytics","statusCode":200,"durationMs":9}
+{"event":"HTTP_REQUEST","requestId":"876dfb2f-bf42-484e-b546-617ba0cfd8e4","method":"GET","route":"/admin/casino/analytics","statusCode":200,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"31001fe4-90f3-46cf-90d5-8303ef520963","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":37}
+{"event":"HTTP_REQUEST","requestId":"39c95388-fcf2-496c-831c-6e51e1799184","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":21}
+{"event":"HTTP_REQUEST","requestId":"c531c4f0-0cb8-4d9b-90ca-447a25f44bd9","method":"POST","route":"/admin/users/:userId/coins/remove","statusCode":201,"durationMs":86}
+{"event":"HTTP_REQUEST","requestId":"34ddf368-34a8-483c-a65d-b72b69155140","method":"POST","route":"/admin/users/:userId/coins/remove","statusCode":201,"durationMs":18}
+{"event":"HTTP_REQUEST","requestId":"e30ef316-613c-49d8-b4bb-235c2782153d","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":89}
+{"event":"HTTP_REQUEST","requestId":"cdb1373d-864d-406d-8ea4-da5075ad4ec2","method":"GET","route":"/admin/users/:userId/detail","statusCode":200,"durationMs":24}
+{"event":"HTTP_REQUEST","requestId":"8495e72f-f16f-4219-946b-a64a2c9728f0","method":"GET","route":"/admin/users","statusCode":200,"durationMs":15}
+{"event":"HTTP_REQUEST","requestId":"993cec6a-7f23-41ab-a466-2822e613922d","method":"POST","route":"/casino/crash/start","statusCode":201,"durationMs":13}
+{"event":"HTTP_REQUEST","requestId":"7be7efe9-3bd4-4599-a071-c9c5845eeed4","method":"POST","route":"/casino/crash/start","statusCode":201,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"f8613a49-ee56-44ab-8d94-50f5b7b79963","method":"POST","route":"/casino/crash/start","statusCode":201,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"06ca8bef-75f8-47bd-8564-9d0e1c19da71","method":"POST","route":"/casino/crash/start","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"9916e8c1-2514-4a6b-ad36-6afc5dadc15e","method":"POST","route":"/casino/crash/start","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"4226341a-53bb-4677-bbd4-10eeb28ad123","method":"POST","route":"/casino/crash/start","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"b86d31e0-5e09-4d7b-9abf-c87f99b23652","method":"POST","route":"/casino/crash/start","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"f42d901b-e308-46ec-b1b1-04871728c079","method":"POST","route":"/casino/crash/start","statusCode":201,"durationMs":0}
+{"event":"HTTP_REQUEST","requestId":"29ab925e-c4dc-4c52-918d-eac91816dc9d","method":"POST","route":"/casino/crash/start","statusCode":201,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"82b532a1-7324-4766-826c-42db7508a799","method":"POST","route":"/casino/crash/start","statusCode":201,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"d4dad383-f2dd-4393-8e63-f6f6e7ea6323","method":"POST","route":"/casino/crash/start","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"d0131b33-dd71-4a85-a9ff-09a6d19c407a","method":"POST","route":"/casino/crash/:roundId/cashout","statusCode":201,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"0147de06-aa63-4646-998f-7e31e84a1aa7","method":"POST","route":"/casino/crash/:roundId/cashout","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"1d9df370-ade6-49c5-aecc-9a47ea73e0b8","method":"POST","route":"/casino/crash/:roundId/cashout","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"8c165e4d-7068-445b-a155-b23cde357c0a","method":"POST","route":"/casino/crash/:roundId/cashout","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"c4bc1f50-0d7f-4f47-bbe8-730f06b26340","method":"POST","route":"/casino/crash/:roundId/cashout","statusCode":201,"durationMs":0}
+{"event":"HTTP_REQUEST","requestId":"b4a4691b-22d8-4d55-bc17-7f2b16ac872d","method":"POST","route":"/casino/crash/start","statusCode":201,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"382721f1-3949-4ba2-a438-021a1e5b0df7","method":"POST","route":"/casino/crash/start","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"05c4f80b-4e1e-4272-bbdd-a33e4aaad857","method":"POST","route":"/casino/crash/start","statusCode":201,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"8a162e56-e13d-4780-8f66-f387b80ec161","method":"POST","route":"/casino/crash/start","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"85e18c4a-1575-43a2-8ef6-636184a16e4d","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"4ede4cf9-9c63-4cb6-940f-c04ad7d7a309","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"0b7b9318-d55f-4645-affe-76aecd985333","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"9329db3e-979b-4425-813b-4daa9f2a309c","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"7e32fd83-3439-40d0-b7d4-ee460c3abaea","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"9e2a9a77-3268-412e-a203-6f0792868802","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"e5c3a068-91c4-4b38-b26d-6cfe45c7b1ab","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"72afae15-66b1-46f7-8f9b-bbf6424ad2de","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"7708e25d-960a-4fef-8a36-e7dda477673c","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"9cb81c73-4350-401b-87e7-42810f4f2a46","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"cab2a06c-1b4e-42ac-ab16-56b920eebd00","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"534a9a6c-4dc3-43e7-b65e-6f9661686af2","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"10657abe-1136-4e88-b757-f86fc623be06","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"b4c0a17d-205c-4f01-96a8-bda7bef691b1","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"90d057ee-3d38-462d-b265-eb32f911759e","method":"POST","route":"/casino/crash/start","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"9799ef34-4ff9-45fc-b6c6-072d5cfb4633","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"263974be-f8cb-44aa-964b-8d4672b4920a","method":"GET","route":"/casino/rounds/:roundId","statusCode":200,"durationMs":5}
+{"event":"HTTP_REQUEST","requestId":"c1da926e-071c-4759-8a2c-1b9fcbb82497","method":"GET","route":"/casino/history","statusCode":200,"durationMs":8}
+{"event":"HTTP_REQUEST","requestId":"2149aef9-e74f-4b0f-b22d-99ec667a4ec6","method":"GET","route":"/casino/crash/active","statusCode":200,"durationMs":76}
+{"event":"HTTP_REQUEST","requestId":"42181404-7038-4efb-8c0c-30e068ec44bb","method":"GET","route":"/admin/casino/rounds","statusCode":200,"durationMs":9}
+{"event":"HTTP_REQUEST","requestId":"7db63710-b1d0-4740-aebe-62a01ded7fe6","method":"GET","route":"/casino/rounds/:roundId/verification","statusCode":200,"durationMs":4}
+{"event":"HTTP_REQUEST","requestId":"61156904-19b8-4547-9b90-f63f86370775","method":"GET","route":"/casino/rounds/:roundId/verification","statusCode":200,"durationMs":4}
+{"event":"HTTP_REQUEST","requestId":"caf3f14f-5d84-4de5-b455-4412bd7c5483","method":"GET","route":"/casino/rounds/:roundId","statusCode":200,"durationMs":4}
+{"event":"HTTP_REQUEST","requestId":"aa56003c-3ab5-45cb-a512-40fbafa0b0a3","method":"POST","route":"/casino/crash/:roundId/cashout","statusCode":201,"durationMs":13}
+{"event":"HTTP_REQUEST","requestId":"704b8255-91af-469a-93f3-a18cd4b427df","method":"GET","route":"/casino/crash/active","statusCode":200,"durationMs":6}
+{"event":"HTTP_REQUEST","requestId":"3a721a76-f63d-4363-b257-b9c5439ebd0f","method":"GET","route":"/casino/games","statusCode":200,"durationMs":30}
+{"event":"HTTP_REQUEST","requestId":"aa7c30bd-0ab5-492c-bcb0-daf5456a4a8e","method":"GET","route":"/casino/games/:gameType/config","statusCode":200,"durationMs":53}
+{"event":"HTTP_REQUEST","requestId":"2dc75bab-25dc-4ace-a982-f7ffc9b3a50f","method":"GET","route":"/casino/games/:gameType/config","statusCode":200,"durationMs":18}
+{"event":"HTTP_REQUEST","requestId":"0a0c45e0-c68c-47da-ae26-68824e7d95d1","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":137}
+{"event":"HTTP_REQUEST","requestId":"b826a1d8-209b-4065-8178-2ffac6f74dba","method":"GET","route":"/casino/history","statusCode":200,"durationMs":14}
+{"event":"HTTP_REQUEST","requestId":"8b19b2c5-3aac-4ac0-82bf-e3ce57324d3f","method":"GET","route":"/admin/casino/performance","statusCode":200,"durationMs":20}
+{"event":"HTTP_REQUEST","requestId":"9513f056-cd29-4149-afaa-6f3e05014dee","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":184}
+{"event":"HTTP_REQUEST","requestId":"9c087c63-a406-48a9-a1b2-51a7ebd4f117","method":"POST","route":"/casino/crash/start","statusCode":201,"durationMs":192}
+{"event":"HTTP_REQUEST","requestId":"32245a9a-18bb-4269-8d39-1c2fafacf9c4","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":652}
+{"event":"HTTP_REQUEST","requestId":"99e56bba-d550-4eda-95a9-b1b81e4affe1","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":774}
+{"event":"HTTP_REQUEST","requestId":"f7b53301-176e-44bc-8695-95b1172194d1","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":862}
+{"event":"HTTP_REQUEST","requestId":"62098618-7756-4fa7-a7b5-d746e6fb8ee0","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":904}
+{"event":"HTTP_REQUEST","requestId":"e4f5bb3f-04c4-43b0-a3d1-b54298e4540d","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":957}
+{"event":"HTTP_REQUEST","requestId":"ae144a5f-c50d-4606-aaa7-520ffbeb3e64","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":984}
+{"event":"HTTP_REQUEST","requestId":"02d5539f-6f72-4ea4-91ed-36f94eeb1426","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":1019}
+{"event":"HTTP_REQUEST","requestId":"40185981-7fc0-4bf3-b9e5-20930d633f3c","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":1063}
+{"event":"HTTP_REQUEST","requestId":"2e28a83f-7d07-4580-adb5-650a961943cd","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":1111}
+{"event":"HTTP_REQUEST","requestId":"0f068aeb-5a8c-40d3-8274-762c3a057183","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":1166}
+{"event":"HTTP_REQUEST","requestId":"40c704d3-b08c-41c0-a3e1-1753af957b36","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":1228}
+{"event":"HTTP_REQUEST","requestId":"d3ebe5d1-b293-43ed-a2fe-ccd7f845e9b1","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":1273}
+{"event":"HTTP_REQUEST","requestId":"343ded9a-7ef8-4657-aebe-6833e032ba60","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":1301}
+{"event":"HTTP_REQUEST","requestId":"ffdc3a81-ffee-41a2-99ee-abcb02c8f592","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":1347}
+{"event":"HTTP_REQUEST","requestId":"b21ab629-b3a4-48a4-8b5c-f6dd00b810de","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":1381}
+{"event":"HTTP_REQUEST","requestId":"2ae1cd2b-ca28-4a2c-8cf1-5946229aaae8","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":1426}
+{"event":"HTTP_REQUEST","requestId":"c8a58bb7-d89a-456e-9aba-fb86c087802a","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":1500}
+{"event":"HTTP_REQUEST","requestId":"7b79317c-5235-499d-b8bb-cd6e366d72cd","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":1535}
+{"event":"HTTP_REQUEST","requestId":"5c526d70-82f2-409a-8a64-4f76094b2d11","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":1570}
+{"event":"HTTP_REQUEST","requestId":"9a5b30e4-a116-4720-a4db-779e3256ef74","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":1622}
+{"event":"HTTP_REQUEST","requestId":"cfc4a893-1fab-4d16-938f-fc9ce2d7c722","method":"POST","route":"/admin/users","statusCode":201,"durationMs":218}
+{"event":"HTTP_REQUEST","requestId":"e66b3813-409c-4575-8ab3-4fc9e473f84f","method":"POST","route":"/admin/users","statusCode":201,"durationMs":147}
+{"event":"HTTP_REQUEST","requestId":"bd87b6da-00cb-495d-bd2d-05820870719b","method":"POST","route":"/admin/users","statusCode":201,"durationMs":164}
+{"event":"HTTP_REQUEST","requestId":"ee7c70fd-0de0-4602-9841-727d20985ada","method":"POST","route":"/admin/users","statusCode":201,"durationMs":196}
+{"event":"HTTP_REQUEST","requestId":"0f76fd63-914c-4ab7-bc86-2687d3a94a70","method":"GET","route":"/admin/users","statusCode":200,"durationMs":14}
+{"event":"HTTP_REQUEST","requestId":"108bf61f-3660-4a7b-9e82-e282cc7b0385","method":"GET","route":"/admin/users","statusCode":200,"durationMs":7}
+{"event":"HTTP_REQUEST","requestId":"c18b237e-2894-4b76-858d-7bdda85aabc6","method":"GET","route":"/admin/users","statusCode":200,"durationMs":7}
+{"event":"HTTP_REQUEST","requestId":"93f96eb8-5c2e-416e-9a38-ba21204e56d1","method":"GET","route":"/admin/users","statusCode":200,"durationMs":7}
+{"event":"HTTP_REQUEST","requestId":"91eb7816-8ff6-4586-883f-0191ebd9c6ee","method":"GET","route":"/admin/users/:userId/detail","statusCode":200,"durationMs":32}
+{"event":"HTTP_REQUEST","requestId":"ff5233e0-59ab-4be5-92af-f21fda0bcd1d","method":"GET","route":"/admin/users/:userId/detail","statusCode":200,"durationMs":5}
+{"event":"HTTP_REQUEST","requestId":"fca22af3-9960-42fd-b8f0-73df80cdb8a3","method":"GET","route":"/admin/users/:userId/detail","statusCode":200,"durationMs":78}
+{"event":"HTTP_REQUEST","requestId":"e4d96f01-0a1c-47a8-acef-65fec792300d","method":"GET","route":"/admin/users/:userId/detail","statusCode":200,"durationMs":12}
+{"event":"HTTP_REQUEST","requestId":"215a1e59-7de1-4979-a070-3d3d694c39d1","method":"POST","route":"/admin/users/:userId/password","statusCode":201,"durationMs":180}
+{"event":"HTTP_REQUEST","requestId":"71e33d63-39a8-4f17-bd15-eda099134aa4","method":"POST","route":"/admin/users/:userId/password/reveal","statusCode":201,"durationMs":18}
+{"event":"HTTP_REQUEST","requestId":"43d71e83-1666-4af4-b609-b3fd6521d2a6","method":"POST","route":"/admin/users/:userId/password","statusCode":201,"durationMs":154}
+{"event":"HTTP_REQUEST","requestId":"7408e234-60e2-4d66-9db3-fb96699311bd","method":"POST","route":"/admin/users/:userId/password","statusCode":201,"durationMs":172}
+{"event":"HTTP_REQUEST","requestId":"63b6dbc4-37e8-4ba0-9cb5-8e979a929218","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":21}
+{"event":"HTTP_REQUEST","requestId":"38f0673b-5510-4fa7-bc61-d1850bd54d50","method":"POST","route":"/admin/users/:userId/password","statusCode":201,"durationMs":149}
+{"event":"HTTP_REQUEST","requestId":"c07c0d8b-76af-4542-bf1c-5d302a388763","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":39}
+{"event":"HTTP_REQUEST","requestId":"12dd1988-8406-41c8-8af4-cf144f39e250","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":24}
+{"event":"HTTP_REQUEST","requestId":"66b1fa95-9aa2-4b37-bd8e-fb0b05a12d6e","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":29}
+{"event":"HTTP_REQUEST","requestId":"ecbb5bae-0f6a-4b9e-89e6-439586358fb9","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":68}
+{"event":"HTTP_REQUEST","requestId":"83e9e7fd-c23b-4ad0-bfd3-04367de98e05","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":63}
+{"event":"HTTP_REQUEST","requestId":"7342d787-5da8-48d6-886e-72d517c01482","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":69}
+{"event":"HTTP_REQUEST","requestId":"e8544a8b-efc5-4375-942d-52ab9b75e6be","method":"POST","route":"/admin/users/:userId/coins/take","statusCode":201,"durationMs":308}
+{"event":"HTTP_REQUEST","requestId":"76c8e7ae-d904-4314-9ff1-8197b5ed9702","method":"POST","route":"/admin/users/:userId/coins/take","statusCode":201,"durationMs":25}
+{"event":"HTTP_REQUEST","requestId":"1eea8cc0-db1a-4473-95aa-5c516141b1a0","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":54}
+{"event":"HTTP_REQUEST","requestId":"9b3d1157-4d2a-4cbe-82e8-a34b8e36d0c8","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":40}
+{"event":"HTTP_REQUEST","requestId":"e7a6c34e-7073-422f-b37d-308ec505dad9","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":18}
+{"event":"HTTP_REQUEST","requestId":"07dfdf3e-3dcc-4069-9cfe-c6a4c9c5d32d","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":20}
+{"event":"HTTP_REQUEST","requestId":"c962609c-7b31-4ceb-8080-01aba083ae8c","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":31}
+{"event":"HTTP_REQUEST","requestId":"08e181d5-bc93-45ce-b1c8-c1d0c232d7b7","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":17}
+{"event":"HTTP_REQUEST","requestId":"0dc65f0f-ce5f-4551-a724-d7ac08ccb9b4","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":17}
+{"event":"HTTP_REQUEST","requestId":"f72f4141-29c9-4233-9291-6577d8cc440c","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":14}
+{"event":"HTTP_REQUEST","requestId":"c6b1f8fe-e80d-45cd-a767-a747436f6df0","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":19}
+{"event":"HTTP_REQUEST","requestId":"c3b52eff-16c2-42bf-9e1e-38839d7fceee","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":16}
+{"event":"HTTP_REQUEST","requestId":"bf712e73-7fe7-4160-8fef-12339ca9cb73","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":13}
+{"event":"HTTP_REQUEST","requestId":"e0f21735-7036-43ec-bcd2-475f4adb20e4","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":45}
+{"event":"HTTP_REQUEST","requestId":"ca26a8cb-79c9-47a5-b4c5-9d1305a6409d","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":53}
+{"event":"HTTP_REQUEST","requestId":"753eb239-8738-4796-9c58-7ca2b0c62e40","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":74}
+{"event":"HTTP_UNHANDLED_EXCEPTION","requestId":"753eb239-8738-4796-9c58-7ca2b0c62e40","method":"POST","route":"/admin/users/bc6f6a36-7f29-43b7-89d7-618045009f0d/coins/give","errorType":"PrismaClientKnownRequestError"}
+{"event":"HTTP_REQUEST","requestId":"aeb20cf8-8eb2-471a-b15e-7c37df99cdc6","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":73}
+{"event":"HTTP_UNHANDLED_EXCEPTION","requestId":"aeb20cf8-8eb2-471a-b15e-7c37df99cdc6","method":"POST","route":"/admin/users/bc6f6a36-7f29-43b7-89d7-618045009f0d/coins/give","errorType":"PrismaClientKnownRequestError"}
+{"event":"HTTP_REQUEST","requestId":"50f08319-0e12-4e78-bddf-27729ae5d312","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":94}
+{"event":"HTTP_UNHANDLED_EXCEPTION","requestId":"50f08319-0e12-4e78-bddf-27729ae5d312","method":"POST","route":"/admin/users/bc6f6a36-7f29-43b7-89d7-618045009f0d/coins/give","errorType":"PrismaClientKnownRequestError"}
+{"event":"HTTP_REQUEST","requestId":"fb7f5c3e-2dd0-4c4a-ab2a-06ea1d946430","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":97}
+{"event":"HTTP_UNHANDLED_EXCEPTION","requestId":"fb7f5c3e-2dd0-4c4a-ab2a-06ea1d946430","method":"POST","route":"/admin/users/bc6f6a36-7f29-43b7-89d7-618045009f0d/coins/give","errorType":"PrismaClientKnownRequestError"}
+{"event":"HTTP_REQUEST","requestId":"93e5bab3-6a41-4134-bfd0-1edce6a1e00c","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":72}
+{"event":"HTTP_UNHANDLED_EXCEPTION","requestId":"93e5bab3-6a41-4134-bfd0-1edce6a1e00c","method":"POST","route":"/admin/users/bc6f6a36-7f29-43b7-89d7-618045009f0d/coins/give","errorType":"PrismaClientKnownRequestError"}
+{"event":"HTTP_REQUEST","requestId":"d3d1c600-f93e-4b2a-b98d-6d35941f4edb","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":34}
+{"event":"HTTP_REQUEST","requestId":"651ff7a7-faf1-4d75-ad59-b2424105b483","method":"POST","route":"/admin/users/:userId/coins/give","statusCode":201,"durationMs":36}
+{"event":"HTTP_REQUEST","requestId":"d0cce3ee-46ea-4f35-b867-9bc2192d2052","method":"POST","route":"/admin/users/:userId/coins/take","statusCode":201,"durationMs":47}
+{"event":"HTTP_REQUEST","requestId":"ffd44c0b-ebba-457f-aa6e-d4322664281b","method":"GET","route":"/admin/security/events","statusCode":200,"durationMs":26}
+{"event":"HTTP_REQUEST","requestId":"15297288-7c7b-4f5c-a255-b61542968a4e","method":"GET","route":"/admin/security/events","statusCode":200,"durationMs":15}
+{"event":"HTTP_REQUEST","requestId":"da243a8a-f8ee-4678-9a27-27830f1a1beb","method":"GET","route":"/admin/security/events","statusCode":200,"durationMs":43}
+{"event":"HTTP_REQUEST","requestId":"75b9b4a9-34e3-4541-8c2c-56c47c555960","method":"GET","route":"/admin/security/events","statusCode":200,"durationMs":68}
+{"event":"HTTP_REQUEST","requestId":"335d3f5e-86d7-4574-b47c-17b190de15c5","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":16}
+{"event":"HTTP_REQUEST","requestId":"9d278a0d-2efc-4d9d-a7d3-4bab5e72b270","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"ebd03e2b-539d-4268-9752-008ea0a65a7e","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"5d8caaac-d071-41e4-bcbd-fb6a131ca328","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"3bb2fca3-ca3e-4f26-a244-2a9b76b7b0d0","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"1de0c8ae-132d-4541-9b70-dadf6009e513","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"eb88ef06-5f14-4b64-a1bc-3b754c43a25c","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"3bea7150-3b74-461a-a26a-2946c88fc0d2","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"c32e4558-2701-42de-818a-4013b262afb8","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"dffeb7c2-506e-49b9-9c22-3226be57f87c","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"de8924c7-ee7b-43fc-a7f2-28598f865816","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":0}
+{"event":"HTTP_REQUEST","requestId":"f124477e-5530-4cbd-9e0b-e4de94392d02","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"fbfe3a7b-a9f5-4c69-8274-d6116d8cc1f5","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"4569b062-02b0-42f4-bebb-e0fb8b6883c0","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"5d54b65c-d042-4688-ae18-12958a7d434f","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"09a4d1dc-25bb-4c2d-8f95-44a0fb6bfd8d","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"4a6cf981-c23e-470f-8e11-5c742017e23a","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"c44449e2-92dc-4480-8060-2efee8e79192","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"60c6d10a-a6a2-4ea7-ab79-e6f98d057ad4","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"a636cf0f-5246-477f-bb49-082409c9c80c","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"3a4d5427-0e13-4027-89a7-ba6b281ef250","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"c65ca877-b0ae-4991-93d2-43b576f7de42","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"32b8156f-948a-449c-9a11-4e96ed8c1a5c","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":90}
+{"event":"HTTP_REQUEST","requestId":"bb4b2a33-118a-4aee-bad9-a833061a6139","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":46}
+{"event":"HTTP_REQUEST","requestId":"fbefb64a-21c9-4bce-88c0-bb7a01c2483f","method":"GET","route":"/casino/games","statusCode":200,"durationMs":36}
+{"event":"HTTP_REQUEST","requestId":"cb45b23a-2171-4fc1-ac02-5e29a0e5d819","method":"GET","route":"/casino/games/:gameType/config","statusCode":200,"durationMs":91}
+{"event":"HTTP_REQUEST","requestId":"da4f9978-9a3f-41c3-9d4e-78bd2a804702","method":"GET","route":"/casino/slots/:gameId/config","statusCode":200,"durationMs":64}
+{"event":"HTTP_REQUEST","requestId":"9cafe629-8bf7-401d-a508-8a6b7e45f8b4","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":156}
+{"event":"HTTP_REQUEST","requestId":"04de75c1-d42b-4442-874c-5bac2716400f","method":"GET","route":"/casino/history","statusCode":200,"durationMs":11}
+{"event":"HTTP_REQUEST","requestId":"9ff80c3d-dbea-4126-a36a-d2975219b389","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":88}
+{"event":"HTTP_REQUEST","requestId":"42a7e082-0638-4744-82d5-cc143a6880d4","method":"GET","route":"/casino/rounds/:roundId/verification","statusCode":200,"durationMs":9}
+{"event":"HTTP_REQUEST","requestId":"bfb91520-347a-4b3d-937a-527c1ccc7954","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":83}
+{"event":"HTTP_REQUEST","requestId":"c9b21127-4f05-4bd8-880f-03c800a9bcfd","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":59}
+{"event":"HTTP_REQUEST","requestId":"4d3764ce-3f18-41cd-b2ab-b8af11e67f24","method":"GET","route":"/admin/casino/rounds","statusCode":200,"durationMs":13}
+{"event":"HTTP_REQUEST","requestId":"cc088070-71ad-4d24-bcbf-9ffe9facfb54","method":"GET","route":"/admin/casino/performance","statusCode":200,"durationMs":15}
+{"event":"HTTP_REQUEST","requestId":"5fea281b-e5a9-4396-87d4-0afae41604e6","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":92}
+{"event":"HTTP_REQUEST","requestId":"e2a8b82d-7047-40da-826d-dfd75c980e40","method":"GET","route":"/casino/rounds/:roundId","statusCode":200,"durationMs":5}
+{"event":"HTTP_REQUEST","requestId":"ef2ee40f-4f42-45b7-bbca-f8244e35d8c9","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":419}
+{"event":"HTTP_REQUEST","requestId":"970b7536-6ed2-4cc2-8f72-ac8d72af6e76","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":493}
+{"event":"HTTP_REQUEST","requestId":"1f5692c2-37f9-4589-b4f4-d66fa8c60adc","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":538}
+{"event":"HTTP_REQUEST","requestId":"c22c8a65-bbb8-49c7-95f6-fabb8ee3388c","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":477}
+{"event":"HTTP_REQUEST","requestId":"4db332d8-f37c-4e49-80ef-e74ae031d577","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":588}
+{"event":"HTTP_REQUEST","requestId":"a1f261eb-d0dd-4871-8a62-9280773bd916","method":"POST","route":"/casino/crash/start","statusCode":201,"durationMs":510}
+{"event":"HTTP_REQUEST","requestId":"08ff8ef2-23db-474b-80d5-ba80b59ab7e9","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":686}
+{"event":"HTTP_REQUEST","requestId":"f860a1c2-66f5-464a-9adb-82f2825fd2cc","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":702}
+{"event":"HTTP_REQUEST","requestId":"ed84f90c-09e6-4921-bdf5-1a64731d876d","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":812}
+{"event":"HTTP_REQUEST","requestId":"3548d804-e522-4bf5-be0a-b615238bb7fc","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":803}
+{"event":"HTTP_REQUEST","requestId":"b61c24df-2180-46d8-9fff-2822fc0d4fd4","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":874}
+{"event":"HTTP_REQUEST","requestId":"2ff90867-2343-42ae-9c61-e89c01f67117","method":"POST","route":"/casino/slots/:gameId/spin","statusCode":201,"durationMs":957}
+{"event":"HTTP_REQUEST","requestId":"7b13035b-f452-433f-8042-14a4f514b8c3","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":991}
+{"event":"HTTP_REQUEST","requestId":"fb2993e3-0b7e-4cd8-8658-7ad1553fbfc3","method":"POST","route":"/casino/lucky-lady/launch","statusCode":201,"durationMs":83}
+{"event":"HTTP_REQUEST","requestId":"c223b59c-fc96-467f-991f-a452a10d3c4e","method":"POST","route":"/casino/lucky-lady/launch","statusCode":201,"durationMs":17}
+{"event":"HTTP_REQUEST","requestId":"083c3368-0490-42ba-b709-2b1dc201e267","method":"POST","route":"/casino/lucky-lady/launch/exchange","statusCode":200,"durationMs":12}
+{"event":"HTTP_REQUEST","requestId":"b987323a-9a47-4443-9d15-2842e1f6421d","method":"POST","route":"/casino/lucky-lady/launch/exchange","statusCode":200,"durationMs":30}
+{"event":"HTTP_REQUEST","requestId":"38f67f26-296f-44a6-bcca-1711b7825d57","method":"POST","route":"/casino/lucky-lady/session/gameplay","statusCode":200,"durationMs":55}
+{"event":"HTTP_REQUEST","requestId":"75e8d049-79ef-4f47-8d83-8c7a474beaec","method":"POST","route":"/casino/lucky-lady/session/gameplay","statusCode":200,"durationMs":3}
+{"event":"HTTP_REQUEST","requestId":"3b3abf09-efbe-457d-8e39-257b05cacbc0","method":"POST","route":"/casino/lucky-lady/session/gameplay","statusCode":200,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"4071976b-a90a-4205-a5f7-781efb0b852a","method":"POST","route":"/casino/lucky-lady/session/gameplay","statusCode":200,"durationMs":0}
+{"event":"HTTP_REQUEST","requestId":"f128822f-4000-4f6d-8ae2-07b97152611b","method":"POST","route":"/casino/lucky-lady/session/gameplay","statusCode":200,"durationMs":209}
+{"event":"HTTP_REQUEST","requestId":"94715192-0222-4398-a87f-ba0d036aedd0","method":"POST","route":"/auth/2fa/setup","statusCode":201,"durationMs":28}
+{"event":"HTTP_REQUEST","requestId":"e38ee47c-58cf-462d-ae87-a45a442db808","method":"POST","route":"/auth/2fa/enable","statusCode":201,"durationMs":1042}
+{"event":"HTTP_REQUEST","requestId":"e5e121dd-c653-43d5-a8a8-15d6ebac0ad1","method":"POST","route":"/auth/2fa/setup","statusCode":201,"durationMs":7}
+{"event":"HTTP_REQUEST","requestId":"166f726b-59f1-44ef-9c62-6b9271e8277e","method":"POST","route":"/auth/2fa/setup","statusCode":201,"durationMs":14}
+{"event":"HTTP_REQUEST","requestId":"66e96713-cfb7-4052-ad58-395376c72a0d","method":"POST","route":"/auth/2fa/enable","statusCode":201,"durationMs":5}
+{"event":"HTTP_REQUEST","requestId":"7cb112e6-8adb-4f28-8675-0cde527406af","method":"GET","route":"/auth/2fa/status","statusCode":200,"durationMs":3}
+{"event":"HTTP_REQUEST","requestId":"7944736b-9f74-49c7-a15b-3903a907e14a","method":"POST","route":"/auth/2fa/setup","statusCode":201,"durationMs":15}
+{"event":"HTTP_REQUEST","requestId":"4174e65a-cc16-44bf-bc0a-77412c037ec9","method":"POST","route":"/auth/2fa/enable","statusCode":201,"durationMs":955}
+{"event":"HTTP_REQUEST","requestId":"b0fe77c4-e764-4fe9-a82b-e8b6b04f8944","method":"POST","route":"/auth/login","statusCode":201,"durationMs":142}
+{"event":"HTTP_REQUEST","requestId":"7ff42366-4ed0-422e-8413-c5ae4a086960","method":"POST","route":"/auth/login/2fa","statusCode":201,"durationMs":13}
+{"event":"HTTP_REQUEST","requestId":"4b26c724-1d1e-4245-a88b-851a0765c608","method":"POST","route":"/auth/login/2fa","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"a8d1c4a1-bdf6-4c25-baa8-f822c4039320","method":"POST","route":"/auth/login/2fa","statusCode":201,"durationMs":31}
+{"event":"HTTP_REQUEST","requestId":"8e68be32-c7f1-49f7-9632-55e57da11aeb","method":"POST","route":"/auth/login/2fa","statusCode":201,"durationMs":12}
+{"event":"HTTP_REQUEST","requestId":"ba52856e-4964-4827-992f-0b4137c4d7ba","method":"POST","route":"/auth/2fa/setup","statusCode":201,"durationMs":14}
+{"event":"HTTP_REQUEST","requestId":"c27aefa7-bc95-48bf-8b0c-3858fdce0c19","method":"POST","route":"/auth/2fa/enable","statusCode":201,"durationMs":1196}
+{"event":"HTTP_REQUEST","requestId":"20ba567e-5650-4f1d-885f-82a132404248","method":"POST","route":"/auth/login","statusCode":201,"durationMs":214}
+{"event":"HTTP_REQUEST","requestId":"1c540e32-30f2-4e55-9144-f80119d97cf7","method":"POST","route":"/auth/login/2fa","statusCode":201,"durationMs":165}
+{"event":"HTTP_REQUEST","requestId":"ef73f8de-3ab8-45b7-8c66-f9fb1229b639","method":"POST","route":"/auth/login/2fa","statusCode":201,"durationMs":1200}
+{"event":"HTTP_REQUEST","requestId":"6b9744b4-a582-485a-96d8-eb3ea701929f","method":"POST","route":"/auth/login/2fa","statusCode":201,"durationMs":172}
+{"event":"HTTP_REQUEST","requestId":"65852230-c9c3-4432-b072-b101bb377bd7","method":"POST","route":"/auth/2fa/setup","statusCode":201,"durationMs":13}
+{"event":"HTTP_REQUEST","requestId":"e75322c3-46f9-439d-9300-e7b69fc706ee","method":"POST","route":"/auth/2fa/enable","statusCode":201,"durationMs":1064}
+{"event":"HTTP_REQUEST","requestId":"8646a22d-b44d-4a6b-beca-8a09dedff013","method":"POST","route":"/auth/login","statusCode":201,"durationMs":148}
+{"event":"HTTP_REQUEST","requestId":"c2637ed1-b03f-4f07-8aa9-f411ac16dd74","method":"POST","route":"/auth/login/2fa","statusCode":201,"durationMs":16}
+{"event":"HTTP_REQUEST","requestId":"de4f8bf3-178b-4a96-8f01-ce6a436fc977","method":"POST","route":"/auth/login/2fa","statusCode":201,"durationMs":11}
+{"event":"HTTP_REQUEST","requestId":"7355df7c-e690-4846-b2b0-d2d87483cf17","method":"POST","route":"/auth/login/2fa","statusCode":201,"durationMs":10}
+{"event":"HTTP_REQUEST","requestId":"dc4b2e97-88a6-43d5-8605-b89ac0e8f3d2","method":"POST","route":"/auth/login/2fa","statusCode":201,"durationMs":11}
+{"event":"HTTP_REQUEST","requestId":"ba378a6a-72dc-4ecf-b75e-195815109825","method":"POST","route":"/auth/login/2fa","statusCode":201,"durationMs":11}
+{"event":"HTTP_REQUEST","requestId":"d384592e-7b9d-47e6-aec9-1a0b5f08093f","method":"POST","route":"/auth/login/2fa","statusCode":201,"durationMs":3}
+{"event":"HTTP_REQUEST","requestId":"11b064da-507f-4304-88fc-b57ac29c6a99","method":"GET","route":"/auth/2fa/status","statusCode":200,"durationMs":3}
+{"event":"HTTP_REQUEST","requestId":"f0cebd27-f964-4cf6-9dd2-dba9064d5fde","method":"POST","route":"/auth/2fa/setup","statusCode":201,"durationMs":19}
+{"event":"HTTP_REQUEST","requestId":"204a4efe-f9fb-45a8-80ac-cb0a4e668e3c","method":"POST","route":"/auth/2fa/enable","statusCode":201,"durationMs":921}
+{"event":"HTTP_REQUEST","requestId":"9fef3e90-7cec-48fe-9bf9-50a48b85da2b","method":"GET","route":"/admin/users","statusCode":200,"durationMs":11}
+{"event":"HTTP_REQUEST","requestId":"cc46ab21-a186-4ae4-8769-d4dc35da6b9b","method":"GET","route":"/users/me","statusCode":200,"durationMs":5}
+{"event":"HTTP_REQUEST","requestId":"f4cb6569-5f2b-437d-bd4c-59d90c56c7e2","method":"POST","route":"/auth/2fa/setup","statusCode":201,"durationMs":16}
+{"event":"HTTP_REQUEST","requestId":"decb42b0-3ab1-4b05-8c47-3a2e58f9c539","method":"POST","route":"/auth/2fa/enable","statusCode":201,"durationMs":917}
+{"event":"HTTP_REQUEST","requestId":"3fec8d94-3211-4f1a-b555-6ce2c3c3a932","method":"POST","route":"/admin/users/:userId/mfa/reset","statusCode":201,"durationMs":9}
+{"event":"HTTP_REQUEST","requestId":"313fc5bb-9f00-4e05-bf45-0054b199b832","method":"POST","route":"/admin/users/:userId/mfa/reset","statusCode":201,"durationMs":8}
+{"event":"HTTP_REQUEST","requestId":"79bfe8f3-21f8-4517-aac9-303ab3692d97","method":"POST","route":"/admin/users/:userId/mfa/reset","statusCode":201,"durationMs":29}
+{"event":"HTTP_REQUEST","requestId":"84fd3d1e-93cb-4e67-a2b1-655bfabaa5e1","method":"POST","route":"/auth/login","statusCode":201,"durationMs":173}
+{"event":"HTTP_REQUEST","requestId":"f9ed2960-8777-4ab9-9edb-6531280a5c50","method":"POST","route":"/admin/casino/math/:gameId/generate","statusCode":201,"durationMs":701}
+{"event":"HTTP_REQUEST","requestId":"89c3f3ab-d9db-4b68-93c8-0884d654daa6","method":"POST","route":"/admin/casino/math/:gameId/generate","statusCode":201,"durationMs":657}
+{"event":"HTTP_REQUEST","requestId":"a496e80a-3ed3-4b26-98d4-4bc938554abb","method":"POST","route":"/admin/casino/math/:gameId/generate","statusCode":201,"durationMs":7}
+{"event":"HTTP_REQUEST","requestId":"b9b97114-5c9a-4a0b-af1f-6d7107ebe14b","method":"POST","route":"/admin/casino/math/:gameId/generate","statusCode":201,"durationMs":3}
+[Nest] 5588  - 10/08/2026, 1:15:45 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '63d8afd0-5461-426b-99a5-f1352b30db44'
+}
+[Nest] 5588  - 10/08/2026, 1:15:45 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '4a36b6fc-744f-4672-8f2d-ff23dd1052ef'
+}
+[Nest] 5588  - 10/08/2026, 1:15:45 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'b9ed559f-0e4e-4c59-b176-5524b02b8bac'
+}
+[Nest] 5588  - 10/08/2026, 1:15:45 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '2f692372-2493-49ca-ab00-f65c60f8ca29'
+}
+[Nest] 5588  - 10/08/2026, 1:15:45 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'd3729eec-d1af-4fe1-83df-f43d2d8f3277'
+}
+[Nest] 5588  - 10/08/2026, 1:15:45 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '2809227a-4c7e-4793-b6b7-a450aa4d208a'
+}
+[Nest] 5588  - 10/08/2026, 1:15:46 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'bc1b5097-354b-4556-8a11-4d97260a45a2'
+}
+[Nest] 5588  - 10/08/2026, 1:15:46 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'ff021af3-6dd6-423f-8c30-29893805ad2c'
+}
+[Nest] 5588  - 10/08/2026, 1:15:51 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '99992bbc-e766-4ee5-a314-bd0cdf9f34e2'
+}
+[Nest] 5588  - 10/08/2026, 1:15:51 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '99992bbc-e766-4ee5-a314-bd0cdf9f34e2'
+}
+[Nest] 5588  - 10/08/2026, 1:15:52 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'e5d8fb6b-8031-496a-8141-d2052a097278'
+}
+[Nest] 5588  - 10/08/2026, 1:15:52 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '942a5995-4e05-45d8-a481-d081e377e023'
+}
+[Nest] 5588  - 10/08/2026, 1:15:52 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '09460932-4ff1-48ea-8e81-4fe9840ec925'
+}
+[Nest] 5588  - 10/08/2026, 1:15:52 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'cb210fda-babb-48ce-b965-3c571da52e85'
+}
+[Nest] 5588  - 10/08/2026, 1:15:52 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_SETTLED',
+  gameType: 'CRASH',
+  roundId: 'cb210fda-babb-48ce-b965-3c571da52e85'
+}
+[Nest] 5588  - 10/08/2026, 1:15:53 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '57dc2dba-6c85-4ff0-888d-2b0df2e2e729'
+}
+[Nest] 5588  - 10/08/2026, 1:15:53 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_SETTLED',
+  gameType: 'CRASH',
+  roundId: '57dc2dba-6c85-4ff0-888d-2b0df2e2e729'
+}
+[Nest] 5588  - 10/08/2026, 1:15:54 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'a229eb96-9f30-472d-b3ee-3570c36f4dfe'
+}
+[Nest] 5588  - 10/08/2026, 1:15:54 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '26419e0a-5287-4470-8d4a-d4019d053bc1'
+}
+[Nest] 5588  - 10/08/2026, 1:15:54 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'd7d3c2a1-d4d6-4e93-9d49-ea9bdaa0e3dc'
+}
+[Nest] 5588  - 10/08/2026, 1:15:54 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '1bb4cc3a-54e2-47fa-8731-056ac59224ca'
+}
+[Nest] 5588  - 10/08/2026, 1:15:55 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '10602d30-05aa-4c71-a55c-571c8c4b00fe'
+}
+[Nest] 5588  - 10/08/2026, 1:15:55 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '491d0466-434c-4040-a5ee-db86aaa26893'
+}
+[Nest] 5588  - 10/08/2026, 1:15:55 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'ec2fff8a-1b68-4c26-ac50-e68a11f6f64c'
+}
+[Nest] 5588  - 10/08/2026, 1:15:55 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '9f5ab440-9017-4dd8-ae90-0555183a735e'
+}
+[Nest] 5588  - 10/08/2026, 1:15:55 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_SETTLED',
+  gameType: 'CRASH',
+  roundId: '9f5ab440-9017-4dd8-ae90-0555183a735e'
+}
+[Nest] 5588  - 10/08/2026, 1:15:55 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '24a7d585-7dce-42f9-a464-c818eba462d6'
+}
+[Nest] 5588  - 10/08/2026, 1:15:55 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '464b8920-7da9-4031-8f23-4b94f2993f43'
+}
+[Nest] 5588  - 10/08/2026, 1:15:55 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '21669b59-9bfe-49c7-91f4-7a40d0f6a496'
+}
+[Nest] 5588  - 10/08/2026, 1:15:56 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '754e16fe-ca50-44f0-9f53-803539187ca5'
+}
+[Nest] 5588  - 10/08/2026, 1:15:56 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '5f78ea3e-e125-4313-a9ff-1dbf91d0d19a'
+}
+[Nest] 5588  - 10/08/2026, 1:15:56 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'dee00579-746b-4614-9d56-e1d66ec90c80'
+}
+[Nest] 5588  - 10/08/2026, 1:15:56 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'e80331fc-ed6d-4d21-bb95-8af31987de8c'
+}
+[Nest] 5588  - 10/08/2026, 1:15:56 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'f351b073-950c-4c82-a796-6ca69e59f710'
+}
+[Nest] 5588  - 10/08/2026, 1:15:56 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '16d9bc41-849c-4bdc-90c9-24c30b1d2825'
+}
+[Nest] 5588  - 10/08/2026, 1:15:56 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '291c1329-7182-4070-997a-17db497e3e50'
+}
+[Nest] 5588  - 10/08/2026, 1:15:56 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'ce4e4808-05c8-407e-9f72-915412cb638e'
+}
+[Nest] 5588  - 10/08/2026, 1:15:56 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'f2806239-5a58-4f9e-bcbc-c377d99111cb'
+}
+[Nest] 5588  - 10/08/2026, 1:15:56 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'b863b897-246a-4929-885b-ad5eee41c66a'
+}
+[Nest] 5588  - 10/08/2026, 1:15:56 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '50e605ad-e36e-49e3-abf1-20c03cacc059'
+}
+[Nest] 5588  - 10/08/2026, 1:15:56 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'aa63a01b-b150-4337-8959-77f3aed0afcb'
+}
+[Nest] 5588  - 10/08/2026, 1:15:57 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'c76435f8-6f66-4418-b34d-4570a5070e6e'
+}
+[Nest] 5588  - 10/08/2026, 1:15:57 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '229ae6be-fc22-4f61-8d6a-339a26762d5c'
+}
+[Nest] 5588  - 10/08/2026, 1:15:57 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '2ac51ea1-8c40-401a-88cf-9688139b96d4'
+}
+[Nest] 5588  - 10/08/2026, 1:15:57 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'e401640f-58bd-4da7-9e9f-203c3e7a2a15'
+}
+[Nest] 5588  - 10/08/2026, 1:15:57 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '00da7dab-27bf-48e6-b98a-77f3219845a6'
+}
+[Nest] 5588  - 10/08/2026, 1:15:57 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'a6befe32-0d4f-415f-a3e9-b576f8905523'
+}
+[Nest] 5588  - 10/08/2026, 1:15:57 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '50ff12ea-8aa5-4252-ac1c-9b1f0b4862fc'
+}
+[Nest] 5588  - 10/08/2026, 1:15:57 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '5d9d5997-8534-42fc-a6f5-cf1c74c51955'
+}
+[Nest] 5588  - 10/08/2026, 1:15:57 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'b6d32b48-6bac-4d7e-8ee5-e7c21791fbcc'
+}
+[Nest] 5588  - 10/08/2026, 1:15:57 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '2bf2c506-f80d-46b9-823a-520af832e9f3'
+}
+[Nest] 5588  - 10/08/2026, 1:15:57 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'fadfd6f6-bdfa-4561-b076-45ddc613da5f'
+}
+[Nest] 5588  - 10/08/2026, 1:15:57 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'c7ff020d-0923-458b-8217-241eea834a7d'
+}
+[Nest] 5588  - 10/08/2026, 1:15:57 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'bf4ce26d-0189-47bc-bdd3-540f54e39341'
+}
+[Nest] 5588  - 10/08/2026, 1:15:57 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '5f54c13a-79a5-4b9f-b3d9-d77debffc4ae'
+}
+[Nest] 5588  - 10/08/2026, 1:15:57 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'fbf9370d-2a46-4e41-ad29-706fd9fd352f'
+}
+[Nest] 5588  - 10/08/2026, 1:15:57 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '2d366ce3-c135-4940-bbb7-6e3921b8904a'
+}
+[Nest] 5588  - 10/08/2026, 1:15:58 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'ea0be6aa-a49b-4e5d-8cfa-1ff76580623e'
+}
+[Nest] 5588  - 10/08/2026, 1:15:58 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '73d9b2a3-e270-43db-bc82-3577f762df29'
+}
+[Nest] 5588  - 10/08/2026, 1:15:58 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '528a0ad8-c007-4a4d-a770-3aa0309ebaa0'
+}
+[Nest] 5588  - 10/08/2026, 1:15:58 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_LOST',
+  gameType: 'CRASH',
+  roundId: '36ee9322-69e8-49e8-8b5c-f8ef0ba67e52'
+}
+[Nest] 5588  - 10/08/2026, 1:15:58 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '27ee1587-6485-4ea9-95f2-9392dced4559'
+}
+[Nest] 5588  - 10/08/2026, 1:15:59 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '3e5b54ec-52e3-4142-b012-3a4fa6027b00'
+}
+[Nest] 5588  - 10/08/2026, 1:15:59 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '5df030f5-3fd6-4c4c-a5e8-e1ded069b12d'
+}
+[Nest] 5588  - 10/08/2026, 1:15:59 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'b78cf958-fb89-4dfc-8a5e-3296e51c9391'
+}
+[Nest] 5588  - 10/08/2026, 1:15:59 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_SETTLED',
+  gameType: 'CRASH',
+  roundId: 'b78cf958-fb89-4dfc-8a5e-3296e51c9391'
+}
+[Nest] 5588  - 10/08/2026, 1:15:59 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_SETTLED',
+  gameType: 'CRASH',
+  roundId: 'b78cf958-fb89-4dfc-8a5e-3296e51c9391'
+}
+[Nest] 5588  - 10/08/2026, 1:16:00 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '8ff1436a-3800-4235-8088-a5b8fc1891aa'
+}
+[Nest] 5588  - 10/08/2026, 1:16:00 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_SETTLED',
+  gameType: 'CRASH',
+  roundId: '8ff1436a-3800-4235-8088-a5b8fc1891aa'
+}
+[Nest] 5588  - 10/08/2026, 1:16:00 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '0c98e30e-0d85-4638-a597-213af80f259b'
+}
+[Nest] 5588  - 10/08/2026, 1:16:00 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'ceba41fb-3e94-499b-89b7-79fe9b438f51'
+}
+[Nest] 5588  - 10/08/2026, 1:16:01 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'b6f305a2-14d9-4216-adf0-b70d62f71345'
+}
+[Nest] 5588  - 10/08/2026, 1:16:01 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '7cc3a08d-d43f-4804-924a-251c5b324f71'
+}
+[Nest] 5588  - 10/08/2026, 1:16:01 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '7d07ac6f-0bcb-4647-a8f0-2b70de26de3e'
+}
+[Nest] 5588  - 10/08/2026, 1:16:01 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '59825212-9bdd-4cec-a844-8fcf3ad37156'
+}
+[Nest] 5588  - 10/08/2026, 1:16:01 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_LOST',
+  gameType: 'CRASH',
+  roundId: 'fbe4e6df-9970-47c3-877e-e420b4fbfc45'
+}
+[Nest] 5588  - 10/08/2026, 1:16:01 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'd29c0266-b4b3-40bf-b0ff-11a491ecc1b1'
+}
+[Nest] 5588  - 10/08/2026, 1:16:01 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '082495aa-ccc4-45c1-b2e7-d97eccbfd358'
+}
+[Nest] 5588  - 10/08/2026, 1:16:01 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '9ce43180-8c91-4acc-b4f8-299ef1443e5a'
+}
+[Nest] 5588  - 10/08/2026, 1:16:01 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '877046ce-bb96-4949-8a54-a8d29a8c209f'
+}
+[Nest] 5588  - 10/08/2026, 1:16:01 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '8dd26d8a-9dac-4beb-ad9d-5201949f9f83'
+}
+[Nest] 5588  - 10/08/2026, 1:16:01 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'e2ef226a-f41c-4632-9afc-ea90ae1df925'
+}
+[Nest] 5588  - 10/08/2026, 1:16:01 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '80e47344-60ef-41f4-83cd-a368a85ae388'
+}
+[Nest] 5588  - 10/08/2026, 1:16:02 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '453ca6eb-6c32-4ee0-aa78-ba45a0620542'
+}
+[Nest] 5588  - 10/08/2026, 1:16:02 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '08442ffb-1c0a-4958-b289-295baab09511'
+}
+[Nest] 5588  - 10/08/2026, 1:16:02 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '9c1d9a2e-536e-430c-9eb4-7a4100df4304'
+}
+[Nest] 5588  - 10/08/2026, 1:16:02 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'e0b28c61-1f7a-4174-b3d5-ba254807f372'
+}
+[Nest] 5588  - 10/08/2026, 1:16:02 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '4703659d-7267-4662-bd63-9fb725d4b03f'
+}
+[Nest] 5588  - 10/08/2026, 1:16:02 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '10e8fb3d-fc19-4185-b76b-8cd59d321470'
+}
+[Nest] 5588  - 10/08/2026, 1:16:02 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_SETTLED',
+  gameType: 'CRASH',
+  roundId: '10e8fb3d-fc19-4185-b76b-8cd59d321470'
+}
+[Nest] 5588  - 10/08/2026, 1:16:03 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'bc9c1a92-2f95-4a67-9847-555c08db1251'
+}
+[Nest] 5588  - 10/08/2026, 1:16:03 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '220a34ff-806f-4636-937d-9ffb1b303d1e'
+}
+[Nest] 5588  - 10/08/2026, 1:16:03 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'f38c3fff-1e80-4448-a536-dc5c5e95e4e9'
+}
+[Nest] 5588  - 10/08/2026, 1:16:04 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '57d4c653-bab0-4fb8-bddc-587da26107a6'
+}
+[Nest] 5588  - 10/08/2026, 1:16:04 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '289a216b-75de-4c93-9980-1713b1352f34'
+}
+[Nest] 5588  - 10/08/2026, 1:16:04 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'cc8ac27b-e334-4a8c-90ae-2e7224c69852'
+}
+[Nest] 5588  - 10/08/2026, 1:16:04 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '26859e18-5b6e-414c-bb12-b707af3abe3f'
+}
+[Nest] 5588  - 10/08/2026, 1:16:05 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'f076fec0-e1cb-4380-beac-8d5dfe780bed'
+}
+[Nest] 5588  - 10/08/2026, 1:16:05 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'f09d9c4d-7b31-4383-a908-edf5345f0d0a'
+}
+[Nest] 5588  - 10/08/2026, 1:16:05 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'b4523fe8-cff8-4540-b322-780f4f5393fe'
+}
+[Nest] 5588  - 10/08/2026, 1:16:05 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'ae8f3892-5a3d-4d73-990f-12761378641c'
+}
+[Nest] 5588  - 10/08/2026, 1:16:05 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '59a39c80-3255-4d07-8203-ce6e1d602805'
+}
+[Nest] 5588  - 10/08/2026, 1:16:05 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'f8d77203-a180-4275-aec1-3fc553bc81af'
+}
+[Nest] 5588  - 10/08/2026, 1:16:06 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '9fec6282-7254-4c6b-92c0-59d9ab573f9b'
+}
+[Nest] 5588  - 10/08/2026, 1:16:06 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'f71b5db1-9ae1-4f59-9175-1e54436f4770'
+}
+[Nest] 5588  - 10/08/2026, 1:16:06 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '17710bc6-815e-4c3f-bb75-e9833c63209b'
+}
+[Nest] 5588  - 10/08/2026, 1:16:07 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '7917b48a-5608-4c5c-bfd8-b7ab8aae6f0c'
+}
+[Nest] 5588  - 10/08/2026, 1:16:07 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '517dacd3-9b9d-4f54-9f24-36de52403634'
+}
+[Nest] 5588  - 10/08/2026, 1:16:07 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'dc6e74b3-22b2-4246-be97-3073b943c13e'
+}
+[Nest] 5588  - 10/08/2026, 1:16:07 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '493365ee-1460-4f88-b1fa-867b7f80e287'
+}
+[Nest] 5588  - 10/08/2026, 1:16:07 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_SETTLED',
+  gameType: 'CRASH',
+  roundId: '493365ee-1460-4f88-b1fa-867b7f80e287'
+}
+[Nest] 5588  - 10/08/2026, 1:16:08 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '0910fd5a-c82f-4d8a-a7bc-1ebdf061384d'
+}
+[Nest] 5588  - 10/08/2026, 1:16:08 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '742ace85-c7f7-49a5-ba43-2963117960c5'
+}
+[Nest] 5588  - 10/08/2026, 1:16:08 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'bf137740-458f-4260-93ab-7134a4f25dab'
+}
+[Nest] 5588  - 10/08/2026, 1:16:08 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'c0a87b0a-87ee-41b7-9aa7-f821a39b823c'
+}
+[Nest] 5588  - 10/08/2026, 1:16:08 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '6b2d28ac-8b11-483f-a6f4-09a972ae8927'
+}
+[Nest] 5588  - 10/08/2026, 1:16:08 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '2da0cf62-3e28-4140-846a-5456c5b019b3'
+}
+[Nest] 5588  - 10/08/2026, 1:16:08 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '27d9465a-80ab-4ab6-b618-9bfb4da73f88'
+}
+[Nest] 5588  - 10/08/2026, 1:16:09 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'e9226349-100e-4094-b359-317432a65927'
+}
+[Nest] 5588  - 10/08/2026, 1:16:09 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '2167f2e2-2d41-479c-8c80-30300fa865f3'
+}
+[Nest] 5588  - 10/08/2026, 1:16:09 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'b8d47049-d7a6-4638-895e-a8b5cb922b23'
+}
+[Nest] 5588  - 10/08/2026, 1:16:10 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '242e723a-059e-46fb-8cd6-7d20b7dd5fc6'
+}
+[Nest] 5588  - 10/08/2026, 1:16:10 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '5e1a143f-b677-4469-9d35-a15f31a9edbf'
+}
+[Nest] 5588  - 10/08/2026, 1:16:10 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'c885175b-4100-48cc-b777-37bc80e396e7'
+}
+[Nest] 5588  - 10/08/2026, 1:16:10 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '007b2cd1-0bbd-47a4-9972-b46887d94ab4'
+}
+[Nest] 5588  - 10/08/2026, 1:16:10 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'd4957449-4b2d-465a-bf2b-9e364b394e2e'
+}
+[Nest] 5588  - 10/08/2026, 1:16:10 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '280e056c-a94e-45a9-9986-4415c8dd11c9'
+}
+[Nest] 5588  - 10/08/2026, 1:16:10 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'ac3972a0-42ea-4409-9164-20fa3d1eda5c'
+}
+[Nest] 5588  - 10/08/2026, 1:16:10 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '4c0558e8-72e3-4e98-a16d-e65f4c41c3f0'
+}
+[Nest] 5588  - 10/08/2026, 1:16:10 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '2addaab4-c6b8-4b41-96c6-36c7b01e94a9'
+}
+[Nest] 5588  - 10/08/2026, 1:16:10 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'ab063a1b-ef4d-4e51-80ca-ba8a3ef66528'
+}
+[Nest] 5588  - 10/08/2026, 1:16:10 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '05fd560b-2461-436b-be1f-981672304bd2'
+}
+[Nest] 5588  - 10/08/2026, 1:16:11 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '1646081d-f0e8-4147-abab-6cbecb8aee20'
+}
+[Nest] 5588  - 10/08/2026, 1:16:11 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '81644f0c-a2c9-4b5a-abb7-aae074e129dd'
+}
+[Nest] 5588  - 10/08/2026, 1:16:11 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_LOST',
+  gameType: 'CRASH',
+  roundId: '753243ca-05e4-4565-86e8-76bf9b2ecdc8'
+}
+[Nest] 5588  - 10/08/2026, 1:16:11 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: '076db223-1211-49da-90fa-623c20f0b1cb'
+}
+[Nest] 5588  - 10/08/2026, 1:16:11 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_LOST',
+  gameType: 'CRASH',
+  roundId: '75365ab7-1f45-4294-bc63-ee3c04d93f2e'
+}
+[Nest] 5588  - 10/08/2026, 1:16:11 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'd709494e-ee3f-4756-b975-6085ac0b6699'
+}
+[Nest] 5588  - 10/08/2026, 1:16:12 AM     LOG [CrashService] Object(3) {
+  event: 'CASINO_ROUND_STARTED',
+  gameType: 'CRASH',
+  roundId: 'b2b2f9ff-3d23-4c5c-8bfc-7d3facfc82cc'
+}
+{"event":"HTTP_REQUEST","requestId":"aae30465-8484-417b-9e50-c996b4d0110b","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":17}
+{"event":"HTTP_REQUEST","requestId":"d280b242-2601-40f2-91ba-6cdf63f597c7","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":6}
+{"event":"HTTP_REQUEST","requestId":"8e5aa48b-6f49-49c1-b380-1f1688de50ce","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"eb146d41-0a9d-4ebe-81c7-f0b828660ba1","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":3}
+{"event":"HTTP_REQUEST","requestId":"4e6a557d-741a-4847-beeb-1852ee07199d","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"61389e00-dd31-4c65-beae-fd3b72dcb314","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"83fb94fc-e0ed-4c69-a1e1-20d6654943f6","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"c753b1f0-ab92-4359-b002-a83de60196b3","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"63a4792b-298f-4057-ade5-1cdd6adbde4e","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"abb0eba7-a432-4ad9-bd96-53d8c0776098","method":"POST","route":"/casino/mines/:roundId/reveal","statusCode":201,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"ec34d952-02dd-4d48-bee2-6f93f1044bee","method":"POST","route":"/casino/mines/start","statusCode":201,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"eed80c9c-af5c-4bae-8977-0f724ad4c929","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"91f09519-f57c-4a5c-b45e-8a7f184ab34e","method":"POST","route":"/casino/mines/:roundId/reveal","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"67534f24-ff6e-40c5-a071-e9778f80badc","method":"POST","route":"/casino/mines/:roundId/reveal","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"0861669c-0173-4fc7-97f4-10a850c94ce4","method":"GET","route":"/casino/rounds/:roundId","statusCode":200,"durationMs":9}
+{"event":"HTTP_REQUEST","requestId":"adbcd16d-412f-467c-9f02-72b4e452e1f8","method":"GET","route":"/casino/history","statusCode":200,"durationMs":10}
+{"event":"HTTP_REQUEST","requestId":"575e88e2-dca8-4487-b1b4-95973768d7da","method":"GET","route":"/casino/mines/active","statusCode":200,"durationMs":13}
+{"event":"HTTP_REQUEST","requestId":"878cc59c-6857-47bc-9e21-8cf5bf6e6e3f","method":"GET","route":"/admin/casino/rounds","statusCode":200,"durationMs":10}
+{"event":"HTTP_REQUEST","requestId":"1c64a834-43ca-4615-8420-7d06d72a324f","method":"GET","route":"/casino/rounds/:roundId/verification","statusCode":200,"durationMs":7}
+{"event":"HTTP_REQUEST","requestId":"5f5289b4-c4ae-401b-a66a-46d3fc4835e5","method":"GET","route":"/casino/rounds/:roundId/verification","statusCode":200,"durationMs":5}
+{"event":"HTTP_REQUEST","requestId":"963d5882-2b97-4e2d-8503-4b5ea7980ab5","method":"GET","route":"/casino/rounds/:roundId","statusCode":200,"durationMs":3}
+{"event":"HTTP_REQUEST","requestId":"cb38993e-db3b-40c3-86db-b7837c616d7f","method":"POST","route":"/casino/mines/:roundId/reveal","statusCode":201,"durationMs":9}
+{"event":"HTTP_REQUEST","requestId":"d7a72401-91b5-4409-a07f-18d41a70b389","method":"POST","route":"/casino/mines/:roundId/cashout","statusCode":201,"durationMs":5}
+{"event":"HTTP_REQUEST","requestId":"91de2182-5df8-4b47-ae6b-081a21f9a4b3","method":"GET","route":"/admin/casino/rounds","statusCode":200,"durationMs":9}
+{"event":"HTTP_REQUEST","requestId":"cd6ab0d0-2bcc-46c8-9e0f-13ab1dcf4dd3","method":"GET","route":"/admin/casino/performance","statusCode":200,"durationMs":38}
+{"event":"HTTP_REQUEST","requestId":"485e96ef-5dea-49e6-ad7e-27d140ad38a5","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":99}
+{"event":"HTTP_REQUEST","requestId":"f9f06ae9-1c3c-4cd7-a85f-edec2a0b012d","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":61}
+{"event":"HTTP_REQUEST","requestId":"fa454422-59cc-4f73-94b4-484f1941a155","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":73}
+{"event":"HTTP_REQUEST","requestId":"c1c4577b-07df-4aaf-8074-98e6cace8693","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":53}
+{"event":"HTTP_REQUEST","requestId":"26612c05-7b5c-4c8f-a497-b1ce04ef775f","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":66}
+{"event":"HTTP_REQUEST","requestId":"9ed93aeb-61a7-451f-a558-e8167b6aa4ed","method":"GET","route":"/admin/casino/performance","statusCode":200,"durationMs":7}
+{"event":"HTTP_REQUEST","requestId":"f1f97a0e-407a-43bd-a041-f0075f15d0df","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":87}
+{"event":"HTTP_REQUEST","requestId":"7c8317cf-252f-40ef-abae-dc1fd2ae097a","method":"POST","route":"/casino/mines/start","statusCode":201,"durationMs":90}
+{"event":"HTTP_REQUEST","requestId":"8464c75a-30de-4193-8344-300cc4d4c5a4","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":611}
+{"event":"HTTP_REQUEST","requestId":"df4cff86-a059-4f0c-b790-493edc26d10e","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":816}
+{"event":"HTTP_REQUEST","requestId":"1e251bea-b1d0-45c6-829e-09eecc9d33a0","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":898}
+{"event":"HTTP_REQUEST","requestId":"9b08f887-490d-4a88-8d45-769e0af63d6a","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":1039}
+{"event":"HTTP_REQUEST","requestId":"1ebe989f-3d0d-42c4-b9be-63b9b505631a","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":1113}
+{"event":"HTTP_REQUEST","requestId":"faa3c6f2-56cb-4763-b973-09528d3530ac","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":1160}
+{"event":"HTTP_REQUEST","requestId":"96e77011-3b9e-459e-805d-84845a486763","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":1216}
+{"event":"HTTP_REQUEST","requestId":"ddcb4129-e19d-4d53-babf-686c668fc342","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":1230}
+{"event":"HTTP_REQUEST","requestId":"f3011f1b-15dc-41ba-a259-15f6e0602e92","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":1275}
+{"event":"HTTP_REQUEST","requestId":"50b66a60-89d2-4002-8f13-20869a969002","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":1277}
+{"event":"HTTP_REQUEST","requestId":"d9446bb4-123d-487b-8c4f-fc1045547ba4","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":1322}
+{"event":"HTTP_REQUEST","requestId":"49a6d7b8-441f-4447-954c-43dbd2cbbab1","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":1394}
+{"event":"HTTP_REQUEST","requestId":"2e88b4ed-a069-4b8e-9b46-a82c78fc09ba","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":1457}
+{"event":"HTTP_REQUEST","requestId":"b719bbfc-6eac-4e7b-b944-200b0a40e18e","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":1458}
+{"event":"HTTP_REQUEST","requestId":"164df22c-7ab1-44dc-b601-90ae8af2ac4f","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":1513}
+{"event":"HTTP_REQUEST","requestId":"bdcc0405-ff8a-4886-a02f-f9c7fc2f7232","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":1560}
+{"event":"HTTP_REQUEST","requestId":"1177ff9a-858c-4f73-8481-ed6f6502995d","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":1615}
+{"event":"HTTP_REQUEST","requestId":"86f52624-0979-4535-9ee6-af35e834dce6","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":1632}
+{"event":"HTTP_REQUEST","requestId":"5656718c-fb76-472e-b993-4bcb52e8221a","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":1658}
+{"event":"HTTP_REQUEST","requestId":"5f06227b-509f-42b4-b436-0defd1581d95","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":1694}
+{"event":"HTTP_REQUEST","requestId":"c1ba0b70-34aa-4c7b-9855-13c418f34e0d","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":1717}
+{"event":"HTTP_REQUEST","requestId":"57b4da9c-1d53-4bff-8274-17a1f65a5525","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":1759}
+{"event":"HTTP_REQUEST","requestId":"2e3285b3-90ba-46a2-9e9e-6e291f73012e","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":1790}
+{"event":"HTTP_REQUEST","requestId":"bc74930e-c863-4a83-a432-cdb9a7ac419d","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":1847}
+{"event":"HTTP_REQUEST","requestId":"3ebf650f-b284-448a-97f7-d63fef9377d3","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":1850}
+{"event":"HTTP_REQUEST","requestId":"9f8f37d0-848a-42e1-84eb-24d4b03bb44a","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":1914}
+{"event":"HTTP_REQUEST","requestId":"f21f5d53-cdf9-45b3-ac3a-2f6c69d32372","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":1965}
+{"event":"HTTP_REQUEST","requestId":"746c13cb-e6bb-4a1c-8e59-d996e897f6b4","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":1981}
+{"event":"HTTP_REQUEST","requestId":"0aeeb4e7-aea6-44a3-a1ac-bb696268cdce","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":2009}
+{"event":"HTTP_REQUEST","requestId":"5c9f9924-5654-4ded-8e10-989251a6bdc2","method":"POST","route":"/casino/dice/play","statusCode":201,"durationMs":2049}
+{"event":"HTTP_REQUEST","requestId":"f19debda-90f9-425f-9549-b50e4993f4dd","method":"POST","route":"/auth/register","statusCode":201,"durationMs":14}
+{"event":"HTTP_REQUEST","requestId":"4d3b6503-b7d5-4e7a-a2a0-7bf283a54c95","method":"POST","route":"/auth/register","statusCode":201,"durationMs":3}
+{"event":"HTTP_REQUEST","requestId":"74e1e49b-b676-4857-bf73-e46e92403b90","method":"POST","route":"/admin/users","statusCode":201,"durationMs":205}
+{"event":"HTTP_REQUEST","requestId":"2610020b-5498-463e-8ff3-906e9fb89103","method":"POST","route":"/admin/users","statusCode":201,"durationMs":233}
+{"event":"HTTP_REQUEST","requestId":"2a75336f-4687-48ed-b267-9dfcbe488c47","method":"POST","route":"/auth/login","statusCode":201,"durationMs":191}
+{"event":"HTTP_REQUEST","requestId":"b95619ec-0f3e-4afa-ad8f-ef73d8b01aae","method":"POST","route":"/admin/users/:userId/password/reveal","statusCode":201,"durationMs":84}
+{"event":"HTTP_REQUEST","requestId":"c2a5dba7-ea82-4ea6-8871-cad0342d894a","method":"POST","route":"/admin/users","statusCode":201,"durationMs":187}
+{"event":"HTTP_REQUEST","requestId":"1e26479e-52bb-4432-b729-99ec1f7370ef","method":"POST","route":"/admin/users","statusCode":201,"durationMs":5}
+{"event":"HTTP_REQUEST","requestId":"9832b3d3-3ba1-49ec-9eb5-527409b79ab4","method":"POST","route":"/admin/users","statusCode":201,"durationMs":12}
+{"event":"HTTP_REQUEST","requestId":"9c3b1d77-186b-4b4b-932e-7ba262e96ec0","method":"POST","route":"/admin/users","statusCode":201,"durationMs":233}
+{"event":"HTTP_REQUEST","requestId":"31c9fc52-9a30-4811-bd35-c2a8fb34e34d","method":"POST","route":"/admin/users","statusCode":201,"durationMs":4}
+{"event":"HTTP_REQUEST","requestId":"79d68a0b-935c-4606-ac73-2af0b848f066","method":"POST","route":"/admin/users","statusCode":201,"durationMs":4}
+{"event":"HTTP_REQUEST","requestId":"08380a66-fd43-4abc-9721-2fb0f1c1d29b","method":"POST","route":"/admin/users","statusCode":201,"durationMs":4}
+{"event":"HTTP_REQUEST","requestId":"b8e7abb7-724a-4bbc-b5f0-a1ca1c78c2f8","method":"POST","route":"/admin/users","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"ebb828b1-dff3-4481-a298-211f63810eb0","method":"POST","route":"/admin/users","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"518314ae-875a-4a34-9e4d-bd0e5f9f6a80","method":"POST","route":"/admin/users","statusCode":201,"durationMs":167}
+{"event":"HTTP_REQUEST","requestId":"114c1f17-5035-47b5-93b7-282ca7aeeb85","method":"POST","route":"/admin/users","statusCode":201,"durationMs":232}
+{"event":"HTTP_REQUEST","requestId":"88022c1e-73c5-4057-bdce-c7597c7ae0ae","method":"POST","route":"/auth/login","statusCode":201,"durationMs":173}
+{"event":"HTTP_REQUEST","requestId":"e015659e-7bd3-43ef-afc2-c91cd80862b4","method":"POST","route":"/auth/login","statusCode":201,"durationMs":186}
+{"event":"HTTP_REQUEST","requestId":"e30785de-5ee5-4075-83c9-11ca676f62a7","method":"POST","route":"/auth/login","statusCode":201,"durationMs":202}
+{"event":"HTTP_REQUEST","requestId":"aa204657-4a66-4d92-80b1-f6b7fc2912eb","method":"POST","route":"/auth/login","statusCode":201,"durationMs":156}
+{"event":"HTTP_REQUEST","requestId":"944bb7ba-43b1-42aa-94d5-de9253303941","method":"POST","route":"/auth/login","statusCode":201,"durationMs":176}
+{"event":"HTTP_REQUEST","requestId":"665086d7-6315-4fee-8f25-675d3c34754a","method":"POST","route":"/auth/login","statusCode":201,"durationMs":200}
+{"event":"HTTP_REQUEST","requestId":"deb4f3c8-dee7-4f40-9729-e3f6c98716bb","method":"POST","route":"/admin/users/:userId/password","statusCode":201,"durationMs":197}
+{"event":"HTTP_REQUEST","requestId":"52dd5964-faab-4c96-b54b-67454196ddae","method":"POST","route":"/auth/login","statusCode":201,"durationMs":179}
+{"event":"HTTP_REQUEST","requestId":"8aa14c50-8607-4480-b74c-10765d7c0411","method":"POST","route":"/auth/login","statusCode":201,"durationMs":162}
+{"event":"HTTP_REQUEST","requestId":"f01280a4-82aa-4fbd-a260-de66b2aad584","method":"POST","route":"/admin/users/:userId/password/reveal","statusCode":201,"durationMs":24}
+{"event":"HTTP_REQUEST","requestId":"a161360c-83a6-497e-8427-637e484c79c6","method":"POST","route":"/admin/users/:userId/password","statusCode":201,"durationMs":0}
+{"event":"HTTP_REQUEST","requestId":"581618b1-3b88-4f20-aac1-4cdcff68d123","method":"POST","route":"/admin/users/:userId/password","statusCode":201,"durationMs":131}
+{"event":"HTTP_REQUEST","requestId":"f6a0d745-3168-404f-97f7-f79fd9142212","method":"POST","route":"/admin/users/:userId/password/reveal","statusCode":201,"durationMs":11}
+{"event":"HTTP_REQUEST","requestId":"95fd976a-c6cd-42d1-b266-ebc3292786f5","method":"POST","route":"/admin/users/:userId/password","statusCode":201,"durationMs":151}
+{"event":"HTTP_REQUEST","requestId":"fa751127-36b6-48af-95f8-2cec66145ea2","method":"POST","route":"/admin/users/:userId/password/reveal","statusCode":201,"durationMs":17}
+{"event":"HTTP_REQUEST","requestId":"a56978fe-121f-4a18-b259-32523833e9f8","method":"POST","route":"/admin/users/:userId/password","statusCode":201,"durationMs":196}
+{"event":"HTTP_REQUEST","requestId":"dfa3baf0-d6b9-4386-bc84-962cfb3a65b1","method":"POST","route":"/admin/users/:userId/password/reveal","statusCode":201,"durationMs":45}
+{"event":"HTTP_REQUEST","requestId":"f4a2a4a1-a2ee-4cf4-b158-0ea9898f8123","method":"POST","route":"/auth/login","statusCode":201,"durationMs":706}
+{"event":"HTTP_REQUEST","requestId":"5aa118ac-9f7e-4a9b-b0f5-0420d0c5757a","method":"POST","route":"/admin/users/:userId/password/reveal","statusCode":201,"durationMs":175}
+{"event":"HTTP_REQUEST","requestId":"25d81a9f-f6a6-452d-9d78-a0cc4d1f9d89","method":"POST","route":"/admin/users/:userId/password","statusCode":201,"durationMs":182}
+{"event":"HTTP_REQUEST","requestId":"82c09e4e-b93d-4437-a3e1-a65cd37fda9b","method":"POST","route":"/admin/users/:userId/password/reveal","statusCode":201,"durationMs":19}
+{"event":"HTTP_REQUEST","requestId":"71c2c028-f04b-4d44-bf34-27b0f00b60a2","method":"POST","route":"/admin/users/:userId/password/reveal","statusCode":201,"durationMs":21}
+{"event":"HTTP_REQUEST","requestId":"f7d5aaeb-5ea5-4c0a-890f-7484768a0304","method":"POST","route":"/admin/users/:userId/password","statusCode":201,"durationMs":222}
+{"event":"HTTP_REQUEST","requestId":"6c829ef7-73b9-4247-b398-d22014d203b6","method":"POST","route":"/admin/users","statusCode":201,"durationMs":4}
+{"event":"HTTP_UNHANDLED_EXCEPTION","requestId":"6c829ef7-73b9-4247-b398-d22014d203b6","method":"POST","route":"/admin/users","errorType":"ServiceUnavailableException"}
+{"event":"HTTP_REQUEST","requestId":"3ac1acf7-d9f7-485f-b323-19638dabfcbe","method":"POST","route":"/admin/users/:userId/password","statusCode":201,"durationMs":2}
+{"event":"HTTP_UNHANDLED_EXCEPTION","requestId":"3ac1acf7-d9f7-485f-b323-19638dabfcbe","method":"POST","route":"/admin/users/7c53f5a8-78a7-4b50-a6e5-e6d0bc00eadc/password","errorType":"ServiceUnavailableException"}
+{"event":"HTTP_REQUEST","requestId":"b8b79f1e-7577-4c18-8c13-840a53e61380","method":"POST","route":"/auth/login","statusCode":201,"durationMs":213}
+{"event":"HTTP_REQUEST","requestId":"f9c8622e-842a-4e37-8b51-6e6d2cbe9dd2","method":"POST","route":"/admin/users/:userId/username","statusCode":201,"durationMs":22}
+{"event":"HTTP_REQUEST","requestId":"f6ae8fb3-de32-4aaa-b7c1-a64414a6fd9e","method":"POST","route":"/admin/users/:userId/username","statusCode":201,"durationMs":20}
+{"event":"HTTP_REQUEST","requestId":"c61b8442-1ba8-493b-9e03-7d5abe94f965","method":"POST","route":"/admin/users/:userId/username","statusCode":201,"durationMs":12}
+[Nest] 5588  - 10/08/2026, 1:17:09 AM     LOG [RouletteService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'ROULETTE',
+  roundId: 'e010e69b-dc57-4b79-93fc-b56524443257'
+}
+[Nest] 5588  - 10/08/2026, 1:17:10 AM     LOG [RouletteService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'ROULETTE',
+  roundId: '0fbe8f14-f4a8-4646-aa21-5c1df8f95dee'
+}
+[Nest] 5588  - 10/08/2026, 1:17:10 AM     LOG [RouletteService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'ROULETTE',
+  roundId: '08388789-b90e-4cff-b81a-89a27f4cd20f'
+}
+[Nest] 5588  - 10/08/2026, 1:17:14 AM     LOG [RouletteService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'ROULETTE',
+  roundId: 'b3928c0c-9757-4563-a95b-77bc8bee8d97'
+}
+[Nest] 5588  - 10/08/2026, 1:17:14 AM     LOG [RouletteService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'ROULETTE',
+  roundId: 'b3928c0c-9757-4563-a95b-77bc8bee8d97'
+}
+[Nest] 5588  - 10/08/2026, 1:17:15 AM     LOG [RouletteService] Object(3) {
+  event: 'CASINO_ROUND_LOST',
+  gameType: 'ROULETTE',
+  roundId: 'ea7f20ef-7da9-48a9-9578-ebbbea4e84a9'
+}
+[Nest] 5588  - 10/08/2026, 1:17:15 AM     LOG [RouletteService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'ROULETTE',
+  roundId: 'ab19e131-5734-4db6-959d-a702bd85c85a'
+}
+[Nest] 5588  - 10/08/2026, 1:17:15 AM     LOG [RouletteService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'ROULETTE',
+  roundId: '94da36eb-be1c-427e-bb8c-ecef270c6f84'
+}
+[Nest] 5588  - 10/08/2026, 1:17:15 AM     LOG [RouletteService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'ROULETTE',
+  roundId: 'e8933748-a348-47a9-9b8a-bff5a37e37b6'
+}
+[Nest] 5588  - 10/08/2026, 1:17:15 AM     LOG [RouletteService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'ROULETTE',
+  roundId: '905be61d-b3a2-47f9-93b0-d1bd9bbb0bb7'
+}
+[Nest] 5588  - 10/08/2026, 1:17:15 AM     LOG [RouletteService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'ROULETTE',
+  roundId: 'ade32cb4-d970-44aa-91eb-50ef3eb2edef'
+}
+[Nest] 5588  - 10/08/2026, 1:17:17 AM     LOG [BlackjackService] Object(3) {
+  event: 'CASINO_ROUND_SETTLED',
+  gameType: 'BLACKJACK',
+  roundId: '76a9f737-d897-45e5-8deb-afc9e176bdb1'
+}
+[Nest] 5588  - 10/08/2026, 1:17:17 AM     LOG [BlackjackService] Object(3) {
+  event: 'CASINO_ROUND_SETTLED',
+  gameType: 'BLACKJACK',
+  roundId: '818558cf-71c4-4c42-8271-8ce09c9731dd'
+}
+[Nest] 5588  - 10/08/2026, 1:17:17 AM     LOG [BlackjackService] Object(3) {
+  event: 'CASINO_ROUND_SETTLED',
+  gameType: 'BLACKJACK',
+  roundId: 'b3fe0916-0414-4e58-bdbb-b1d1b7124021'
+}
+[Nest] 5588  - 10/08/2026, 1:17:17 AM     LOG [BlackjackService] Object(3) {
+  event: 'CASINO_ROUND_SETTLED',
+  gameType: 'BLACKJACK',
+  roundId: '020410cd-045e-4375-9736-0ddd95638b76'
+}
+[Nest] 5588  - 10/08/2026, 1:17:17 AM     LOG [BlackjackService] Object(3) {
+  event: 'CASINO_ROUND_SETTLED',
+  gameType: 'BLACKJACK',
+  roundId: '97c5851b-3df6-48b6-8f9a-51acba3f68df'
+}
+[Nest] 5588  - 10/08/2026, 1:17:17 AM     LOG [BlackjackService] Object(3) {
+  event: 'CASINO_ROUND_SETTLED',
+  gameType: 'BLACKJACK',
+  roundId: '5c61f1c6-f24c-4a6e-9875-a8d0b4e6b84f'
+}
+[Nest] 5588  - 10/08/2026, 1:17:17 AM     LOG [BlackjackService] Object(3) {
+  event: 'CASINO_ROUND_SETTLED',
+  gameType: 'BLACKJACK',
+  roundId: '0e5c69d3-1488-4420-9ce0-166202aa3e5e'
+}
+[Nest] 5588  - 10/08/2026, 1:17:17 AM     LOG [BlackjackService] Object(3) {
+  event: 'CASINO_ROUND_SETTLED',
+  gameType: 'BLACKJACK',
+  roundId: '2abbc207-cfc6-40d0-b713-5573b1fbca56'
+}
+[Nest] 5588  - 10/08/2026, 1:17:17 AM     LOG [BlackjackService] Object(3) {
+  event: 'CASINO_ROUND_SETTLED',
+  gameType: 'BLACKJACK',
+  roundId: 'a570fc88-1cee-4995-bb30-b6589b6df743'
+}
+[Nest] 5588  - 10/08/2026, 1:17:18 AM     LOG [BlackjackService] Object(3) {
+  event: 'CASINO_ROUND_SETTLED',
+  gameType: 'BLACKJACK',
+  roundId: '732e6df4-779b-44c4-8224-27342f6a50d5'
+}
+[Nest] 5588  - 10/08/2026, 1:17:18 AM     LOG [BlackjackService] Object(3) {
+  event: 'CASINO_ROUND_SETTLED',
+  gameType: 'BLACKJACK',
+  roundId: '825bd00d-c3ed-4ac9-9ed4-182efc956419'
+}
+[Nest] 5588  - 10/08/2026, 1:17:18 AM     LOG [BlackjackService] Object(3) {
+  event: 'CASINO_ROUND_SETTLED',
+  gameType: 'BLACKJACK',
+  roundId: '8112a170-9379-4116-9dc6-ce2f99cfa1c2'
+}
+[Nest] 5588  - 10/08/2026, 1:17:18 AM     LOG [BlackjackService] Object(3) {
+  event: 'CASINO_ROUND_SETTLED',
+  gameType: 'BLACKJACK',
+  roundId: '3fdb23bf-dd99-44a2-a207-80f2d065085d'
+}
+[Nest] 5588  - 10/08/2026, 1:17:18 AM     LOG [BlackjackService] Object(3) {
+  event: 'CASINO_ROUND_SETTLED',
+  gameType: 'BLACKJACK',
+  roundId: '09085285-7bc1-47c9-b5fb-e06e96dfe69c'
+}
+[Nest] 5588  - 10/08/2026, 1:17:19 AM     LOG [BlackjackService] Object(3) {
+  event: 'CASINO_ROUND_SETTLED',
+  gameType: 'BLACKJACK',
+  roundId: '845db294-80bb-4b1b-ba84-86d55409ad07'
+}
+[Nest] 5588  - 10/08/2026, 1:17:20 AM     LOG [BlackjackService] Object(3) {
+  event: 'CASINO_ROUND_SETTLED',
+  gameType: 'BLACKJACK',
+  roundId: '48fc4fd3-62da-4a54-9608-45ee6ccbbb1a'
+}
+[Nest] 5588  - 10/08/2026, 1:17:20 AM     LOG [BlackjackService] Object(3) {
+  event: 'CASINO_ROUND_SETTLED',
+  gameType: 'BLACKJACK',
+  roundId: '64e4f6d6-1159-4073-8c39-1132aad673a2'
+}
+[Nest] 5588  - 10/08/2026, 1:17:21 AM     LOG [BlackjackService] Object(3) {
+  event: 'CASINO_ROUND_SETTLED',
+  gameType: 'BLACKJACK',
+  roundId: 'b8b49162-f47e-4375-bed9-e51bd78a5654'
+}
+[Nest] 5588  - 10/08/2026, 1:17:21 AM     LOG [BlackjackService] Object(3) {
+  event: 'CASINO_ROUND_SETTLED',
+  gameType: 'BLACKJACK',
+  roundId: 'b8b49162-f47e-4375-bed9-e51bd78a5654'
+}
+[Nest] 5588  - 10/08/2026, 1:17:22 AM     LOG [BlackjackService] Object(3) {
+  event: 'CASINO_ROUND_SETTLED',
+  gameType: 'BLACKJACK',
+  roundId: 'dd3bbf24-2a8d-4997-825c-ed2184382871'
+}
+[Nest] 5588  - 10/08/2026, 1:17:23 AM     LOG [BlackjackService] Object(3) {
+  event: 'CASINO_ROUND_SETTLED',
+  gameType: 'BLACKJACK',
+  roundId: '2b537a97-23b1-4cb8-9c92-7a4528ac8e2c'
+}
+[Nest] 5588  - 10/08/2026, 1:17:24 AM     LOG [BlackjackService] Object(3) {
+  event: 'CASINO_ROUND_SETTLED',
+  gameType: 'BLACKJACK',
+  roundId: '57b4015c-a6b9-4b35-915f-f008f4c3e4bc'
+}
+{"event":"HTTP_REQUEST","requestId":"ab514300-9aea-4864-8a28-fa7ddf34d362","method":"GET","route":"/casino/games","statusCode":200,"durationMs":45}
+{"event":"HTTP_REQUEST","requestId":"6d8c126c-f7f8-4cc3-954b-041a3af5d5a3","method":"GET","route":"/casino/games","statusCode":200,"durationMs":3}
+{"event":"HTTP_REQUEST","requestId":"58132018-8736-4a09-b04a-ad4c2ccd02e7","method":"POST","route":"/casino/games/:gameId/favorite","statusCode":201,"durationMs":16}
+{"event":"HTTP_REQUEST","requestId":"cc32e289-8d75-41a0-95a1-3e985d3afd8c","method":"GET","route":"/casino/favorites","statusCode":200,"durationMs":20}
+{"event":"HTTP_REQUEST","requestId":"c532fb76-b2f5-47b9-a801-05f64aa4f4ec","method":"DELETE","route":"/casino/games/:gameId/favorite","statusCode":200,"durationMs":8}
+{"event":"HTTP_REQUEST","requestId":"0db869d7-b96e-4f57-a156-0dccca4db4f6","method":"GET","route":"/casino/favorites","statusCode":200,"durationMs":10}
+{"event":"HTTP_REQUEST","requestId":"18979d29-cfb5-4885-a56c-d6ff9bc71851","method":"POST","route":"/casino/games/:gameId/favorite","statusCode":201,"durationMs":13}
+{"event":"HTTP_REQUEST","requestId":"66dc3b7d-20c4-4b6f-b172-518ae428a071","method":"POST","route":"/casino/games/:gameId/favorite","statusCode":201,"durationMs":12}
+{"event":"HTTP_REQUEST","requestId":"c56a4937-ce93-4bff-a3f6-dbccea6b9834","method":"POST","route":"/casino/games/:gameId/favorite","statusCode":201,"durationMs":11}
+{"event":"HTTP_REQUEST","requestId":"b860c9b1-bdbb-4333-a419-a3ad9c610edd","method":"DELETE","route":"/casino/games/:gameId/favorite","statusCode":200,"durationMs":7}
+{"event":"HTTP_REQUEST","requestId":"a03a72c0-58c3-4adc-9d5e-c2273f951a38","method":"POST","route":"/casino/games/:gameId/favorite","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"25fbc04c-a59b-47d4-89d1-8cda0de52d84","method":"POST","route":"/casino/games/:gameId/favorite","statusCode":201,"durationMs":16}
+{"event":"HTTP_REQUEST","requestId":"46d3249e-5190-477f-9c87-938afa0b57d8","method":"GET","route":"/casino/favorites","statusCode":200,"durationMs":17}
+{"event":"HTTP_REQUEST","requestId":"68cbcb1b-09c1-4ef3-b1aa-1f01d9b6a677","method":"GET","route":"/casino/recent","statusCode":200,"durationMs":39}
+{"event":"HTTP_REQUEST","requestId":"d6097ad8-470f-4bdd-9c34-39ba2ddf5e7c","method":"POST","route":"/casino/plinko/play","statusCode":201,"durationMs":87}
+{"event":"HTTP_REQUEST","requestId":"8c5e80a3-42fd-4b4e-8d3f-68c0edb20000","method":"GET","route":"/casino/recent","statusCode":200,"durationMs":9}
+{"event":"HTTP_REQUEST","requestId":"6b25c0e3-031a-4f48-af22-36adf1a07cec","method":"GET","route":"/casino/recent","statusCode":200,"durationMs":11}
+{"event":"HTTP_REQUEST","requestId":"5e157cbc-aaca-4036-8f4b-741dd3bf40e7","method":"GET","route":"/casino/recent","statusCode":200,"durationMs":8}
+{"event":"HTTP_REQUEST","requestId":"29f9ca16-231f-462f-817f-df723447973a","method":"GET","route":"/casino/recent","statusCode":200,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"3f26db74-eac3-4b4d-a38e-6396e1acb424","method":"GET","route":"/casino/recent","statusCode":200,"durationMs":7}
+{"event":"HTTP_REQUEST","requestId":"75e2b92c-59c4-413a-a51b-915570097052","method":"POST","route":"/casino/lucky-lady/launch","statusCode":201,"durationMs":96}
+{"event":"HTTP_REQUEST","requestId":"d2f0dce4-93a5-42e5-80f0-97db3a77900d","method":"POST","route":"/casino/lucky-lady/launch","statusCode":201,"durationMs":22}
+{"event":"HTTP_REQUEST","requestId":"520e1280-6439-443e-a3b2-95eef2946683","method":"POST","route":"/casino/lucky-lady/launch","statusCode":201,"durationMs":30}
+{"event":"HTTP_REQUEST","requestId":"cf441601-c3be-4b63-bcd2-0df51649eda4","method":"GET","route":"/admin/casino/math","statusCode":200,"durationMs":21}
+{"event":"HTTP_REQUEST","requestId":"32a633b7-6743-47e9-9007-63425ad5cac5","method":"GET","route":"/admin/casino/math","statusCode":200,"durationMs":6}
+{"event":"HTTP_REQUEST","requestId":"9fe0e61e-807f-41a4-855c-1fcab3ca7cbc","method":"PATCH","route":"/admin/platform/maintenance","statusCode":200,"durationMs":34}
+{"event":"HTTP_REQUEST","requestId":"481168d7-e8d0-4465-8e84-1868e2da39bd","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":67}
+{"event":"HTTP_REQUEST","requestId":"cb9c3040-43a8-4853-9b43-3a7c7a137053","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":12}
+{"event":"HTTP_REQUEST","requestId":"2d145820-ea59-43a5-b251-2d441d320656","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":50}
+{"event":"HTTP_REQUEST","requestId":"fa12ca8a-bf64-4c0a-88a7-aca3eb0d5194","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":22}
+{"event":"HTTP_REQUEST","requestId":"7fbfef7f-dba2-479e-aac9-79927cbec81a","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":12}
+{"event":"HTTP_REQUEST","requestId":"8b9d0438-9a1f-4b15-8dfd-8fd46851e48c","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":68}
+{"event":"HTTP_REQUEST","requestId":"e46d7295-be83-4a31-9917-50acda27cdeb","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":30}
+{"event":"HTTP_REQUEST","requestId":"250cf4b5-93d2-4100-8d31-494c1025a3f5","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":34}
+{"event":"HTTP_REQUEST","requestId":"b7acc3dd-31ff-47e3-ab1a-9dbf76568c88","method":"GET","route":"/admin/users","statusCode":200,"durationMs":20}
+{"event":"HTTP_REQUEST","requestId":"ab72f33e-35e0-4602-bc3f-dad31dc36034","method":"GET","route":"/admin/users","statusCode":200,"durationMs":15}
+{"event":"HTTP_REQUEST","requestId":"8a1bda92-c51d-41a7-9f5d-f6cad0bda3c1","method":"GET","route":"/admin/users/:userId","statusCode":200,"durationMs":5}
+{"event":"HTTP_REQUEST","requestId":"3093c11c-cb10-4afd-baa3-7fd5440f2fc6","method":"GET","route":"/admin/casino/math","statusCode":200,"durationMs":11}
+{"event":"HTTP_REQUEST","requestId":"7845b6e1-395e-45b1-b57f-20981e662383","method":"GET","route":"/casino/rounds/:roundId","statusCode":200,"durationMs":4}
+{"event":"HTTP_REQUEST","requestId":"7df48189-a117-48da-b17d-164798f130bb","method":"GET","route":"/casino/rounds/:roundId","statusCode":200,"durationMs":4}
+{"event":"HTTP_REQUEST","requestId":"3d065388-8d3c-4c79-9448-ec8065ec826a","method":"GET","route":"/casino/rounds/:roundId","statusCode":200,"durationMs":4}
+[Nest] 5588  - 10/08/2026, 1:18:33 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '1d98bd0b-063b-4e63-ac6f-63c77550d205'
+}
+[Nest] 5588  - 10/08/2026, 1:18:34 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: 'b3a4a2d2-47ce-4955-9e82-afff30bd7b44'
+}
+[Nest] 5588  - 10/08/2026, 1:18:34 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '94b219ab-8f9d-4fdf-ab53-bdeed8c64135'
+}
+[Nest] 5588  - 10/08/2026, 1:18:34 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '456b3698-c116-434d-88af-be694143e2a6'
+}
+[Nest] 5588  - 10/08/2026, 1:18:34 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '4b047ef6-b3aa-422f-8163-778ef958dd33'
+}
+[Nest] 5588  - 10/08/2026, 1:18:34 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '61984135-8745-4509-977c-0cd58c309374'
+}
+[Nest] 5588  - 10/08/2026, 1:18:34 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '44d480cb-cf88-4c88-aea3-ea098d454b7c'
+}
+[Nest] 5588  - 10/08/2026, 1:18:34 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '61fb98fd-e130-4687-833c-37012d90da64'
+}
+[Nest] 5588  - 10/08/2026, 1:18:34 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '88f3c220-177c-4152-b922-ae5db175b723'
+}
+[Nest] 5588  - 10/08/2026, 1:18:34 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '8d68e8c8-281d-4c48-beac-47aa93a26639'
+}
+[Nest] 5588  - 10/08/2026, 1:18:40 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: 'ca2755f9-b7b2-4489-86f1-b84c73c7f63c'
+}
+[Nest] 5588  - 10/08/2026, 1:18:40 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '33fbae94-7703-4fa7-b022-01b7005e0582'
+}
+[Nest] 5588  - 10/08/2026, 1:18:40 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '904f0ffb-1f02-4d04-ad76-8f64f640a141'
+}
+[Nest] 5588  - 10/08/2026, 1:18:41 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '2c71fdfe-3f5b-497e-97a5-47df2e80baff'
+}
+[Nest] 5588  - 10/08/2026, 1:18:41 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '62fead41-5099-4b00-83dd-7921cfbe48d1'
+}
+[Nest] 5588  - 10/08/2026, 1:18:41 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: 'cb016c73-ee2d-4039-967b-73a3bb4d53fa'
+}
+[Nest] 5588  - 10/08/2026, 1:18:41 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '2e89b737-4c4d-49d3-b1d8-f3b8ab58cda8'
+}
+[Nest] 5588  - 10/08/2026, 1:18:41 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '2a5decc6-d7e4-4818-ad0e-37dbb0cee459'
+}
+[Nest] 5588  - 10/08/2026, 1:18:41 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: 'e8aa8a0d-4bc8-49b1-a565-0616a3256c98'
+}
+[Nest] 5588  - 10/08/2026, 1:18:41 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: 'e7d0c6ed-912f-4cfb-8e67-993b14c00d2f'
+}
+[Nest] 5588  - 10/08/2026, 1:18:42 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: 'eadcbf33-fd67-414a-899d-b003a70a4091'
+}
+[Nest] 5588  - 10/08/2026, 1:18:42 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: 'f0671cb4-8be0-43a3-825a-4681bfa58b9a'
+}
+[Nest] 5588  - 10/08/2026, 1:18:42 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '191cd586-082e-4ca1-8320-288038ab2fe4'
+}
+[Nest] 5588  - 10/08/2026, 1:18:42 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: 'ca299e13-7622-4144-be5c-183f369c3f12'
+}
+[Nest] 5588  - 10/08/2026, 1:18:42 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: 'f77ffbb3-6a33-42a4-92a7-4cbfa136ecb3'
+}
+[Nest] 5588  - 10/08/2026, 1:18:42 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '76c285fd-f198-451c-a600-0aa362225e89'
+}
+[Nest] 5588  - 10/08/2026, 1:18:42 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: 'b0228a98-dbf5-40d6-b564-a1b032f5453c'
+}
+[Nest] 5588  - 10/08/2026, 1:18:42 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '9e8c1aa2-7f65-49e5-99ef-b9ee6edde3b1'
+}
+[Nest] 5588  - 10/08/2026, 1:18:42 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: 'eda6e02f-3ad9-4db2-be30-9de0a2833350'
+}
+[Nest] 5588  - 10/08/2026, 1:18:42 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: 'ba716437-6b49-4803-8d4e-e672e8586755'
+}
+[Nest] 5588  - 10/08/2026, 1:18:42 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '544ba724-8735-4168-ac13-82947ca50e7b'
+}
+[Nest] 5588  - 10/08/2026, 1:18:42 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '9de19f94-3788-40a4-b557-769f8b16e2e8'
+}
+[Nest] 5588  - 10/08/2026, 1:18:42 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '6baa89f4-8b17-4e26-969c-02c2fb4dbfe2'
+}
+[Nest] 5588  - 10/08/2026, 1:18:42 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '572e11aa-c395-43fb-9172-6055ff519f15'
+}
+[Nest] 5588  - 10/08/2026, 1:18:42 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '02fd5003-c0e1-41b2-85b0-0c25d490e382'
+}
+[Nest] 5588  - 10/08/2026, 1:18:42 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '8502cf36-ee65-4ebf-8ad8-92902d7d8704'
+}
+[Nest] 5588  - 10/08/2026, 1:18:42 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: 'fc49d9f9-e3a6-42c8-98f3-6fe725b1df7c'
+}
+[Nest] 5588  - 10/08/2026, 1:18:42 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '713cd183-2377-4abb-9d29-c0b381774063'
+}
+[Nest] 5588  - 10/08/2026, 1:18:43 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: 'e68eaf3b-94de-44c9-b86a-d08adf7e84fc'
+}
+[Nest] 5588  - 10/08/2026, 1:18:43 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: 'f998d8f5-b048-4631-bafb-a3640a88bf13'
+}
+[Nest] 5588  - 10/08/2026, 1:18:43 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: 'f07de341-47f3-4b50-a841-716d631d6de4'
+}
+[Nest] 5588  - 10/08/2026, 1:18:43 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '3aa87ca2-cd1e-481d-a31e-9dc0fda35a2e'
+}
+[Nest] 5588  - 10/08/2026, 1:18:43 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: 'c9551d96-9898-41ee-a6e1-e055ce64e85e'
+}
+[Nest] 5588  - 10/08/2026, 1:18:43 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '516c412d-2406-4016-9876-c9b3ab896ca4'
+}
+[Nest] 5588  - 10/08/2026, 1:18:43 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: 'c8dab4b5-7227-4f46-a91e-b01ca20fe171'
+}
+[Nest] 5588  - 10/08/2026, 1:18:43 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: 'a09510c0-044e-42ce-9d3b-50ff1104d530'
+}
+[Nest] 5588  - 10/08/2026, 1:18:43 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '59a356c6-db21-4c8c-9162-b5f4174dfcc8'
+}
+[Nest] 5588  - 10/08/2026, 1:18:43 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '80080deb-d223-471a-abec-5b54652437e4'
+}
+[Nest] 5588  - 10/08/2026, 1:18:43 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: 'cb9acced-da9d-4994-bc59-1b7c713bf6c8'
+}
+[Nest] 5588  - 10/08/2026, 1:18:43 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: 'f8c2e041-a58c-4a63-9e81-01e040d95bfe'
+}
+[Nest] 5588  - 10/08/2026, 1:18:43 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: 'ccdf6435-b0a8-4a02-8c74-8afd5bf7df08'
+}
+[Nest] 5588  - 10/08/2026, 1:18:43 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '7741ed0b-2603-489c-baff-2926b6453880'
+}
+[Nest] 5588  - 10/08/2026, 1:18:43 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '004273a5-b568-46ce-861c-bbc311d6c4d6'
+}
+[Nest] 5588  - 10/08/2026, 1:18:43 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: 'ec30f799-58f8-4396-9b21-5cda165b70e3'
+}
+[Nest] 5588  - 10/08/2026, 1:18:43 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '8a447cd4-dd33-43a7-89de-ae16fa967e66'
+}
+[Nest] 5588  - 10/08/2026, 1:18:43 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '2a7149c2-868d-4b4b-970f-eab9271cffde'
+}
+[Nest] 5588  - 10/08/2026, 1:18:43 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '495567e9-3c8b-475e-a9fb-1e5d73792d3e'
+}
+[Nest] 5588  - 10/08/2026, 1:18:44 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '3afed4e8-ed2f-4263-bc5e-f5704e57a090'
+}
+[Nest] 5588  - 10/08/2026, 1:18:44 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '3afed4e8-ed2f-4263-bc5e-f5704e57a090'
+}
+[Nest] 5588  - 10/08/2026, 1:18:45 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '081a7971-2b80-428c-9c8a-35a5f826bc7e'
+}
+[Nest] 5588  - 10/08/2026, 1:18:45 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: 'e24ef79c-746d-47c7-9e1f-b6519e7ade9f'
+}
+[Nest] 5588  - 10/08/2026, 1:18:46 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: 'eb5217c3-0028-4a00-83ef-9e9cfdf697b7'
+}
+[Nest] 5588  - 10/08/2026, 1:18:47 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '6ddba8b6-f45e-48f4-b485-97a532f2a60a'
+}
+[Nest] 5588  - 10/08/2026, 1:18:47 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: 'f236cb14-c85f-46f8-b1ee-b09925a78e4e'
+}
+[Nest] 5588  - 10/08/2026, 1:18:47 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: 'fe4d418a-2d68-481c-bee6-762efc0d1094'
+}
+[Nest] 5588  - 10/08/2026, 1:18:47 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '1490b325-4b52-48bb-86a2-0bf6de7c0d32'
+}
+[Nest] 5588  - 10/08/2026, 1:18:47 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '1d212c8d-6f19-4e49-ac4a-dc885620b24b'
+}
+[Nest] 5588  - 10/08/2026, 1:18:47 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '79e2967d-d91a-4c0d-97d8-cfbb6cb11470'
+}
+[Nest] 5588  - 10/08/2026, 1:18:47 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: 'edc232ae-7ec9-4eed-bb18-e650fb576c35'
+}
+[Nest] 5588  - 10/08/2026, 1:18:47 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '746b8efb-8864-4aa0-9ea4-b81e8ea1312f'
+}
+[Nest] 5588  - 10/08/2026, 1:18:47 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: 'c66e635a-0854-45e4-af70-77cb29c3113b'
+}
+[Nest] 5588  - 10/08/2026, 1:18:47 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '1a949b45-3139-4aae-83b1-1e5c66c02d16'
+}
+[Nest] 5588  - 10/08/2026, 1:18:47 AM     LOG [PlinkoService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'PLINKO',
+  roundId: '748287ec-6fe9-424f-9499-030e7111deae'
+}
+{"event":"HTTP_REQUEST","requestId":"eb1d6459-daaa-40a3-b3da-8ae0ad3a0044","method":"GET","route":"/admin/sports/bets/stale","statusCode":200,"durationMs":69}
+{"event":"HTTP_REQUEST","requestId":"49d8d459-5fe9-44a2-8a65-f8117b78f095","method":"GET","route":"/admin/sports/settlement/failures","statusCode":200,"durationMs":21}
+{"event":"HTTP_REQUEST","requestId":"85a3555e-33a3-47af-a6a3-6d21bcfcceba","method":"POST","route":"/admin/sports/events/:provider/:providerEventId/reconcile","statusCode":201,"durationMs":147}
+{"event":"HTTP_REQUEST","requestId":"723d9d9b-6928-4f6a-9930-c55c52586faa","method":"POST","route":"/admin/sports/events/:provider/:providerEventId/reconcile","statusCode":201,"durationMs":155}
+{"event":"HTTP_REQUEST","requestId":"6eb9aaa8-dc67-48aa-8301-188f38143137","method":"POST","route":"/admin/sports/events/:provider/:providerEventId/reconcile","statusCode":201,"durationMs":163}
+{"event":"HTTP_REQUEST","requestId":"49058e44-8abd-4485-81c8-dbbcb49e816f","method":"POST","route":"/admin/sports/events/:provider/:providerEventId/reconcile","statusCode":201,"durationMs":163}
+{"event":"HTTP_REQUEST","requestId":"6e1df603-7aa8-4a4e-99c8-304d42cd9f05","method":"POST","route":"/admin/sports/events/:provider/:providerEventId/reconcile","statusCode":201,"durationMs":171}
+{"event":"HTTP_REQUEST","requestId":"8d917b7f-50a3-4db2-be95-e314fa6d5322","method":"POST","route":"/admin/sports/events/:provider/:providerEventId/reconcile","statusCode":201,"durationMs":177}
+{"event":"HTTP_REQUEST","requestId":"2f155e71-32a0-4675-99f8-9a9bb8ca9738","method":"POST","route":"/admin/sports/events/:provider/:providerEventId/reconcile","statusCode":201,"durationMs":195}
+{"event":"HTTP_REQUEST","requestId":"c5a0332a-7bb3-4956-9cf7-ce333e2a302b","method":"POST","route":"/admin/sports/events/:provider/:providerEventId/reconcile","statusCode":201,"durationMs":190}
+{"event":"HTTP_REQUEST","requestId":"e3bfd652-be54-43e1-a9f5-81a4544dc6b8","method":"POST","route":"/admin/sports/events/:provider/:providerEventId/reconcile","statusCode":201,"durationMs":200}
+{"event":"HTTP_REQUEST","requestId":"41772908-ac7b-4d49-a330-7e42713c27e7","method":"POST","route":"/admin/sports/events/:provider/:providerEventId/reconcile","statusCode":201,"durationMs":204}
+{"event":"HTTP_REQUEST","requestId":"955fcc25-7eba-4fc5-bdc4-2447fffad0f9","method":"POST","route":"/admin/sports/events/:provider/:providerEventId/reconcile","statusCode":201,"durationMs":125}
+{"event":"HTTP_REQUEST","requestId":"0d2e66d4-9c7c-4059-9d54-110037971dae","method":"POST","route":"/admin/sports/events/:provider/:providerEventId/reconcile","statusCode":201,"durationMs":130}
+{"event":"HTTP_REQUEST","requestId":"0aac46ab-43b7-4184-bf8c-500533669d76","method":"POST","route":"/admin/sports/events/:provider/:providerEventId/reconcile","statusCode":201,"durationMs":138}
+{"event":"HTTP_REQUEST","requestId":"aa3be539-a4b2-4d3f-bd4c-d173fabf310f","method":"POST","route":"/admin/sports/events/:provider/:providerEventId/reconcile","statusCode":201,"durationMs":141}
+{"event":"HTTP_REQUEST","requestId":"259bff14-e840-4112-ad36-e2772836787f","method":"POST","route":"/admin/sports/events/:provider/:providerEventId/reconcile","statusCode":201,"durationMs":150}
+{"event":"HTTP_REQUEST","requestId":"d0dd80ca-a1e6-45fd-a87b-86f5d2e946f6","method":"POST","route":"/admin/sports/events/:provider/:providerEventId/reconcile","statusCode":201,"durationMs":156}
+{"event":"HTTP_REQUEST","requestId":"7f576c28-ee3b-4832-848c-898cddaf0862","method":"POST","route":"/admin/sports/events/:provider/:providerEventId/reconcile","statusCode":201,"durationMs":160}
+{"event":"HTTP_REQUEST","requestId":"f018abea-c6e4-4fc7-92c0-43b223ee97a8","method":"POST","route":"/admin/sports/events/:provider/:providerEventId/reconcile","statusCode":201,"durationMs":168}
+{"event":"HTTP_REQUEST","requestId":"caee47f1-0060-4f91-99fe-a7d971c006c5","method":"POST","route":"/admin/sports/events/:provider/:providerEventId/reconcile","statusCode":201,"durationMs":176}
+{"event":"HTTP_REQUEST","requestId":"40e4eb98-5f7f-4d5a-9107-0beb6644183b","method":"POST","route":"/admin/sports/events/:provider/:providerEventId/reconcile","statusCode":201,"durationMs":182}
+{"event":"HTTP_REQUEST","requestId":"078a559e-ad5f-4c7e-a415-19bdf24370f2","method":"POST","route":"/admin/sports/events/:provider/:providerEventId/reconcile","statusCode":201,"durationMs":25}
+{"event":"HTTP_UNHANDLED_EXCEPTION","requestId":"078a559e-ad5f-4c7e-a415-19bdf24370f2","method":"POST","route":"/admin/sports/events/fixture/expected-event/reconcile","errorType":"SportsError"}
+[Nest] 5588  - 10/08/2026, 1:19:01 AM   ERROR [SettlementService] Object(3) {
+  event: 'RESULT_CONFLICT_DETECTED',
+  provider: 'fixture',
+  providerEventId: 'conflicted-event'
+}
+{"event":"HTTP_REQUEST","requestId":"57795f2e-5275-4019-9c0a-ad980529197d","method":"GET","route":"/admin/sports/conflicts","statusCode":200,"durationMs":14}
+{"event":"HTTP_REQUEST","requestId":"b9cf9e90-6def-40de-8d89-0b97926fb5ef","method":"GET","route":"/admin/sports/providers/status","statusCode":200,"durationMs":6}
+[Nest] 5588  - 10/08/2026, 1:19:06 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '057f5b15-63c1-43b7-bc5b-fc1b8e19fef1',
+  stake: '100',
+  payout: '30'
+}
+[Nest] 5588  - 10/08/2026, 1:19:07 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: 'd9ba3f64-441a-4d33-a412-cdb3afa85953',
+  stake: '200',
+  payout: '60'
+}
+[Nest] 5588  - 10/08/2026, 1:19:07 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: 'c8cf5072-9378-4b82-9217-6ab138897b3a',
+  stake: '200',
+  payout: '140'
+}
+[Nest] 5588  - 10/08/2026, 1:19:07 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '8242c7e8-fd38-4995-8004-a487895e3979',
+  stake: '200',
+  payout: '50'
+}
+[Nest] 5588  - 10/08/2026, 1:19:07 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '2e8c7b1b-4a16-462d-848a-9cbec17be31c',
+  stake: '200',
+  payout: '90'
+}
+[Nest] 5588  - 10/08/2026, 1:19:07 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: 'd40a9d00-be3d-438a-9d07-be03d078beff',
+  stake: '200',
+  payout: '120'
+}
+[Nest] 5588  - 10/08/2026, 1:19:07 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '4723b503-a86e-43d2-bb55-4a47d32f55a4',
+  stake: '200',
+  payout: '190'
+}
+[Nest] 5588  - 10/08/2026, 1:19:07 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '408dedfa-cb3a-4f6c-9404-8fd431c1df32',
+  stake: '200',
+  payout: '730'
+}
+[Nest] 5588  - 10/08/2026, 1:19:07 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '61adca73-6a22-4a83-bc99-730f94b6933f',
+  stake: '200',
+  payout: '90'
+}
+[Nest] 5588  - 10/08/2026, 1:19:07 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '1341fa28-500f-4655-84da-68b16ea5f897',
+  stake: '200',
+  payout: '180'
+}
+[Nest] 5588  - 10/08/2026, 1:19:07 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '42bc2df1-8e13-41c8-bd71-4ee20aa149f4',
+  stake: '200',
+  payout: '60'
+}
+[Nest] 5588  - 10/08/2026, 1:19:07 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '4d748e2f-91c7-49b5-b8fa-6255786ac975',
+  stake: '200',
+  payout: '180'
+}
+[Nest] 5588  - 10/08/2026, 1:19:08 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: 'e67b8152-8b36-4576-9396-2201b438804a',
+  stake: '200',
+  payout: '120'
+}
+[Nest] 5588  - 10/08/2026, 1:19:08 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '5fd45b53-61e2-4714-825f-28ab9683b3ef',
+  stake: '200',
+  payout: '60'
+}
+[Nest] 5588  - 10/08/2026, 1:19:08 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: 'cd8c4e15-386a-4099-8916-785afcdafc65',
+  stake: '200',
+  payout: '50'
+}
+[Nest] 5588  - 10/08/2026, 1:19:08 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_LOST',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '185d0889-b274-4810-ab2c-e79069a05410',
+  stake: '200',
+  payout: '0'
+}
+[Nest] 5588  - 10/08/2026, 1:19:08 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: 'e6b6ab9a-00f1-46ad-85d5-eed4523395ea',
+  stake: '200',
+  payout: '180'
+}
+[Nest] 5588  - 10/08/2026, 1:19:08 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '17a8015d-8a0f-4218-bebd-d636cfae7eac',
+  stake: '200',
+  payout: '50'
+}
+[Nest] 5588  - 10/08/2026, 1:19:08 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: 'ec199032-762d-4a0e-90ba-7c247e6cb6ff',
+  stake: '200',
+  payout: '1140'
+}
+[Nest] 5588  - 10/08/2026, 1:19:08 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '9787fd54-b648-4bb4-ba2d-fe8327850ae4',
+  stake: '200',
+  payout: '610'
+}
+[Nest] 5588  - 10/08/2026, 1:19:08 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_LOST',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: 'b3b47a13-1854-4b41-9dba-adabe37da436',
+  stake: '200',
+  payout: '0'
+}
+[Nest] 5588  - 10/08/2026, 1:19:08 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '857bbf84-b798-4dbd-9e6b-0bb75b8febc6',
+  stake: '200',
+  payout: '90'
+}
+[Nest] 5588  - 10/08/2026, 1:19:08 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '476f7df5-0620-48e6-9671-a0200d90a5ed',
+  stake: '200',
+  payout: '90'
+}
+[Nest] 5588  - 10/08/2026, 1:19:08 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_LOST',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: 'b4b4a5cd-2916-46ed-b86f-0d9dae34adbc',
+  stake: '200',
+  payout: '0'
+}
+[Nest] 5588  - 10/08/2026, 1:19:08 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_LOST',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '3cef20f7-a754-4ab6-a61b-5bbbd190bcb7',
+  stake: '200',
+  payout: '0'
+}
+[Nest] 5588  - 10/08/2026, 1:19:08 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: 'e7bc38bf-2c09-4ea0-bec9-254a520965c9',
+  stake: '200',
+  payout: '50'
+}
+[Nest] 5588  - 10/08/2026, 1:19:09 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '93b0630c-5140-4525-ac8b-e3ea0121a705',
+  stake: '200',
+  payout: '50'
+}
+[Nest] 5588  - 10/08/2026, 1:19:10 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: 'e24901b7-0554-4a48-af4e-c97c83c574cb',
+  stake: '100',
+  payout: '140'
+}
+[Nest] 5588  - 10/08/2026, 1:19:10 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_LOST',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '96982135-c734-48bf-91ba-01f8de690139',
+  stake: '100',
+  payout: '0'
+}
+[Nest] 5588  - 10/08/2026, 1:19:13 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: 'a3d71210-7e2a-4a20-b0af-d8b3e8bc198f',
+  stake: '20',
+  payout: '56'
+}
+[Nest] 5588  - 10/08/2026, 1:19:15 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '06eeffd0-3ccd-462e-8719-1db7e396c8b2',
+  stake: '100',
+  payout: '30'
+}
+[Nest] 5588  - 10/08/2026, 1:19:15 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '06eeffd0-3ccd-462e-8719-1db7e396c8b2',
+  stake: '100',
+  payout: '60'
+}
+[Nest] 5588  - 10/08/2026, 1:19:15 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '269c7539-a517-44c6-b260-e8fa29d2530b',
+  stake: '500',
+  payout: '500'
+}
+[Nest] 5588  - 10/08/2026, 1:19:15 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_LOST',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '269c7539-a517-44c6-b260-e8fa29d2530b',
+  stake: '500',
+  payout: '0'
+}
+[Nest] 5588  - 10/08/2026, 1:19:15 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '269c7539-a517-44c6-b260-e8fa29d2530b',
+  stake: '500',
+  payout: '150'
+}
+[Nest] 5588  - 10/08/2026, 1:19:15 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_LOST',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '269c7539-a517-44c6-b260-e8fa29d2530b',
+  stake: '500',
+  payout: '0'
+}
+[Nest] 5588  - 10/08/2026, 1:19:15 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '269c7539-a517-44c6-b260-e8fa29d2530b',
+  stake: '500',
+  payout: '125'
+}
+[Nest] 5588  - 10/08/2026, 1:19:15 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '269c7539-a517-44c6-b260-e8fa29d2530b',
+  stake: '500',
+  payout: '125'
+}
+[Nest] 5588  - 10/08/2026, 1:19:16 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '789ae5b5-8fde-4980-a092-abe96b490c1c',
+  stake: '100',
+  payout: '25'
+}
+[Nest] 5588  - 10/08/2026, 1:19:17 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '7fbf0cda-ec8c-44ec-b604-0c0140e83d36',
+  stake: '400',
+  payout: '180'
+}
+[Nest] 5588  - 10/08/2026, 1:19:17 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '07f17ccb-5dbf-4cb7-bc19-1500e41e3f68',
+  stake: '100',
+  payout: '60'
+}
+[Nest] 5588  - 10/08/2026, 1:19:18 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_LOST',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: 'd0b0786c-aeeb-436b-ad2e-dcb1bc7eab7e',
+  stake: '300',
+  payout: '0'
+}
+[Nest] 5588  - 10/08/2026, 1:19:18 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '157036c2-625b-4f20-953c-c88ba71fda04',
+  stake: '300',
+  payout: '75'
+}
+[Nest] 5588  - 10/08/2026, 1:19:18 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: 'd56a41b2-8f18-4552-995d-8b2a25872348',
+  stake: '300',
+  payout: '810'
+}
+[Nest] 5588  - 10/08/2026, 1:19:18 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '781b4f59-e782-4ba3-9ac0-f23b51b18561',
+  stake: '300',
+  payout: '360'
+}
+[Nest] 5588  - 10/08/2026, 1:19:18 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_LOST',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '953c8a85-7d98-4e3f-a3ef-4a78ade8df32',
+  stake: '300',
+  payout: '0'
+}
+[Nest] 5588  - 10/08/2026, 1:19:18 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '3c28bd2a-0c1b-437a-a14e-4c7bf401fdfc',
+  stake: '300',
+  payout: '75'
+}
+[Nest] 5588  - 10/08/2026, 1:19:18 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '42f61750-f8d8-499b-9bc6-166b5f82b170',
+  stake: '300',
+  payout: '3795'
+}
+[Nest] 5588  - 10/08/2026, 1:19:18 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '5b5b2f82-1639-4639-ba20-149198a2c1d7',
+  stake: '300',
+  payout: '210'
+}
+[Nest] 5588  - 10/08/2026, 1:19:18 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_LOST',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '8e0037f8-10c0-4ec2-91f9-114036d79b76',
+  stake: '300',
+  payout: '0'
+}
+[Nest] 5588  - 10/08/2026, 1:19:18 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '32fdd23f-aebf-4f34-8f69-c45fcf627690',
+  stake: '300',
+  payout: '960'
+}
+[Nest] 5588  - 10/08/2026, 1:19:18 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: '30adb44c-1136-4085-8bf5-e49725677627',
+  stake: '300',
+  payout: '1500'
+}
+[Nest] 5588  - 10/08/2026, 1:19:18 AM     LOG [SlotsService] Object(7) {
+  event: 'CASINO_ROUND_LOST',
+  gameType: 'SLOTS',
+  gameId: 'fools-gold-rush',
+  gameVersion: 'fools-gold-rush.v1.rtp9499',
+  roundId: 'f980ed59-f05a-4ed4-91d8-207033e0fefd',
+  stake: '300',
+  payout: '0'
+}
+[Nest] 5588  - 10/08/2026, 1:19:19 AM     LOG [SlotsService] Object(4) {
+  event: 'SLOT_DEFINITION_VALIDATED',
+  gameId: 'fools-gold-rush',
+  version: 'fools-gold-rush.v1.rtp9499',
+  rtpBps: 9499
+}
+{"event":"HTTP_REQUEST","requestId":"74a83abb-c5cb-4445-8e1d-a05a6e14eecb","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":108}
+{"event":"HTTP_REQUEST","requestId":"64f2dbf3-bb92-4580-a7f1-9e857bb6a01b","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":22}
+{"event":"HTTP_REQUEST","requestId":"d7d5f8be-98b0-40f9-bea3-dd606d3e3969","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":18}
+{"event":"HTTP_REQUEST","requestId":"1e881308-f2c5-4d19-8fdd-ae3e8de2207c","method":"POST","route":"/admin/users/:userId/coins/remove","statusCode":201,"durationMs":19}
+{"event":"HTTP_REQUEST","requestId":"eab5d229-690c-4198-ba97-8fca387b4366","method":"GET","route":"/admin/users","statusCode":200,"durationMs":17}
+{"event":"HTTP_REQUEST","requestId":"fe180e29-c3c7-4075-95f1-a97ffc1c661e","method":"GET","route":"/admin/users/:userId/detail","statusCode":200,"durationMs":6}
+{"event":"HTTP_REQUEST","requestId":"57c63f82-b8b0-4a09-b8fb-6ae8f35a0d48","method":"GET","route":"/admin/users/:userId/ledger","statusCode":200,"durationMs":5}
+{"event":"HTTP_REQUEST","requestId":"0b5a8021-9373-4a93-8400-d8e1a41ca5db","method":"POST","route":"/admin/users/:userId/password/reveal","statusCode":201,"durationMs":19}
+{"event":"HTTP_REQUEST","requestId":"e4301590-114e-45fa-b4f9-63a63022013c","method":"POST","route":"/admin/users/:userId/password","statusCode":201,"durationMs":195}
+{"event":"HTTP_REQUEST","requestId":"fd179b3a-7b23-491a-9895-e8ee4b9d4d4d","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":26}
+{"event":"HTTP_REQUEST","requestId":"90e8a252-655f-4c06-b048-55db87a463f6","method":"GET","route":"/admin/users","statusCode":200,"durationMs":6}
+{"event":"HTTP_REQUEST","requestId":"13a7ec8a-9a46-40dd-ab9e-1b83fa85c84c","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":32}
+{"event":"HTTP_REQUEST","requestId":"5c9ea0f9-70db-4497-bf46-a2fda141731b","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":32}
+{"event":"HTTP_REQUEST","requestId":"43f25a79-c39e-4991-996a-6f4e779fb88a","method":"POST","route":"/admin/users/:userId/coins/remove","statusCode":201,"durationMs":32}
+{"event":"HTTP_REQUEST","requestId":"dad9b81a-baa5-49f9-975c-83d2541f0a29","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":33}
+{"event":"HTTP_REQUEST","requestId":"7823628b-612f-4d91-ad3b-ae933f5ee114","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":14}
+{"event":"HTTP_REQUEST","requestId":"478c1335-3936-4678-a0eb-56c558c5c658","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":19}
+{"event":"HTTP_REQUEST","requestId":"96088f9d-14fe-4d89-998c-dfefbe8d6bf5","method":"POST","route":"/admin/users/:userId/coins/remove","statusCode":201,"durationMs":21}
+{"event":"HTTP_REQUEST","requestId":"681e5d23-70a1-4e92-90f8-ed77fa775321","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":31}
+{"event":"HTTP_REQUEST","requestId":"8a5841db-529b-43f7-a479-31891e227f77","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":28}
+{"event":"HTTP_REQUEST","requestId":"c60f15df-673f-42c7-8227-f64f417ae7dc","method":"GET","route":"/admin/security/events","statusCode":200,"durationMs":27}
+{"event":"HTTP_REQUEST","requestId":"85405ecb-d119-4f9e-a891-b4a6e021d00e","method":"GET","route":"/admin/security/events","statusCode":200,"durationMs":11}
+{"event":"HTTP_REQUEST","requestId":"4534a075-525b-4b9e-b976-826a1ef6a2d4","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":55}
+{"event":"HTTP_REQUEST","requestId":"9216a193-ca80-45af-a7aa-2bc048264aba","method":"POST","route":"/admin/security/events/:eventId/acknowledge","statusCode":201,"durationMs":12}
+{"event":"HTTP_REQUEST","requestId":"d7d545b1-963d-4845-b153-78fb9c5bbcf7","method":"POST","route":"/admin/security/events/:eventId/acknowledge","statusCode":201,"durationMs":13}
+{"event":"HTTP_REQUEST","requestId":"8d8d3afe-199d-4ca2-b556-e514dec98058","method":"POST","route":"/admin/security/events/:eventId/acknowledge","statusCode":201,"durationMs":8}
+{"event":"HTTP_REQUEST","requestId":"40d5f69a-87d4-47eb-8bde-7b928eccfcd8","method":"GET","route":"/admin/security/events","statusCode":200,"durationMs":13}
+{"event":"HTTP_REQUEST","requestId":"b9fa8f39-b515-460b-9968-0a20362e7880","method":"POST","route":"/users/me/password","statusCode":201,"durationMs":279}
+{"event":"HTTP_REQUEST","requestId":"d06684aa-b42b-4ad3-893e-8881135e1907","method":"POST","route":"/users/me/password","statusCode":201,"durationMs":492}
+{"event":"HTTP_REQUEST","requestId":"cbf68418-1052-422a-b365-4acab5683d8e","method":"POST","route":"/users/me/password","statusCode":201,"durationMs":3}
+{"event":"HTTP_REQUEST","requestId":"a88126de-f042-4890-9a2b-099a92f166a8","method":"POST","route":"/users/me/password","statusCode":201,"durationMs":365}
+{"event":"HTTP_REQUEST","requestId":"eb192f76-eadb-4c99-95ed-c072ad2b7459","method":"GET","route":"/admin/security/events","statusCode":200,"durationMs":15}
+{"event":"HTTP_REQUEST","requestId":"5fb646f2-473f-436e-b568-34864fd5cb7d","method":"GET","route":"/admin/security/events","statusCode":200,"durationMs":7}
+{"event":"HTTP_REQUEST","requestId":"330b7c3d-045c-40e3-ab97-410857ea6484","method":"POST","route":"/users/me/password","statusCode":201,"durationMs":131}
+{"event":"HTTP_REQUEST","requestId":"aad9858f-e72a-47de-b059-34779b518168","method":"POST","route":"/users/me/password","statusCode":201,"durationMs":157}
+{"event":"HTTP_REQUEST","requestId":"15896315-4364-4bc9-8a36-5e7c72ed3af8","method":"POST","route":"/users/me/password","statusCode":201,"durationMs":138}
+{"event":"HTTP_REQUEST","requestId":"1c409682-9e26-4eae-8233-ed61edd2e36b","method":"POST","route":"/users/me/password","statusCode":201,"durationMs":126}
+{"event":"HTTP_REQUEST","requestId":"ee0ef1e9-d5cd-465b-8721-b8b13d092d14","method":"POST","route":"/users/me/password","statusCode":201,"durationMs":136}
+{"event":"HTTP_REQUEST","requestId":"c5162f39-98f5-43eb-abb7-0dafda0384a4","method":"POST","route":"/users/me/password","statusCode":201,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"4c572d39-bcda-455c-8592-8e917a067df0","method":"POST","route":"/admin/users/:userId/owner","statusCode":201,"durationMs":10}
+{"event":"HTTP_REQUEST","requestId":"88b424f3-0038-4439-a970-88e6b99de08b","method":"POST","route":"/admin/users/:userId/owner","statusCode":201,"durationMs":16}
+{"event":"HTTP_REQUEST","requestId":"d51b2f84-d2ba-4096-b513-ab598b3a5498","method":"POST","route":"/admin/users/:userId/owner","statusCode":201,"durationMs":11}
+{"event":"HTTP_REQUEST","requestId":"54e2691c-9e3c-481e-9c6b-65054729a5e6","method":"POST","route":"/admin/users/:userId/owner","statusCode":201,"durationMs":22}
+{"event":"HTTP_REQUEST","requestId":"4af473c0-2377-43fa-94c2-921db808a771","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":37}
+{"event":"HTTP_REQUEST","requestId":"3882133c-ac1c-4d1f-8065-b8ae3450faf5","method":"POST","route":"/admin/users/:userId/owner","statusCode":201,"durationMs":29}
+{"event":"HTTP_REQUEST","requestId":"1965f5e4-275c-4b8d-98fa-fe8733a90d57","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":17}
+{"event":"HTTP_REQUEST","requestId":"a79cd1a9-564c-4430-aa02-98dc336f3cfd","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":52}
+[Nest] 5588  - 10/08/2026, 1:19:40 AM     LOG [DiceService] Object(3) {
+  event: 'CASINO_ROUND_LOST',
+  gameType: 'DICE',
+  roundId: '2f779041-55fa-411a-98c3-1e1657754208'
+}
+[Nest] 5588  - 10/08/2026, 1:19:41 AM     LOG [DiceService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'DICE',
+  roundId: '4a938198-ad8d-4466-8d6a-5aae0ec1ed2a'
+}
+[Nest] 5588  - 10/08/2026, 1:19:42 AM     LOG [DiceService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'DICE',
+  roundId: '057b7589-e1ed-47d2-9f76-dd180c78f88f'
+}
+[Nest] 5588  - 10/08/2026, 1:19:42 AM     LOG [DiceService] Object(3) {
+  event: 'CASINO_ROUND_LOST',
+  gameType: 'DICE',
+  roundId: '73d0b2fc-c6f2-4c1e-8c20-d278c5395e66'
+}
+[Nest] 5588  - 10/08/2026, 1:19:46 AM     LOG [DiceService] Object(3) {
+  event: 'CASINO_ROUND_LOST',
+  gameType: 'DICE',
+  roundId: '901a29f5-5232-47e8-9a8e-39f333bb0fc8'
+}
+[Nest] 5588  - 10/08/2026, 1:19:46 AM     LOG [DiceService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'DICE',
+  roundId: '9141fc15-1e46-4e0c-97af-e2cad1eaa5d5'
+}
+[Nest] 5588  - 10/08/2026, 1:19:47 AM     LOG [DiceService] Object(3) {
+  event: 'CASINO_ROUND_LOST',
+  gameType: 'DICE',
+  roundId: '850ea319-22f9-495f-bebf-22cd00dad05c'
+}
+[Nest] 5588  - 10/08/2026, 1:19:47 AM     LOG [DiceService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'DICE',
+  roundId: '850ea319-22f9-495f-bebf-22cd00dad05c'
+}
+[Nest] 5588  - 10/08/2026, 1:19:48 AM     LOG [DiceService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'DICE',
+  roundId: 'ddb56da3-9fd8-4dd2-aed4-fff8d42fe557'
+}
+[Nest] 5588  - 10/08/2026, 1:19:49 AM     LOG [DiceService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'DICE',
+  roundId: 'e98cea4e-3502-4040-a743-803f548b7e12'
+}
+[Nest] 5588  - 10/08/2026, 1:19:49 AM     LOG [DiceService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'DICE',
+  roundId: 'c1cadbe9-2331-4838-8119-b8b4a35c220f'
+}
+[Nest] 5588  - 10/08/2026, 1:19:50 AM     LOG [DiceService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'DICE',
+  roundId: '4978ac6d-69a0-4b9d-ab9d-f7ac15b15602'
+}
+[Nest] 5588  - 10/08/2026, 1:19:50 AM     LOG [DiceService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'DICE',
+  roundId: '29bcda0e-ae16-4454-813e-a75a9d2de708'
+}
+[Nest] 5588  - 10/08/2026, 1:19:50 AM     LOG [DiceService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'DICE',
+  roundId: 'da78832f-eeb4-4fcc-a6fd-4b7ad4edda23'
+}
+[Nest] 5588  - 10/08/2026, 1:19:50 AM     LOG [DiceService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'DICE',
+  roundId: 'be7449ee-1109-48dd-a993-a7a95f241732'
+}
+[Nest] 5588  - 10/08/2026, 1:19:50 AM     LOG [DiceService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'DICE',
+  roundId: '055351d0-77c9-4c52-b7f2-72d007374b70'
+}
+[Nest] 5588  - 10/08/2026, 1:19:50 AM     LOG [DiceService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'DICE',
+  roundId: '51b4fcb5-c601-4ad0-b6ab-f469df6b7868'
+}
+[Nest] 5588  - 10/08/2026, 1:19:51 AM     LOG [DiceService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'DICE',
+  roundId: '6aabf7fe-288e-42df-ba11-af3a5b33d622'
+}
+[Nest] 5588  - 10/08/2026, 1:19:51 AM     LOG [DiceService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'DICE',
+  roundId: 'cb220f7e-150e-4e95-b6cd-7013d06dece5'
+}
+[Nest] 5588  - 10/08/2026, 1:19:51 AM     LOG [DiceService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'DICE',
+  roundId: '8bb41172-e83b-4095-a13f-bd72e00a39d6'
+}
+[Nest] 5588  - 10/08/2026, 1:19:51 AM     LOG [DiceService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'DICE',
+  roundId: 'c952a7d3-5870-43ca-8125-f8489f4b6093'
+}
+[Nest] 5588  - 10/08/2026, 1:19:51 AM     LOG [DiceService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'DICE',
+  roundId: '608d9e61-7b5d-4e40-9f11-105b98927d1a'
+}
+[Nest] 5588  - 10/08/2026, 1:19:51 AM     LOG [DiceService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'DICE',
+  roundId: 'ded62339-f238-4720-94b0-a7c6fbd59c72'
+}
+[Nest] 5588  - 10/08/2026, 1:19:51 AM     LOG [DiceService] Object(3) {
+  event: 'CASINO_ROUND_WON',
+  gameType: 'DICE',
+  roundId: '6fecfe68-8bbc-447c-bf43-376a1a1816b4'
+}
+[Nest] 5588  - 10/08/2026, 1:19:51 AM     LOG [DiceService] Object(3) {
+  event: 'CASINO_ROUND_LOST',
+  gameType: 'DICE',
+  roundId: '08d77bec-14b3-4db8-9ee0-4f192f9e73d7'
+}
+[Nest] 5588  - 10/08/2026, 1:19:52 AM     LOG [DiceService] Object(3) {
+  event: 'CASINO_ROUND_LOST',
+  gameType: 'DICE',
+  roundId: '3da78888-513e-44db-9788-21305c395e0e'
+}
+[Nest] 5588  - 10/08/2026, 1:19:59 AM     LOG [MinesService] Object(3) {
+  event: 'CASINO_CASHOUT',
+  gameType: 'MINES',
+  roundId: '888e01f4-cafc-4078-8c5e-99131244962a'
+}
+[Nest] 5588  - 10/08/2026, 1:20:02 AM     LOG [MinesService] Object(3) {
+  event: 'CASINO_CASHOUT',
+  gameType: 'MINES',
+  roundId: '679682d9-2e96-4b57-aa46-b89175dbc774'
+}
+[Nest] 5588  - 10/08/2026, 1:20:04 AM     LOG [MinesService] Object(3) {
+  event: 'CASINO_CASHOUT',
+  gameType: 'MINES',
+  roundId: 'a0404e03-9296-4ce6-8a19-36940ebc1438'
+}
+{"event":"HTTP_REQUEST","requestId":"51a8ba8d-2976-438d-bb4b-45d1706cd179","method":"POST","route":"/auth/login","statusCode":201,"durationMs":264}
+{"event":"HTTP_REQUEST","requestId":"9f7fe11d-8884-4b8e-83f6-802649963674","method":"POST","route":"/auth/refresh","statusCode":201,"durationMs":33}
+{"event":"HTTP_REQUEST","requestId":"c7f98d28-6617-4ef5-95d8-eb5621aff43e","method":"POST","route":"/auth/refresh","statusCode":201,"durationMs":45}
+{"event":"HTTP_REQUEST","requestId":"93038f30-88a9-48e1-be23-a2788a29294c","method":"POST","route":"/auth/refresh","statusCode":201,"durationMs":20}
+{"event":"HTTP_REQUEST","requestId":"012a3784-390e-47c6-8371-377ff6ed4df6","method":"POST","route":"/auth/logout","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"835a25e9-dec7-40fa-ac99-e4c4b5ca6415","method":"GET","route":"/bets/:betId","statusCode":200,"durationMs":14}
+{"event":"HTTP_REQUEST","requestId":"5257e3b8-0605-4233-a20c-c87a6653601b","method":"GET","route":"/wallet/me/ledger","statusCode":200,"durationMs":3}
+{"event":"HTTP_REQUEST","requestId":"909d83e1-3e82-4940-ae3c-e16499a61659","method":"GET","route":"/admin/users","statusCode":200,"durationMs":18}
+{"event":"HTTP_REQUEST","requestId":"80a5acc1-1326-4dac-b2df-f6df6b990e61","method":"POST","route":"/auth/login","statusCode":201,"durationMs":24}
+{"event":"HTTP_REQUEST","requestId":"f7c3c27a-6df1-4d89-b8e0-9e99bfe0cc84","method":"POST","route":"/auth/login","statusCode":201,"durationMs":25}
+{"event":"HTTP_REQUEST","requestId":"d10dd729-ce75-49f8-a8ed-141221d61bf7","method":"POST","route":"/auth/login","statusCode":201,"durationMs":12}
+{"event":"HTTP_REQUEST","requestId":"30fb8a6a-bce0-4ca9-a207-196d9d994625","method":"POST","route":"/auth/login","statusCode":201,"durationMs":13}
+{"event":"HTTP_REQUEST","requestId":"0443d8dd-1aba-4da2-8f4f-b8eda29b16bd","method":"POST","route":"/auth/login","statusCode":201,"durationMs":10}
+{"event":"HTTP_REQUEST","requestId":"0aef5e32-c695-4cdd-93c7-129f630a2bec","method":"POST","route":"/auth/login","statusCode":201,"durationMs":3}
+{"event":"HTTP_REQUEST","requestId":"a8d7f469-12ca-4dc9-9c20-8f0d739d8ee8","method":"POST","route":"/bets","statusCode":201,"durationMs":4}
+{"event":"HTTP_REQUEST","requestId":"e5e8f288-497e-4f4e-ae8e-51469b52564e","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":86}
+{"event":"HTTP_REQUEST","requestId":"53728870-1c4c-418f-89d4-945b1234d6dd","method":"POST","route":"/admin/users/:userId/coins/remove","statusCode":201,"durationMs":36}
+{"event":"HTTP_REQUEST","requestId":"84e47829-c9f3-46bf-b4ac-bb24eb54c13f","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":34}
+{"event":"HTTP_REQUEST","requestId":"a77cd81f-e116-4ae7-87bf-6d61e82b3d2a","method":"POST","route":"/admin/users/:userId/coins/remove","statusCode":201,"durationMs":31}
+{"event":"HTTP_REQUEST","requestId":"16b84d0f-ed9a-4d08-a641-30b294c3fb87","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":18}
+{"event":"HTTP_REQUEST","requestId":"cf7e8eef-49a2-421a-99d7-884716a7f7e7","method":"POST","route":"/admin/users/:userId/coins/remove","statusCode":201,"durationMs":15}
+{"event":"HTTP_REQUEST","requestId":"ffdce777-6000-4d77-af68-dc86f3cea4c7","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":11}
+{"event":"HTTP_REQUEST","requestId":"1f4ba0a0-8cc3-4e37-b56d-acdeae99dfcd","method":"POST","route":"/admin/users/:userId/coins/remove","statusCode":201,"durationMs":10}
+{"event":"HTTP_REQUEST","requestId":"7f949b14-0727-458c-93eb-48949816d6e9","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":20}
+{"event":"HTTP_REQUEST","requestId":"67b6f82b-f098-41c2-9e0e-b4d32945996e","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":15}
+{"event":"HTTP_REQUEST","requestId":"e7ed062e-c1fd-4a9e-b189-84b960e5adef","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":12}
+{"event":"HTTP_REQUEST","requestId":"ded4193f-4519-45fe-bd66-d24676d21647","method":"GET","route":"/admin/casino/math","statusCode":200,"durationMs":29}
+{"event":"HTTP_REQUEST","requestId":"4b8778be-c69c-4a44-9dc7-3a6f4a5fea78","method":"POST","route":"/casino/lucky-lady/launch","statusCode":201,"durationMs":97}
+{"event":"HTTP_REQUEST","requestId":"6043abfe-98b6-4dcc-81bc-fa88207ec66e","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":69}
+{"event":"HTTP_REQUEST","requestId":"9feb69dc-620c-467a-8da6-d7ff7943d080","method":"POST","route":"/auth/login","statusCode":201,"durationMs":172}
+{"event":"HTTP_REQUEST","requestId":"8d29363b-d7d2-41b8-bf34-c86411d0b22b","method":"POST","route":"/auth/login","statusCode":201,"durationMs":179}
+{"event":"HTTP_REQUEST","requestId":"0ca379a4-26ab-4d88-a0b8-d48aad0e2531","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":24}
+{"event":"HTTP_REQUEST","requestId":"4f60adb9-4154-47b2-afbb-3d0595b4f342","method":"POST","route":"/auth/login","statusCode":201,"durationMs":182}
+{"event":"HTTP_REQUEST","requestId":"0025b227-84cb-4e2e-b703-5bf8d8a5de34","method":"POST","route":"/auth/login","statusCode":201,"durationMs":156}
+{"event":"HTTP_REQUEST","requestId":"8d6e691f-5f20-4f66-a8fe-1ebedb7f3714","method":"GET","route":"/casino/games","statusCode":200,"durationMs":29}
+{"event":"HTTP_REQUEST","requestId":"aadd5244-7cf1-4dd4-b4fc-ae2ad4111448","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":25}
+{"event":"HTTP_REQUEST","requestId":"ca5d3009-eada-46f5-b02b-c8df57a1661a","method":"POST","route":"/auth/refresh","statusCode":201,"durationMs":21}
+{"event":"HTTP_REQUEST","requestId":"acbf770b-5181-4e31-9709-bf8e30255813","method":"POST","route":"/auth/login","statusCode":201,"durationMs":159}
+{"event":"HTTP_REQUEST","requestId":"7aa99597-925a-4f34-8131-d0b7df503c6e","method":"POST","route":"/auth/refresh","statusCode":201,"durationMs":17}
+{"event":"HTTP_REQUEST","requestId":"4faecd89-c2ab-4ed0-a6d9-c1155fdd75a9","method":"POST","route":"/auth/refresh","statusCode":201,"durationMs":19}
+{"event":"HTTP_REQUEST","requestId":"6ffa1bd4-6789-49b5-8d56-944e35f66d4a","method":"POST","route":"/auth/login","statusCode":201,"durationMs":166}
+{"event":"HTTP_REQUEST","requestId":"4631334b-93ee-40a4-becd-e312efc27a4b","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":32}
+{"event":"HTTP_REQUEST","requestId":"6aafb280-6c24-4d67-bb0e-8705159fe137","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":31}
+{"event":"HTTP_REQUEST","requestId":"053abb67-b8e8-4ded-9946-d1b17d99a56c","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":21}
+{"event":"HTTP_REQUEST","requestId":"165d247e-a986-4f05-9a9e-bf941c7725fd","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":26}
+{"event":"HTTP_REQUEST","requestId":"ece5289f-766c-4753-83f1-19095021ba8e","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":26}
+{"event":"HTTP_REQUEST","requestId":"90d85800-d9dd-464a-9216-806ade310033","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":25}
+{"event":"HTTP_REQUEST","requestId":"bd889db8-3296-4674-a0bf-870d3c9bf041","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":22}
+{"event":"HTTP_REQUEST","requestId":"c8b24be4-3ff7-4437-bb51-fb6a95e7f0e3","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":25}
+{"event":"HTTP_REQUEST","requestId":"721e3400-e31a-4777-a1b8-ae7fb55b0c15","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":23}
+{"event":"HTTP_REQUEST","requestId":"06d885c6-462f-4d43-b641-2b435857bb56","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":24}
+{"event":"HTTP_REQUEST","requestId":"cd975f3c-9451-4c49-9cd6-6c582a084b26","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":24}
+{"event":"HTTP_REQUEST","requestId":"64e23adf-d3f9-4faf-b92e-361baa396959","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":27}
+{"event":"HTTP_REQUEST","requestId":"a46ca807-a5eb-414c-9ca0-3a370f282f88","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":27}
+{"event":"HTTP_REQUEST","requestId":"68bc6e3c-4b9b-4b44-8f8c-286c3be6a083","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":25}
+{"event":"HTTP_REQUEST","requestId":"05d1b6c5-d6fd-42da-a94d-423e2226b524","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":23}
+{"event":"HTTP_REQUEST","requestId":"0969c831-3264-424c-be41-0e35755ce4f1","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":32}
+{"event":"HTTP_REQUEST","requestId":"1f007779-d681-4668-a638-1e26449d9490","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":31}
+{"event":"HTTP_REQUEST","requestId":"7ff63465-ec47-4aea-bfd1-a0c9e39ab1eb","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":31}
+{"event":"HTTP_REQUEST","requestId":"598cf580-13b3-4cbb-9fa8-45b35e7f8e7e","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":34}
+{"event":"HTTP_REQUEST","requestId":"a13882a2-8661-44a4-baa9-40abdd5608b3","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":30}
+{"event":"HTTP_REQUEST","requestId":"7abe882f-cc3d-4937-9961-33bf6db12dc3","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"c455a434-04a4-464e-9646-f49236327240","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"4c3bbfe7-c7d5-428e-bfe5-4482c96869fe","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":21}
+{"event":"HTTP_REQUEST","requestId":"83b55197-cf1e-49f5-97b0-39f3a4de16d0","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":42}
+{"event":"HTTP_REQUEST","requestId":"904672c2-ff6b-4b3c-9161-0f721afd2f4c","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":26}
+{"event":"HTTP_REQUEST","requestId":"1ce46067-f0b0-4d9b-857f-b532f14fee53","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":28}
+[Nest] 5588  - 10/08/2026, 1:21:26 AM    WARN [SettlementService] Object(4) {
+  event: 'RESULT_FETCH_FAILED',
+  provider: 'fixture',
+  providerEventId: 'live',
+  code: 'SPORTS_SETTLEMENT_FAILED'
+}
+[Nest] 5588  - 10/08/2026, 1:21:26 AM   ERROR [SettlementService] Object(3) {
+  event: 'RESULT_CONFLICT_DETECTED',
+  provider: 'fixture',
+  providerEventId: 'conflict'
+}
+{"event":"HTTP_REQUEST","requestId":"79c28d15-6403-4b0b-a177-66cacd1c2e8f","method":"GET","route":"/health/live","statusCode":200,"durationMs":4}
+{"event":"HTTP_REQUEST","requestId":"cfd071b2-6879-4a4c-b1bf-3869ca5b44d1","method":"GET","route":"/health/ready","statusCode":200,"durationMs":9}
+{"event":"HTTP_REQUEST","requestId":"5c58f25f-ae47-4660-b1ba-9c67321fc04f","method":"GET","route":"/health/live","statusCode":200,"durationMs":0}
+{"event":"HTTP_REQUEST","requestId":"deploy-check-42","method":"GET","route":"/health/live","statusCode":200,"durationMs":0}
+{"event":"HTTP_REQUEST","requestId":"af4c7ac9-db12-492d-ba4f-855105462ad4","method":"GET","route":"/health/ready","statusCode":200,"durationMs":3}
+{"event":"HTTP_REQUEST","requestId":"5b299128-46b2-4ab2-9a0c-eee64c2e2af6","method":"GET","route":"/health/ready","statusCode":503,"durationMs":3}
+[Nest] 5588  - 10/08/2026, 1:21:41 AM   DEBUG [RedisService] Object(2) {
+  event: 'SPORTS_CACHE_MISS',
+  key: 'sports:v1:list'
+}
+[Nest] 5588  - 10/08/2026, 1:21:41 AM   DEBUG [RedisService] Object(2) {
+  event: 'SPORTS_CACHE_HIT',
+  key: 'sports:v1:list'
+}
+[Nest] 5588  - 10/08/2026, 1:21:41 AM   DEBUG [RedisService] Object(2) {
+  event: 'SPORTS_CACHE_MISS',
+  key: 'sports:v1:list'
+}
+[Nest] 5588  - 10/08/2026, 1:21:41 AM   DEBUG [RedisService] Object(2) {
+  event: 'SPORTS_CACHE_MISS',
+  key: 'sports:v1:board:f68b014acafe76485a02'
+}
+[Nest] 5588  - 10/08/2026, 1:21:41 AM   DEBUG [RedisService] Object(2) {
+  event: 'SPORTS_CACHE_MISS',
+  key: 'sports:v1:list'
+}
+[Nest] 5588  - 10/08/2026, 1:21:41 AM   DEBUG [RedisService] Object(2) {
+  event: 'SPORTS_CACHE_MISS',
+  key: 'sports:v1:list'
+}
+[Nest] 5588  - 10/08/2026, 1:21:41 AM   DEBUG [RedisService] Object(2) {
+  event: 'SPORTS_CACHE_MISS',
+  key: 'sports:v1:list'
+}
+[Nest] 5588  - 10/08/2026, 1:21:41 AM   DEBUG [RedisService] Object(2) {
+  event: 'SPORTS_CACHE_MISS',
+  key: 'sports:v1:list'
+}
+[Nest] 5588  - 10/08/2026, 1:21:41 AM   DEBUG [RedisService] Object(2) {
+  event: 'SPORTS_CACHE_MISS',
+  key: 'sports:v1:list'
+}
+[Nest] 5588  - 10/08/2026, 1:21:41 AM   DEBUG [RedisService] Object(2) {
+  event: 'SPORTS_CACHE_MISS',
+  key: 'sports:v1:list'
+}
+[Nest] 5588  - 10/08/2026, 1:21:41 AM   DEBUG [RedisService] Object(2) {
+  event: 'SPORTS_CACHE_MISS',
+  key: 'sports:v1:list'
+}
+[Nest] 5588  - 10/08/2026, 1:21:41 AM   DEBUG [RedisService] Object(2) {
+  event: 'SPORTS_CACHE_MISS',
+  key: 'sports:v1:list'
+}
+[Nest] 5588  - 10/08/2026, 1:21:41 AM   DEBUG [RedisService] Object(2) {
+  event: 'SPORTS_CACHE_MISS',
+  key: 'sports:v1:list'
+}
+[Nest] 5588  - 10/08/2026, 1:21:41 AM   DEBUG [RedisService] Object(2) {
+  event: 'SPORTS_CACHE_MISS',
+  key: 'sports:v1:list'
+}
+[Nest] 5588  - 10/08/2026, 1:21:41 AM   DEBUG [RedisService] Object(2) {
+  event: 'SPORTS_CACHE_MISS',
+  key: 'sports:v1:board:7a24e17b10623231bc93'
+}
+[Nest] 5588  - 10/08/2026, 1:21:41 AM   DEBUG [RedisService] Object(2) {
+  event: 'SPORTS_CACHE_MISS',
+  key: 'sports:v1:board:7a24e17b10623231bc93'
+}
+[Nest] 5588  - 10/08/2026, 1:21:41 AM   DEBUG [RedisService] Object(2) {
+  event: 'SPORTS_CACHE_MISS',
+  key: 'sports:v1:board:7a24e17b10623231bc93'
+}
+[Nest] 5588  - 10/08/2026, 1:21:41 AM   DEBUG [RedisService] Object(2) {
+  event: 'SPORTS_CACHE_MISS',
+  key: 'sports:v1:board:7a24e17b10623231bc93'
+}
+[Nest] 5588  - 10/08/2026, 1:21:41 AM   DEBUG [RedisService] Object(2) {
+  event: 'SPORTS_CACHE_MISS',
+  key: 'sports:v1:board:7a24e17b10623231bc93'
+}
+[Nest] 5588  - 10/08/2026, 1:21:41 AM   DEBUG [RedisService] Object(2) {
+  event: 'SPORTS_CACHE_MISS',
+  key: 'sports:v1:board:7a24e17b10623231bc93'
+}
+[Nest] 5588  - 10/08/2026, 1:21:41 AM   DEBUG [RedisService] Object(2) {
+  event: 'SPORTS_CACHE_MISS',
+  key: 'sports:v1:board:7a24e17b10623231bc93'
+}
+[Nest] 5588  - 10/08/2026, 1:21:41 AM   DEBUG [RedisService] Object(2) {
+  event: 'SPORTS_CACHE_MISS',
+  key: 'sports:v1:board:7a24e17b10623231bc93'
+}
+[Nest] 5588  - 10/08/2026, 1:21:41 AM   DEBUG [RedisService] Object(2) {
+  event: 'SPORTS_CACHE_MISS',
+  key: 'sports:v1:board:7a24e17b10623231bc93'
+}
+[Nest] 5588  - 10/08/2026, 1:21:41 AM   DEBUG [RedisService] Object(2) {
+  event: 'SPORTS_CACHE_MISS',
+  key: 'sports:v1:board:7a24e17b10623231bc93'
+}
+[Nest] 5588  - 10/08/2026, 1:21:41 AM   DEBUG [RedisService] Object(2) {
+  event: 'SPORTS_CACHE_MISS',
+  key: 'sports:v1:list'
+}
+[Nest] 5588  - 10/08/2026, 1:21:41 AM   DEBUG [RedisService] Object(2) {
+  event: 'SPORTS_CACHE_MISS',
+  key: 'sports:v1:odds:b67b13aa813546f1f73e'
+}
+[Nest] 5588  - 10/08/2026, 1:21:41 AM   DEBUG [RedisService] Object(2) {
+  event: 'SPORTS_CACHE_HIT',
+  key: 'sports:v1:list'
+}
+[Nest] 5588  - 10/08/2026, 1:21:41 AM   DEBUG [RedisService] Object(2) {
+  event: 'SPORTS_CACHE_MISS',
+  key: 'sports:v1:odds:72c3a5ae7e840eb8a91f'
+}
+[Nest] 5588  - 10/08/2026, 1:21:43 AM   DEBUG [RedisService] Object(2) {
+  event: 'SPORTS_CACHE_HIT',
+  key: 'sports:v1:list'
+}
+[Nest] 5588  - 10/08/2026, 1:21:43 AM   DEBUG [RedisService] Object(2) {
+  event: 'SPORTS_CACHE_MISS',
+  key: 'sports:v1:odds:b67b13aa813546f1f73e'
+}
+[Nest] 5588  - 10/08/2026, 1:21:43 AM   DEBUG [RedisService] Object(2) {
+  event: 'SPORTS_CACHE_MISS',
+  key: 'sports:v1:list'
+}
+[Nest] 5588  - 10/08/2026, 1:21:50 AM     LOG [TheOddsApiProvider] Object(2) {
+  event: 'SPORTS_PROVIDER_REQUEST_SUCCESS',
+  path: '/sports'
+}
+[Nest] 5588  - 10/08/2026, 1:21:50 AM     LOG [TheOddsApiProvider] Object(2) {
+  event: 'SPORTS_PROVIDER_REQUEST_SUCCESS',
+  path: '/sports/soccer_epl/events/event-1/odds'
+}
+[Nest] 5588  - 10/08/2026, 1:21:50 AM    WARN [TheOddsApiProvider] Object(3) {
+  event: 'SPORTS_PROVIDER_REQUEST_FAILED',
+  path: '/sports/soccer_epl/events/event-1/odds',
+  code: 'SPORTS_PROVIDER_INVALID_RESPONSE'
+}
+[Nest] 5588  - 10/08/2026, 1:21:50 AM    WARN [TheOddsApiProvider] Object(3) {
+  event: 'SPORTS_PROVIDER_REQUEST_FAILED',
+  path: '/sports',
+  code: 'SPORTS_PROVIDER_RATE_LIMITED'
+}
+[Nest] 5588  - 10/08/2026, 1:21:50 AM    WARN [TheOddsApiProvider] Object(3) {
+  event: 'SPORTS_PROVIDER_REQUEST_FAILED',
+  path: '/sports',
+  code: 'SPORTS_PROVIDER_UNAVAILABLE'
+}
+[Nest] 5588  - 10/08/2026, 1:21:50 AM    WARN [TheOddsApiProvider] Object(3) {
+  event: 'SPORTS_PROVIDER_REQUEST_FAILED',
+  path: '/sports',
+  code: 'SPORTS_PROVIDER_UNAVAILABLE'
+}
+Test Suites: 47 passed, 47 total
+Tests:       775 passed, 775 total
+Snapshots:   0 total
+Time:        2319.476 s
+Ran all test suites.
+DONE-MARK
