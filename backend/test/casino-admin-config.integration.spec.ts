@@ -138,7 +138,9 @@ describe('super admin casino configuration (PostgreSQL + Redis)', () => {
         .set('Authorization', `Bearer ${bearer}`)
         .expect(200);
 
-      expect(response.body.games).toHaveLength(7);
+      // Nine registry games: the imported Lucky Lady bundle joins the
+      // first-party catalogue and is seeded the same way.
+      expect(response.body.games).toHaveLength(9);
       const dice = response.body.games.find((game: { gameId: string }) => game.gameId === 'dice');
       expect(dice.enabled).toBe(true);
       expect(dice.maintenance).toBe(false);
@@ -168,6 +170,8 @@ describe('super admin casino configuration (PostgreSQL + Redis)', () => {
         crash: 'DIRECT',
         plinko: 'PROFILE',
         'fools-gold-rush': 'PROFILE',
+        'lucky-lady': 'PROFILE',
+        'titans-tempest': 'CANONICAL',
         roulette: 'CANONICAL',
         blackjack: 'RULE_BASED',
       });

@@ -143,7 +143,7 @@ describe('casino registry, search, favorites and recent games (PostgreSQL + Redi
       expect(originals.length).toBeGreaterThan(0);
       expect(originals.every((game) => game.category === 'ORIGINALS')).toBe(true);
       expect(registry.list({ category: 'SLOTS' }).map((game) => game.id))
-        .toEqual(['fools-gold-rush']);
+        .toEqual(['fools-gold-rush', 'titans-tempest', 'lucky-lady']);
     });
 
     it('filters by featured flag', () => {

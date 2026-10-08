@@ -9,6 +9,7 @@ import {
 } from './games/slots/slot.definitions';
 import { analyseSlotRtp } from './games/slots/slot.rtp';
 import { TITANS_TEMPEST_V1, tumbleVersion } from './games/slots/tumble.definition';
+import { LUCKY_LADY_V1, luckyLadyVersion } from './games/lucky-lady/lucky-lady.definition';
 
 /**
  * The code-level baseline for every game, and the rules for what an operator
@@ -377,6 +378,49 @@ export const GAME_CONFIG_SPECS: Record<CasinoGameId, GameConfigSpec> = {
       }
     },
   },
+
+  'lucky-lady': {
+    gameId: 'lucky-lady',
+    rtpControl: 'PROFILE',
+    baseline: () => ({
+      minStake: LUCKY_LADY_V1.minStake,
+      maxStake: LUCKY_LADY_V1.maxStake,
+      rtpBps: LUCKY_LADY_V1.declaredRtpBps,
+      gameSpecific: { profile: 'RTP50', profileHash: LUCKY_LADY_V1.profileHash },
+      label: luckyLadyVersion(),
+    }),
+    // The frozen 50% profile is the only accepted mathematics, so the label
+    // never varies: an operator moves limits and availability, never the return.
+    label: () => luckyLadyVersion(),
+    validate: (candidate) => {
+      if (candidate.rtpBps !== null && candidate.rtpBps !== LUCKY_LADY_V1.declaredRtpBps) {
+        fail(
+          'RTP_NOT_ADJUSTABLE',
+          'This game ships one frozen validated profile; its return cannot be dialled.',
+        );
+      }
+      const profile = candidate.gameSpecific.profile;
+      if (profile !== undefined && profile !== 'RTP50') {
+        fail('UNKNOWN_SLOT_PROFILE', 'Only the validated RTP50 profile exists for this game.');
+      }
+      // The native ladder is fixed: ten lines always active with a whole-point
+      // per-line stake of 1/2/5/10/20, so the round stake is exactly 10..200.
+      // An operator may change availability, never the denomination, which is
+      // why a candidate that moves the limits is refused instead of ignored.
+      if (candidate.minStake !== LUCKY_LADY_V1.minStake) {
+        fail(
+          'STAKE_LIMITS_ARE_FIXED',
+          `Ten lines are always active, so the minimum stake is fixed at ${LUCKY_LADY_V1.minStake} points.`,
+        );
+      }
+      if (candidate.maxStake !== LUCKY_LADY_V1.maxStake) {
+        fail(
+          'STAKE_LIMITS_ARE_FIXED',
+          `The native stake ladder caps a round at exactly ${LUCKY_LADY_V1.maxStake} points.`,
+        );
+      }
+    },
+  },
 };
 
 /** Effective RTP for a candidate, resolving profile games to their exact value. */
@@ -384,6 +428,9 @@ export function candidateRtpBps(gameId: CasinoGameId, candidate: GameConfigCandi
   if (gameId === 'fools-gold-rush') {
     const definition = slotProfile(gameId, candidate.gameSpecific.profile as string);
     return analyseSlotRtp(definition).rtpBps;
+  }
+  if (gameId === 'lucky-lady') {
+    return LUCKY_LADY_V1.declaredRtpBps;
   }
   return candidate.rtpBps;
 }

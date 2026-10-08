@@ -12,3 +12,6 @@ docker-compose*.yml text eol=lf
 .dockerignore text eol=lf
 .env.example text eol=lf
 .env.production.example text eol=lf
+
+# Lucky Lady verifies these accepted math artifacts byte-for-byte at runtime.
+backend/src/casino/games/lucky-lady/math/** text eol=lf

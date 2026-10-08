@@ -11,6 +11,7 @@ import {
   slotVersion,
 } from './games/slots/slot.definitions';
 import { TITANS_TEMPEST_V1, tumbleVersion } from './games/slots/tumble.definition';
+import { LUCKY_LADY_V1, luckyLadyVersion } from './games/lucky-lady/lucky-lady.definition';
 
 export const CASINO_CATEGORIES = ['ORIGINALS', 'TABLE_GAMES', 'SLOTS'] as const;
 export type CasinoCategory = (typeof CASINO_CATEGORIES)[number];
@@ -24,6 +25,7 @@ export const CASINO_GAME_IDS = [
   'plinko',
   'fools-gold-rush',
   'titans-tempest',
+  'lucky-lady',
 ] as const;
 export type CasinoGameId = (typeof CASINO_GAME_IDS)[number];
 
@@ -232,6 +234,36 @@ const DEFINITIONS: GameDefinition[] = [
         gameVersion: tumbleVersion(TITANS_TEMPEST_V1),
       };
     },
+  },
+  {
+    id: 'lucky-lady',
+    slug: 'lucky-lady',
+    gameType: 'SLOTS',
+    name: "Lucky Lady's Charm Deluxe",
+    category: 'SLOTS',
+    description: 'Imported Novomatic/Greentube 10-line classic with a red/black gamble and 15 free games.',
+    route: '/casino/slots/lucky-lady',
+    featured: true,
+    keywords: [
+      'lucky lady', 'lucky ladys charm', 'lady', 'charm', 'imported', 'slot', 'slots',
+      'gamble', 'free spins', 'free games', 'scatter', 'wild', 'deluxe', 'novomatic', 'greentube',
+    ],
+    // The recovered client is served from its own loopback origin, so the
+    // launch route is a platform page rather than an in-app board.
+    stateful: true,
+    // Outcomes come from the platform CSPRNG through the accepted evaluator.
+    // The generic commit/reveal verifier does not reproduce this game's draws,
+    // so the registry must not advertise that guarantee for it.
+    supportsFairness: false,
+    thumbnailKey: 'lucky-lady',
+    envKey: 'CASINO_GAME_LUCKY_LADY_ENABLED',
+    config: () => ({
+      // Ten lines are always active, so the registry publishes the total
+      // stake range the native 1/2/5/10/20 per-line ladder produces.
+      minStake: LUCKY_LADY_V1.minStake.toString(),
+      maxStake: LUCKY_LADY_V1.maxStake.toString(),
+      gameVersion: luckyLadyVersion(),
+    }),
   },
 ];
 

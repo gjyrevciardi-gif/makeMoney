@@ -146,6 +146,9 @@ model User {
   casinoGameFavorites   CasinoGameFavorite[]
   authoredCasinoConfigs CasinoGameConfigVersion[] @relation("CasinoConfigAuthor")
   acknowledgedConflicts SportsResultConflict[]
+  luckyLadyLaunches     LuckyLadyLaunch[]         @relation("LuckyLadyLaunchOwner")
+  luckyLadySessions     LuckyLadySession[]        @relation("LuckyLadySessionOwner")
+  luckyLadyPrepared     LuckyLadyPrepared[]       @relation("LuckyLadyPreparedOwner")
 }
 
 model Wallet {
@@ -167,6 +170,12 @@ model LedgerEntry {
   relatedBetId         String?      @db.Uuid
   relatedCasinoRoundId String?      @db.Uuid
   idempotencyKey       String       @unique
+  /// Additive provenance for imported-game money movements. Null for the
+  /// first-party games, which keep their existing conventions.
+  gameSessionId        String?      @db.Uuid
+  actionId             String?
+  balanceBefore        BigInt?
+  balanceAfter         BigInt?
   createdAt            DateTime     @default(now())
   wallet               Wallet       @relation(fields: [walletId], references: [id])
   actor                User?        @relation("LedgerActor", fields: [actorId], references: [id])
@@ -331,17 +340,98 @@ model CasinoRound {
 /// Append-only record of every player action applied to a round. The unique
 /// idempotency key makes a retried reveal/cashout a replay rather than a
 /// second mutation.
+///
+/// For imported third-party games this row is also the durable response cache
+/// and presentation-receipt journal: `canonical` holds the validated request
+/// semantics, `payload` the stored response, and `deliveredAt`/`ackedAt` the
+/// transmission attempt and the client's confirmed receipt. Those columns stay
+/// null for the first-party originals, which keep their own replay semantics.
 model CasinoRoundAction {
   id             String      @id @default(uuid()) @db.Uuid
+  /// Database-generated monotonic order: the "latest authoritative action"
+  /// must never be decided by a random UUID tie-break.
+  seq            Int         @default(autoincrement())
   roundId        String      @db.Uuid
   userId         String      @db.Uuid
   action         String
   payload        Json
   idempotencyKey String      @unique
+  gameId         String?
+  canonical      String?
+  deliveredAt    DateTime?
+  ackedAt        DateTime?
   createdAt      DateTime    @default(now())
   round          CasinoRound @relation(fields: [roundId], references: [id], onDelete: Cascade)
 
   @@index([roundId, createdAt])
+  @@index([userId, gameId, createdAt])
+  @@index([userId, gameId, seq])
+}
+
+/// One-time launch capability. The raw opaque secret is returned to the
+/// authenticated launcher exactly once and only its hash is stored, so a
+/// database read can never replay a launch. Scope, actor and expiry are pinned
+/// at issue time and consumption is a single conditional update.
+model LuckyLadyLaunch {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @db.Uuid
+  scope      String
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  consumedAt DateTime?
+  sessionId  String?   @db.Uuid
+  createdAt  DateTime  @default(now())
+  user       User      @relation("LuckyLadyLaunchOwner", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([expiresAt])
+}
+
+/// Reconnectable gameplay capability bound to one user and one game. The
+/// browser never learns the plaintext of another session; the stored hash is
+/// the only lookup key, and gameplay re-checks the database role on every call.
+model LuckyLadySession {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @db.Uuid
+  gameId     String
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  lastSeenAt DateTime  @default(now())
+  createdAt  DateTime  @default(now())
+  user       User      @relation("LuckyLadySessionOwner", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, gameId, createdAt])
+  @@index([expiresAt])
+}
+
+/// Durable prepared-outcome journal for one imported game.
+///
+/// The authoritative outcome (paid board plus the whole future feature
+/// sequence, or one gamble draw) is committed here before any wallet movement.
+/// Settlement then consumes this stored row, so a crash or a serialization
+/// failure can never cause a reroll, a second wager debit, or a lost round.
+model LuckyLadyPrepared {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  requestKey String   @unique
+  kind       String
+  canonical  String
+  body       Json
+  payload    Json
+  roundId    String?  @db.Uuid
+  /// The session and action that produced the outcome, so a settlement
+  /// reconciled after a reconnect still records its true origin.
+  sessionId  String?  @db.Uuid
+  actionId   String
+  /// The exact round state this outcome was drawn against.
+  originRoundId String?
+  originVersion Int?
+  originPhase   String?
+  createdAt  DateTime @default(now())
+  user       User     @relation("LuckyLadyPreparedOwner", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
 }
 
 /// Game-domain view of casino value movement. The immutable LedgerEntry table

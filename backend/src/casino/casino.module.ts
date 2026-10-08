@@ -27,6 +27,8 @@ import { PlinkoService } from './games/plinko/plinko.service';
 import { CasinoClock } from './casino-clock.service';
 import { SlotsService } from './games/slots/slots.service';
 import { TumbleSlotsService } from './games/slots/tumble.service';
+import { LuckyLadyController } from './games/lucky-lady/lucky-lady.controller';
+import { LUCKY_LADY_OPTIONS, LuckyLadyGameService } from './games/lucky-lady/lucky-lady.service';
 
 @Module({
   imports: [JwtModule.register({ secret: process.env.JWT_ACCESS_SECRET })],
@@ -35,6 +37,7 @@ import { TumbleSlotsService } from './games/slots/tumble.service';
     CasinoAdminController,
     CasinoConfigController,
     PlatformSettingsController,
+    LuckyLadyController,
   ],
   providers: [
     PrismaService,
@@ -58,6 +61,9 @@ import { TumbleSlotsService } from './games/slots/tumble.service';
     PlinkoService,
     SlotsService,
     TumbleSlotsService,
+    LuckyLadyGameService,
+    // Production defaults: OS CSPRNG draws, no test RNG or failure hooks.
+    { provide: LUCKY_LADY_OPTIONS, useValue: {} },
   ],
   exports: [
     CasinoService,
