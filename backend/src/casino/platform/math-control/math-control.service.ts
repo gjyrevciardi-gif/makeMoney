@@ -1,10 +1,13 @@
 import {
   ConflictException,
   ForbiddenException,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../../../prisma.service';
 import { hasCapability } from '../../../auth/capabilities';
@@ -16,14 +19,17 @@ import { MathControlJobs } from './math-control.jobs';
 import {
   defaultSessionConfig,
 } from './math-control.bankroll';
-import type {
-  MathPolicy,
-  MathProfileArtifact,
-  MathValidationEvidence,
-  GameMathAdapter,
-  ProfileValidationOutcome,
-  SessionConfig,
-  ValidationOptions,
+import {
+  GAME_MATH_DEFAULT_RESETTERS,
+  type GameMathAdapter,
+  type GameMathDefaultResetter,
+  type GameMathDefaultResult,
+  type MathPolicy,
+  type MathProfileArtifact,
+  type MathValidationEvidence,
+  type ProfileValidationOutcome,
+  type SessionConfig,
+  type ValidationOptions,
 } from './math-control.types';
 
 /**
@@ -49,6 +55,11 @@ export class MathControlService {
     private readonly prisma: PrismaService,
     private readonly registry: GameMathRegistry,
     private readonly jobs: MathControlJobs,
+    // A game whose default state is owned by its own admin panel registers one
+    // delegate here; the shared pointer move below is the fallback. Optional so
+    // existing direct constructions in tests keep working.
+    @Optional() @Inject(GAME_MATH_DEFAULT_RESETTERS)
+    private readonly defaultResetters: GameMathDefaultResetter[] = [],
   ) {}
 
   private async assertAdmin(actorId: string, operation: string) {
@@ -221,7 +232,12 @@ export class MathControlService {
             ? (result.analysis.maxRoundMultiplier as number)
             : parsed.policy.maxWinMultiplier).toFixed(6),
         ),
-        policy: parsed.policy as unknown as Prisma.InputJsonValue,
+        // Persist the artifact's own policy, not the raw request: an adapter may
+        // stamp explicit metadata that is part of the frozen hash (Classic stamps
+        // `maxWinEnabled: true` for a RESOLVED_SPIN profile). Storing the request
+        // would make artifactFromRow re-derive a different hash and fail every
+        // later validate/activate with MATH_ARTIFACT_HASH_MISMATCH.
+        policy: artifact.policy as unknown as Prisma.InputJsonValue,
         analytic: result.analysis as unknown as Prisma.InputJsonValue,
         payload: artifact.payload as Prisma.InputJsonValue,
         status: 'DRAFT',
@@ -403,7 +419,8 @@ export class MathControlService {
 
       const checks = (validation.checks ?? []) as Array<{ id: string; status: string; value?: unknown }>;
       const failed = checks.filter((entry) => entry.status !== 'PASS').map((entry) => entry.id);
-      const missing = REQUIRED_ACTIVATION_CHECKS.filter((id) => !checks.some((entry) => entry.id === id));
+      const missing = requiredActivationChecks(artifact.policy.maxWinScope)
+        .filter((id) => !checks.some((entry) => entry.id === id));
       const grade = ((validation.metrics ?? {}) as { grade?: string }).grade ?? 'PREVIEW';
       if (missing.length > 0 || failed.length > 0 || grade !== 'ACTIVATION') {
         throw new ConflictException({
@@ -463,6 +480,16 @@ export class MathControlService {
           profileId: artifact.profileId,
           profileHash: artifact.canonicalHash,
           validationId: validation.id,
+          // A shared activation is the platform's CUSTOM state: the pointer must
+          // stop advertising the DEFAULT tombstone it may be leaving, exactly as
+          // the create() branch above does through the column default. Without
+          // this the runtime seam keeps reading `kind === 'DEFAULT'` and returns
+          // null for a profile that is genuinely active.
+          kind: 'GENERATED',
+          // The shared lifecycle never binds a panel payout candidate, so a
+          // candidate id left on the pointer by a panel transition must not
+          // outlive it; the create() branch leaves this column null.
+          payoutCandidateId: null,
           version: current.version + 1,
           activatedBy: actorId,
           activatedAt: new Date(),
@@ -492,6 +519,142 @@ export class MathControlService {
       validationId: pointer.validationId,
       version: pointer.version,
       activatedAt: pointer.activatedAt.toISOString(),
+    };
+  }
+
+  /**
+   * Reset this game to its accepted default mathematics for NEW paid rounds.
+   *
+   * Additive and game-agnostic. The pointer move is scoped to exactly this
+   * `gameId`, bumps the monotonic revision, and appends an audit row in the same
+   * transaction, exactly as activate() does. Nothing here deletes a profile, a
+   * validation or a prior activation, and a round already in flight keeps the
+   * identity it was opened under because the runtime reads the pointer once.
+   *
+   * A game whose default is owned by its own admin panel is delegated to that
+   * panel's existing transition, so its history and runtime state stay coherent.
+   * The registry is the single source of truth for which games have mathematics
+   * integrated: an unregistered game is the established 404 contract.
+   *
+   * The state is decided by the pointer's kind and profile row, never by an RTP
+   * value, so a zero-return custom profile is CUSTOM (control on), not DEFAULT.
+   */
+  async resetToDefault(
+    actorId: string,
+    gameId: string,
+    input: { actionId?: string; expectedVersion?: number } = {},
+  ): Promise<GameMathDefaultResult> {
+    await this.assertAdmin(actorId, 'CASINO_MATH_DEFAULT');
+    // Unknown/integrated-only game: the registry throws the established
+    // GAME_MATH_NOT_INTEGRATED 404. Never a silent fallback.
+    const adapter = this.registry.adapter(gameId);
+
+    const delegate = (this.defaultResetters ?? []).find((entry) => entry.gameId === gameId);
+    if (delegate) {
+      const actionId = (input.actionId ?? '').trim();
+      return delegate.resetToDefault(actorId, {
+        actionId: actionId.length > 0 ? actionId : `math-default-${gameId}-${randomUUID()}`,
+        expectedVersion: input.expectedVersion,
+      });
+    }
+    // The registered default this game falls back to, from the game's own adapter
+    // (Classic: the frozen rtp50.v1 artefact). A game that declares none keeps the
+    // empty identity; nothing is ever borrowed from another game.
+    const registered = adapter.defaultProfile?.() ?? null;
+    return this.resetSharedDefault(actorId, gameId, input.expectedVersion, registered);
+  }
+
+  /** The shared pointer move to DEFAULT, under the same CAS discipline as activate(). */
+  private async resetSharedDefault(
+    actorId: string,
+    gameId: string,
+    expectedVersion?: number,
+    registered: { profileId: string; profileHash: string } | null = null,
+  ): Promise<GameMathDefaultResult> {
+    const pointer = await this.prisma.$transaction(async (tx) => {
+      const current = await tx.gameActiveMathProfile.findUnique({ where: { gameId } });
+      const defaultProfileId = registered?.profileId ?? '';
+      const defaultProfileHash = registered?.profileHash ?? '';
+
+      // The optimistic guard is evaluated before the idempotent early return, so a
+      // stale expectedVersion is refused even when the game is already on default.
+      if (current && expectedVersion !== undefined && current.version !== expectedVersion) {
+        throw new ConflictException({
+          code: 'ACTIVE_MATH_PROFILE_CONFLICT',
+          message: `Active mathematics moved to version ${current.version}.`,
+        });
+      }
+      if (current && current.kind === 'DEFAULT' && current.profileRowId === null) {
+        // Already default: idempotent, no version bump and no duplicate audit row.
+        return current;
+      }
+
+      if (!current) {
+        // Never activated: the game already runs its accepted default. The row is
+        // still materialised so the state is visible and the revision anchored.
+        const created = await tx.gameActiveMathProfile.create({
+          data: {
+            gameId,
+            profileRowId: null,
+            profileId: defaultProfileId,
+            profileHash: defaultProfileHash,
+            validationId: null,
+            kind: 'DEFAULT',
+            payoutCandidateId: null,
+            version: 1,
+            activatedBy: actorId,
+          },
+        });
+        await this.auditDefault(tx, actorId, gameId, { from: 'NEVER_ACTIVATED', version: created.version });
+        return created;
+      }
+
+      const updated = await tx.gameActiveMathProfile.updateMany({
+        where: { gameId, version: current.version },
+        data: {
+          profileRowId: null,
+          profileId: defaultProfileId,
+          profileHash: defaultProfileHash,
+          validationId: null,
+          kind: 'DEFAULT',
+          payoutCandidateId: null,
+          version: current.version + 1,
+          activatedBy: actorId,
+          activatedAt: new Date(),
+        },
+      });
+      if (updated.count !== 1) {
+        throw new ConflictException({
+          code: 'ACTIVE_MATH_PROFILE_CONFLICT',
+          message: 'Another activation won the race; reload and retry.',
+        });
+      }
+      const next = await tx.gameActiveMathProfile.findUniqueOrThrow({ where: { gameId } });
+      await this.auditDefault(tx, actorId, gameId, {
+        from: 'CUSTOM',
+        previousProfileId: current.profileId || null,
+        previousProfileHash: current.profileHash || null,
+        defaultProfileId: registered?.profileId ?? null,
+        version: next.version,
+      });
+      return next;
+    });
+
+    return {
+      gameId,
+      mode: 'DEFAULT' as const,
+      version: pointer.version,
+      // For a game with a registered default this is that immutable identity, so
+      // CURRENT proves which default is live rather than only that a pointer was
+      // cleared. A game with no declared default keeps the empty identity.
+      profileId: registered?.profileId ?? null,
+      profileHash: registered?.profileHash ?? null,
+      validationId: null,
+      activatedAt: pointer.activatedAt.toISOString(),
+      activatedBy: pointer.activatedBy,
+      note:
+        `The registered default mathematics${registered ? ` (${registered.profileId})` : ''} are live for ` +
+        'NEW paid rounds; a round in flight keeps the mathematics it was opened under.',
     };
   }
 
@@ -602,6 +765,29 @@ export class MathControlService {
     });
   }
 
+  /** The DEFAULT audit row commits in the same transaction as the pointer move. */
+  private auditDefault(
+    tx: Prisma.TransactionClient,
+    actorId: string,
+    gameId: string,
+    metadata: Record<string, unknown>,
+  ) {
+    return tx.auditLog.create({
+      data: {
+        actorId,
+        targetType: 'CASINO_MATH_CONTROL',
+        targetId: gameId,
+        // `AuditAction` is a database enum, and a distinct
+        // `CASINO_MATH_PROFILE_DEFAULT` value would need a migration. The
+        // established lifecycle action is reused with the transition spelled out
+        // in the metadata, exactly like the payout panel's own DEFAULT rows.
+        action: 'CASINO_MATH_PAYOUT_LIFECYCLE',
+        result: 'OK',
+        metadata: { action: 'DEFAULT', ...metadata } as Prisma.InputJsonValue,
+      },
+    });
+  }
+
   /** The activation audit row commits in the same transaction as the pointer. */
   private auditIn(
     tx: Prisma.TransactionClient,
@@ -642,6 +828,25 @@ export const REQUIRED_ACTIVATION_CHECKS = [
   'BANKROLL_ACCOUNTING_EXACT',
   'EVIDENCE_GRADE_ACTIVATION',
 ] as const;
+
+/**
+ * The activation evidence a profile must carry, by ceiling scope.
+ *
+ * `RTP_WITHIN_BOUND_TIMES_HIT_RATE` is the whole-round identity
+ * `E[X] <= M * P(X > 0)`: it only holds when one paid round resolves to at most
+ * one bounded outcome. A `RESOLVED_SPIN` profile deliberately bounds each paid
+ * and free resolution while a feature chain may aggregate many of them, so the
+ * identity is not asserted there - the game adapters state the same rule. Requiring
+ * it for `RESOLVED_SPIN` made activation impossible for exactly the grammar that
+ * proves a per-resolution ceiling, while the per-resolution ceiling itself is
+ * still proved by `MAX_WIN_PROVEN_WITHIN_CEILING`. Whole-round scopes keep the
+ * complete list, so their gate is unchanged.
+ */
+export function requiredActivationChecks(scope: string): readonly string[] {
+  return scope === 'RESOLVED_SPIN'
+    ? REQUIRED_ACTIVATION_CHECKS.filter((id) => id !== 'RTP_WITHIN_BOUND_TIMES_HIT_RATE')
+    : [...REQUIRED_ACTIVATION_CHECKS];
+}
 
 export function clampInt(value: number, min: number, max: number): number {
   if (!Number.isFinite(value)) return min;

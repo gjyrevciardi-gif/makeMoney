@@ -1,0 +1,217 @@
+{
+  "denomination": "simulation-only centi-points (1 unit = 0.01 PTS); the live game ladder stays whole points",
+  "config": {
+    "startUnits": 10000,
+    "stakeUnits": 180,
+    "horizonPaidSpins": 300,
+    "aliveCheckpoints": [
+      100,
+      250
+    ],
+    "balanceCheckpoints": [
+      100,
+      250
+    ],
+    "reachTargets": [
+      12500
+    ],
+    "fallTargets": [
+      8000
+    ],
+    "ruinCheckpoints": [
+      100,
+      250
+    ]
+  },
+  "sampleSize": 12,
+  "seeds": {
+    "prefix": "bankroll:069f28094363eebee4e52d25d8c2a8c6c5c377c6e7694590d8ff08045eeb189f:1",
+    "count": 12,
+    "first": "bankroll:069f28094363eebee4e52d25d8c2a8c6c5c377c6e7694590d8ff08045eeb189f:1:0",
+    "last": "bankroll:069f28094363eebee4e52d25d8c2a8c6c5c377c6e7694590d8ff08045eeb189f:1:11"
+  },
+  "horizonPaidSpins": 300,
+  "censoredCount": 1,
+  "ruinedCount": 11,
+  "spinCounts": {
+    "paidSpins": 1341,
+    "freeSpins": 70,
+    "totalResolvedSpins": 1411
+  },
+  "totals": {
+    "openingUnits": 120000,
+    "openingUnitsExact": "120000",
+    "paidWagerUnits": 241380,
+    "paidWagerUnitsExact": "241380",
+    "baseReturnUnits": 92080,
+    "baseReturnUnitsExact": "92080",
+    "featureReturnUnits": 37200,
+    "featureReturnUnitsExact": "37200",
+    "returnedUnits": 129280,
+    "returnedUnitsExact": "129280",
+    "closingUnits": 7900,
+    "closingUnitsExact": "7900",
+    "ledgerDeltaUnits": 0,
+    "ledgerDeltaUnitsExact": "0",
+    "ledgerIdentityHolds": true,
+    "paidRounds": 1341,
+    "turnoverPts": 2413.8,
+    "turnoverPtsExact": "2413.8",
+    "returnedPts": 1292.8,
+    "returnedPtsExact": "1292.8"
+  },
+  "observedLengthPaidSpins": {
+    "mean": 111.75,
+    "median": 92,
+    "p10": 60.3,
+    "p25": 65.25,
+    "p75": 123,
+    "p90": 168.9,
+    "p95": 230.15
+  },
+  "turnoverPaidSpins": {
+    "mean": 111.75,
+    "median": 92,
+    "p10": 60.3,
+    "p25": 65.25,
+    "p75": 123,
+    "p90": 168.9,
+    "p95": 230.15
+  },
+  "turnoverPts": {
+    "sampleSize": 12,
+    "mean": 201.15,
+    "meanExact": "201.15",
+    "median": 165.6,
+    "medianExact": "165.6",
+    "p10": 108.54,
+    "p10Exact": "108.54",
+    "p25": 117.45,
+    "p25Exact": "117.45",
+    "p75": 221.4,
+    "p75Exact": "221.4",
+    "p90": 304.02,
+    "p90Exact": "304.02",
+    "p95": 414.27,
+    "p95Exact": "414.27"
+  },
+  "balanceAt": {
+    "100": {
+      "mean": 4318.333333333333,
+      "median": 980,
+      "p10": 100,
+      "p25": 115,
+      "p75": 2990,
+      "p90": 5630,
+      "p95": 18638
+    },
+    "250": {
+      "mean": 1391.6666666666667,
+      "median": 130,
+      "p10": 62,
+      "p25": 95,
+      "p75": 140,
+      "p90": 158,
+      "p95": 7054
+    }
+  },
+  "balanceAtExact": {
+    "100": {
+      "sampleSize": 12,
+      "mean": 4318.333333333333,
+      "meanExact": "4318.3333333333",
+      "median": 980,
+      "medianExact": "980",
+      "p10": 100,
+      "p10Exact": "100",
+      "p25": 115,
+      "p25Exact": "115",
+      "p75": 2990,
+      "p75Exact": "2990",
+      "p90": 5630,
+      "p90Exact": "5630",
+      "p95": 18638,
+      "p95Exact": "18638"
+    },
+    "250": {
+      "sampleSize": 12,
+      "mean": 1391.6666666666667,
+      "meanExact": "1391.6666666667",
+      "median": 130,
+      "medianExact": "130",
+      "p10": 62,
+      "p10Exact": "62",
+      "p25": 95,
+      "p25Exact": "95",
+      "p75": 140,
+      "p75Exact": "140",
+      "p90": 158,
+      "p90Exact": "158",
+      "p95": 7054,
+      "p95Exact": "7054"
+    }
+  },
+  "aliveAt": {
+    "100": 0.5,
+    "250": 0.08333333333333333
+  },
+  "reachProbability": {
+    "12500": 0.3333333333333333
+  },
+  "fallBelowProbability": {
+    "8000": 1
+  },
+  "ruinBy": {
+    "100": 0.5,
+    "250": 0.9166666666666666
+  },
+  "ruinByObservedSessions": {
+    "100": 12,
+    "250": 12
+  },
+  "observedBustQuantiles": {
+    "mean": 94.63636363636364,
+    "median": 72,
+    "p10": 60,
+    "p25": 64.5,
+    "p75": 117.5,
+    "p90": 132,
+    "p95": 152.5
+  },
+  "maxDrawdown": {
+    "mean": 13561.666666666666,
+    "median": 10230,
+    "p10": 9862,
+    "p25": 9895,
+    "p75": 13905,
+    "p90": 14304,
+    "p95": 25266
+  },
+  "maxWin": {
+    "units": 21140,
+    "unitsExact": "21140",
+    "pts": 211.4,
+    "ptsExact": "211.4",
+    "sessionFrequency": 0.08333333333333333
+  },
+  "featureRoundRate": 0.005219985085756898,
+  "retriggerRoundRate": 0,
+  "featureReturnShare": 0.2877475247524752,
+  "measuredRtpExact": "53.558704",
+  "measuredRtpPercent": 53.558704117988235,
+  "houseEdgeExact": "46.441296",
+  "houseEdgePercent": 46.441295882011765,
+  "notes": [
+    "Measured return is total return over total PAID wager, never an ending balance over a starting balance.",
+    "Ledger identity: opening 120000 + returned 129280 - paid wager 241380 = closing 7900 (exact: true).",
+    "Spin counts from the authoritative outcome source: 1341 paid spins + 70 free spins = 1411 resolved spins (free spins never debit a wager; retriggers are resolved spins).",
+    "Money-shaped figures are exact BigInt accumulations; a `*Exact` string is authoritative and a numeric mirror is null when the value is not exactly representable.",
+    "Rounded decimal strings (`*Exact` on a ratio, e.g. RTP/quantiles) are fixed-precision presentations; exact monetary totals are integer strings.",
+    "A session that reached the horizon is censored, not ruined; its bust time is unknown inside the horizon.",
+    "A ruin checkpoint beyond the horizon is unobserved (null) with its observable-session count, never a point probability of zero.",
+    "Length is the restricted observed duration (paid spins completed), quantiles by linear interpolation between closest ranks (R-7).",
+    "Balance checkpoints hold the terminal dust balance of a busted session so later checkpoints stay representative.",
+    "Number-valued statistics are presentation mirrors of exact values, not accounting inputs.",
+    "reachTargets (simulation units): {\"12500 units\":\"125.00 PTS\"}"
+  ]
+}

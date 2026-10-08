@@ -12,6 +12,46 @@
 export const GAME_MATH_ADAPTERS = 'GAME_MATH_ADAPTERS';
 
 /**
+ * Injection token for the per-game DEFAULT reset delegates.
+ *
+ * Most games let the shared lifecycle move their own pointer to the explicit
+ * `DEFAULT` state. A game whose default state is owned by a dedicated admin
+ * panel (Lucky Lady's payout panel writes history and clears a runtime
+ * distribution in the same transaction) registers one delegate here, so the
+ * generic route reuses that exact behaviour instead of duplicating it.
+ */
+export const GAME_MATH_DEFAULT_RESETTERS = 'GAME_MATH_DEFAULT_RESETTERS';
+
+/**
+ * What a DEFAULT transition produced, reported uniformly whichever path ran.
+ *
+ * `mode` is `DEFAULT` for this operation by contract; a custom (including a
+ * zero-return) profile is `CUSTOM`. The state is keyed on the pointer's kind and
+ * profile row, never on an RTP value, so a zero-return custom profile is not
+ * mistaken for "control off".
+ */
+export type GameMathDefaultResult = {
+  gameId: string;
+  mode: 'DEFAULT';
+  version: number;
+  profileId: string | null;
+  profileHash: string | null;
+  validationId: string | null;
+  activatedAt: string | null;
+  activatedBy: string | null;
+  note: string;
+};
+
+/** One game's DEFAULT-reset delegate, registered under its exact gameId. */
+export interface GameMathDefaultResetter {
+  readonly gameId: string;
+  resetToDefault(
+    actorId: string,
+    input: { actionId: string; expectedVersion?: number },
+  ): Promise<GameMathDefaultResult>;
+}
+
+/**
  * Payout classes a profile can be described in.
  *
  * `MAX` is the class above the policy's big-win ceiling and `BIG` is the
@@ -584,6 +624,16 @@ export type PolicyValidationResult =
  */
 export interface GameMathAdapter {
   readonly gameId: string;
+  /**
+   * The game's registered, immutable default mathematics, when it declares one.
+   *
+   * The shared DEFAULT reset records this identity on the pointer so CURRENT can
+   * prove which default is live instead of only clearing a custom pointer. It is
+   * always the game's own declared default, never inferred from a hash and never
+   * borrowed from another game; a game that declares none keeps the empty
+   * identity. A panel-owned default (Lucky Lady) keeps its own contract instead.
+   */
+  defaultProfile?(): { profileId: string; profileHash: string } | null;
   /** Cheap identity of the mathematics this process executes, without a sweep. */
   identity(): { engineSha256: string; rulesSha256: string };
   /**

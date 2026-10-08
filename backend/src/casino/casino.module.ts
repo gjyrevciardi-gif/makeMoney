@@ -1,3 +1,6 @@
+import { ClassicController } from './games/book-of-ra-classic/classic.controller';
+import { ClassicAdapter, CLASSIC_OPTIONS } from './games/book-of-ra-classic/classic.adapter';
+import { ClassicMathAdapter } from './games/book-of-ra-classic/classic.math-adapter';
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { AccessGuard } from '../auth/access.guard';
@@ -40,7 +43,7 @@ import { MathControlJobs } from './platform/math-control/math-control.jobs';
 import { LuckyLadyPayoutController } from './games/lucky-lady/payout/lucky-lady-payout.controller';
 import { LuckyLadyPayoutService } from './games/lucky-lady/payout/lucky-lady-payout.service';
 import { LuckyLadyMathAdapter } from './games/lucky-lady/lucky-lady.math-adapter';
-import { GAME_MATH_ADAPTERS } from './platform/math-control/math-control.types';
+import { GAME_MATH_ADAPTERS, GAME_MATH_DEFAULT_RESETTERS } from './platform/math-control/math-control.types';
 import {
   GAME_AVAILABILITY,
   GAME_PLATFORM,
@@ -55,6 +58,7 @@ import {
     CasinoConfigController,
     PlatformSettingsController,
     LuckyLadyController,
+    ClassicController,
     MathControlController,
     LuckyLadyPayoutController,
   ],
@@ -99,14 +103,27 @@ import {
     },
     // ---- Adapter #1: Lucky Lady's Charm Deluxe ----
     LuckyLadyAdapter,
+    ClassicAdapter,
+    { provide: CLASSIC_OPTIONS, useValue: {} },
     // Production defaults: OS CSPRNG draws, no test RNG or failure hooks.
     { provide: LUCKY_LADY_OPTIONS, useValue: {} },
     // ---- Game Math Control (shared lifecycle, per-game mathematics) ----
     LuckyLadyMathAdapter,
+    ClassicMathAdapter,
     {
       provide: GAME_MATH_ADAPTERS,
-      useFactory: (luckyLady: LuckyLadyMathAdapter) => [luckyLady],
-      inject: [LuckyLadyMathAdapter],
+      useFactory: (luckyLady: LuckyLadyMathAdapter, classic: ClassicMathAdapter) => [luckyLady, classic],
+      inject: [LuckyLadyMathAdapter, ClassicMathAdapter],
+    },
+    // Games whose default state is owned by their own admin panel register one
+    // DEFAULT-reset delegate. Lucky Lady's payout panel keeps that ownership:
+    // the generic route reuses its transaction, history row and distribution
+    // clearing instead of duplicating them, and the legacy panel route is
+    // unchanged.
+    {
+      provide: GAME_MATH_DEFAULT_RESETTERS,
+      useFactory: (payout: LuckyLadyPayoutService) => [payout],
+      inject: [LuckyLadyPayoutService],
     },
     GameMathRegistry,
     MathControlJobs,

@@ -5,7 +5,7 @@ import { AccessGuard, AuthenticatedRequest } from '../../../auth/access.guard';
 import { Capabilities } from '../../../auth/capabilities.decorator';
 import { RolesGuard } from '../../../auth/roles.guard';
 import { RATE_LIMITS, RateLimitService } from '../../../common/rate-limit.service';
-import { ActivateMathDto, MathPolicyDto, ValidationOptionsDto } from './math-control.dto';
+import { ActivateMathDto, MathPolicyDto, ResetMathDto, ValidationOptionsDto } from './math-control.dto';
 import { MathControlService } from './math-control.service';
 import { MathControlJobs } from './math-control.jobs';
 
@@ -123,6 +123,27 @@ export class MathControlController {
   ) {
     await this.throttle(request.actor.id);
     return this.math.activate(request.actor.id, params.gameId, params.profileId, body.expectedVersion);
+  }
+
+  /**
+   * Reset this game to its accepted default mathematics for NEW paid rounds.
+   *
+   * Additive and game-agnostic. It moves this game's own pointer to the explicit
+   * DEFAULT state; a game whose default is owned by its own admin panel is
+   * delegated to that panel's existing transition so its history stays coherent.
+   * An unregistered game is the established GAME_MATH_NOT_INTEGRATED 404.
+   */
+  @Post(':gameId/default')
+  async restoreDefault(
+    @Req() request: AuthenticatedRequest,
+    @Param() params: GameParams,
+    @Body() body: ResetMathDto,
+  ) {
+    await this.throttle(request.actor.id);
+    return this.math.resetToDefault(request.actor.id, params.gameId, {
+      actionId: body.actionId,
+      expectedVersion: body.expectedVersion,
+    });
   }
 }
 

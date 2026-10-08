@@ -1,0 +1,317 @@
+{
+ "ranAt": "2026-10-07T22:49:29.801Z",
+ "database": [
+  {
+   "db": "boc_classic_test",
+   "host": "172.31.0.3/32",
+   "port": 5432
+  }
+ ],
+ "fixture": {
+  "userId": "0d3b0d8d-7872-491f-a04d-481299bc908d",
+  "sessionId": "8600d65c-3ff3-48e6-ac36-c2c78bb83635",
+  "funded": "1000"
+ },
+ "walletBefore": "1000",
+ "requestId": "diag-e08b4441-0084510e-f",
+ "requestKey": "0d3b0d8d-7872-491f-a04d-481299bc908d:diag-e08b4441-0084510e-f",
+ "outcomes": [
+  {
+   "index": 0,
+   "status": "rejected",
+   "error": {
+    "className": "PrismaClientKnownRequestError",
+    "code": "P2002",
+    "message": "\nInvalid `tx.gamePreparedOutcome.create()` invocation in\nC:\\Users\\Admin\\orca\\workspaces\\toto\\book-of-ra-current\\backend\\dist\\src\\casino\\platform\\game-journal.service.js:167:38\n\n  164     });\n  165 }\n  166 async prepareOutcome(tx, outcome) {\n→ 167     await tx.gamePreparedOutcome.create(\nUnique constraint failed on the fields: (`requestKey`)",
+    "meta": {
+     "modelName": "GamePreparedOutcome",
+     "target": [
+      "requestKey"
+     ]
+    },
+    "clientVersion": "6.19.3",
+    "stack": [
+     "PrismaClientKnownRequestError: ",
+     "Invalid `tx.gamePreparedOutcome.create()` invocation in",
+     "C:\\Users\\Admin\\orca\\workspaces\\toto\\book-of-ra-current\\backend\\dist\\src\\casino\\platform\\game-journal.service.js:167:38",
+     "",
+     "  164     });",
+     "  165 }",
+     "  166 async prepareOutcome(tx, outcome) {",
+     "→ 167     await tx.gamePreparedOutcome.create(",
+     "Unique constraint failed on the fields: (`requestKey`)",
+     "    at ei.handleRequestError (C:\\Users\\Admin\\orca\\workspaces\\toto\\book-of-ra-current\\node_modules\\@prisma\\client\\runtime\\library.js:121:7268)",
+     "    at ei.handleAndLogRequestError (C:\\Users\\Admin\\orca\\workspaces\\toto\\book-of-ra-current\\node_modules\\@prisma\\client\\runtime\\library.js:121:6593)",
+     "    at ei.request (C:\\Users\\Admin\\orca\\workspaces\\toto\\book-of-ra-current\\node_modules\\@prisma\\client\\runtime\\library.js:121:6300)",
+     "    at async a (C:\\Users\\Admin\\orca\\workspaces\\toto\\book-of-ra-current\\node_modules\\@prisma\\client\\runtime\\library.js:130:9551)",
+     "    at async GameJournalService.prepareOutcome (C:\\Users\\Admin\\orca\\workspaces\\toto\\book-of-ra-current\\backend\\dist\\src\\casino\\platform\\game-journal.service.js:167:9)"
+    ]
+   }
+  },
+  {
+   "index": 1,
+   "status": "fulfilled",
+   "response": {
+    "recovery": {
+     "bet": {
+      "slotBet": 1,
+      "slotLines": 9
+     },
+     "free": {
+      "total": 0,
+      "current": 0,
+      "remaining": 0,
+      "multiplier": 1
+     },
+     "phase": "PENDING_WIN",
+     "gamble": {
+      "cards": [],
+      "attempts": 0
+     },
+     "result": {
+      "responseType": "bet",
+      "responseEvent": "spin",
+      "serverResponse": {
+       "expPay": 0,
+       "Balance": 991,
+       "Jackpots": {},
+       "expLines": [],
+       "expReels": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "totalWin": 5,
+       "winLines": [
+        {
+         "Win": 5,
+         "Line": 6,
+         "Count": 2,
+         "stepWin": 5,
+         "winReel1": [
+          1,
+          "P_2"
+         ],
+         "winReel2": [
+          0,
+          "SCAT"
+         ],
+         "winReel3": [
+          "none",
+          "none"
+         ],
+         "winReel4": [
+          "none",
+          "none"
+         ],
+         "winReel5": [
+          "none",
+          "none"
+         ]
+        }
+       ],
+       "bonusInfo": {
+        "winReel2": [
+         0,
+         "SCAT"
+        ],
+        "scattersWin": 0,
+        "scattersType": "none"
+       },
+       "afterBalance": 991,
+       "reelsSymbols": {
+        "rp": [
+         21,
+         53,
+         23,
+         4,
+         71
+        ],
+        "reel1": [
+         "K",
+         "P_2",
+         "A"
+        ],
+        "reel2": [
+         "SCAT",
+         "P_4",
+         "P_3"
+        ],
+        "reel3": [
+         "Q",
+         "10",
+         "P_1"
+        ],
+        "reel4": [
+         "P_3",
+         "P_2",
+         "A"
+        ],
+        "reel5": [
+         "P_4",
+         "A",
+         "Q"
+        ]
+       },
+       "totalFreeGames": 0,
+       "currentFreeGames": 0
+      }
+     },
+     "balance": 991,
+     "profile": {
+      "id": "book-of-ra-classic.rtp50.v1",
+      "hash": "a2f6fef07d3afa792bafda0af824fecb0042d8295e83dc9672b437cc18480d48",
+      "version": 1
+     },
+     "receipt": {
+      "acked": false,
+      "event": "bet",
+      "delivered": false
+     },
+     "roundId": "3f57a247-719e-4b5c-a98f-a5e6c62cddca",
+     "version": 1,
+     "actionId": "diag-e08b4441-0084510e-f",
+     "lastGamble": null,
+     "pendingWin": 5,
+     "settlement": {
+      "collected": false
+     }
+    },
+    "responseType": "bet",
+    "responseEvent": "spin",
+    "serverResponse": {
+     "expPay": 0,
+     "Balance": 991,
+     "Jackpots": {},
+     "expLines": [],
+     "expReels": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+     ],
+     "totalWin": 5,
+     "winLines": [
+      {
+       "Win": 5,
+       "Line": 6,
+       "Count": 2,
+       "stepWin": 5,
+       "winReel1": [
+        1,
+        "P_2"
+       ],
+       "winReel2": [
+        0,
+        "SCAT"
+       ],
+       "winReel3": [
+        "none",
+        "none"
+       ],
+       "winReel4": [
+        "none",
+        "none"
+       ],
+       "winReel5": [
+        "none",
+        "none"
+       ]
+      }
+     ],
+     "bonusInfo": {
+      "winReel2": [
+       0,
+       "SCAT"
+      ],
+      "scattersWin": 0,
+      "scattersType": "none"
+     },
+     "afterBalance": 991,
+     "reelsSymbols": {
+      "rp": [
+       21,
+       53,
+       23,
+       4,
+       71
+      ],
+      "reel1": [
+       "K",
+       "P_2",
+       "A"
+      ],
+      "reel2": [
+       "SCAT",
+       "P_4",
+       "P_3"
+      ],
+      "reel3": [
+       "Q",
+       "10",
+       "P_1"
+      ],
+      "reel4": [
+       "P_3",
+       "P_2",
+       "A"
+      ],
+      "reel5": [
+       "P_4",
+       "A",
+       "Q"
+      ]
+     },
+     "totalFreeGames": 0,
+     "currentFreeGames": 0
+    }
+   }
+  }
+ ],
+ "afterFailure": {
+  "wallet": "991",
+  "ledger": [
+   {
+    "type": "ADMIN_GRANT",
+    "amount": "1000",
+    "idempotencyKey": "diag-grant-e08b4441",
+    "actionId": null,
+    "gameSessionId": null
+   },
+   {
+    "type": "CASINO_BET",
+    "amount": "-9",
+    "idempotencyKey": "casino:book-of-ra-classic:bet:3f57a247-719e-4b5c-a98f-a5e6c62cddca",
+    "actionId": "diag-e08b4441-0084510e-f",
+    "gameSessionId": "8600d65c-3ff3-48e6-ac36-c2c78bb83635"
+   }
+  ],
+  "rounds": [
+   {
+    "id": "3f57a247-719e-4b5c-a98f-a5e6c62cddca",
+    "status": "OPEN",
+    "stake": "9",
+    "payout": "0",
+    "createdAt": "2026-10-07T22:49:30.242Z"
+   }
+  ],
+  "actions": [
+   {
+    "id": "9088abc9-2bbf-4527-99ec-9be3efa86771",
+    "action": "bet",
+    "seq": 189,
+    "deliveredAt": "2026-10-07T22:49:30.279Z",
+    "ackedAt": null,
+    "canonical": "{\"event\":\"bet\",\"lines\":9,\"player\":\"0d3b0d8d-7872-491f-a04d-481299bc908d\",\"stake\":1}"
+   }
+  ],
+  "actionsTotal": 1,
+  "prepared": [],
+  "preparedTotal": 0
+ }
+}

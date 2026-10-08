@@ -1,0 +1,270 @@
+{
+ "generatedAt": "2026-10-07T16:55:42.415Z",
+ "mode": "loopback-stub-platform",
+ "checks": 44,
+ "failures": 0,
+ "results": [
+  {
+   "name": "client.directory-matches-reference-manifest",
+   "ok": true,
+   "detail": "files=282 expected=282"
+  },
+  {
+   "name": "gateway.up",
+   "ok": true,
+   "detail": "healthz reachable"
+  },
+  {
+   "name": "gateway.startup-log-names-the-game",
+   "ok": true,
+   "detail": "{\"listening\":\"http://127.0.0.1:65387\",\"platform\":\"http://localhost:65386\",\"game\":\"book-of-ra-classic\",\"gameRoute\":\"/game/BookOfRaCL/server\",\"clientPrefix\":\"/games/BookOfRaCL/\",\"clientDir\":\"C:\\\\Users\\\\"
+  },
+  {
+   "name": "health.reports-game-and-client",
+   "ok": true,
+   "detail": "{\"ok\":true,\"game\":\"book-of-ra-classic\",\"client\":true}"
+  },
+  {
+   "name": "headers.restrictive-csp",
+   "ok": true,
+   "detail": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; media-src 'self' data: blob:; connect-src 'self'; object-src 'none'; frame-src 'none'; base-uri 'self'"
+  },
+  {
+   "name": "headers.nosniff-and-no-store",
+   "ok": true,
+   "detail": "nosniff / no-store"
+  },
+  {
+   "name": "entry.serves-the-native-bundle-in-blade-order",
+   "ok": true,
+   "detail": "script order matches resources/views/.../BookOfRaCL.blade.php"
+  },
+  {
+   "name": "entry.references-local-fonts-not-webfont-js",
+   "ok": true,
+   "detail": "local fonts.css + first-party readiness shim"
+  },
+  {
+   "name": "entry.loads-the-first-party-bridge",
+   "ok": true,
+   "detail": "bridge and shim present"
+  },
+  {
+   "name": "entry.has-no-absolute-external-reference",
+   "ok": true,
+   "detail": "no cross-origin asset references"
+  },
+  {
+   "name": "shim.served-as-javascript",
+   "ok": true,
+   "detail": "200"
+  },
+  {
+   "name": "bridge.served-and-targets-the-classic-route",
+   "ok": true,
+   "detail": "200"
+  },
+  {
+   "name": "bridge.keeps-the-ll-recovery-events-and-fields",
+   "ok": true,
+   "detail": "collect/gamble/ack + classic guard"
+  },
+  {
+   "name": "static.serves-exact-bytes-from-the-client-dir",
+   "ok": true,
+   "detail": "status=200 bytes=23134"
+  },
+  {
+   "name": "static.serves-the-native-view-config",
+   "ok": true,
+   "detail": "200"
+  },
+  {
+   "name": "static.serves-audio-with-a-media-type",
+   "ok": true,
+   "detail": "audio/mpeg"
+  },
+  {
+   "name": "static.missing-file-is-404",
+   "ok": true,
+   "detail": "404"
+  },
+  {
+   "name": "static.path-traversal-refused",
+   "ok": true,
+   "detail": "404"
+  },
+  {
+   "name": "static.outside-the-client-prefix-refused",
+   "ok": true,
+   "detail": "404"
+  },
+  {
+   "name": "host.foreign-host-refused",
+   "ok": true,
+   "detail": "403"
+  },
+  {
+   "name": "origin.foreign-gameplay-origin-refused",
+   "ok": true,
+   "detail": "status=403 upstream=0"
+  },
+  {
+   "name": "gameplay.requires-the-game-cookie",
+   "ok": true,
+   "detail": "status=401"
+  },
+  {
+   "name": "launch.untrusted-origin-refused",
+   "ok": true,
+   "detail": "403"
+  },
+  {
+   "name": "launch.missing-origin-refused",
+   "ok": true,
+   "detail": "403"
+  },
+  {
+   "name": "launch.undersized-token-refused",
+   "ok": true,
+   "detail": "400"
+  },
+  {
+   "name": "launch.upstream-rejection-is-not-a-redirect",
+   "ok": true,
+   "detail": "401"
+  },
+  {
+   "name": "launch.exchange-redirects-to-a-clean-url",
+   "ok": true,
+   "detail": "status=303 location=/play"
+  },
+  {
+   "name": "launch.sets-an-httponly-same-site-game-cookie",
+   "ok": true,
+   "detail": "boc_session=<redacted>; HttpOnly; SameSite=Strict; Path=/"
+  },
+  {
+   "name": "launch.never-puts-the-token-in-the-url",
+   "ok": true,
+   "detail": "token absent from Location"
+  },
+  {
+   "name": "launch.forwards-the-token-to-the-platform-route",
+   "ok": true,
+   "detail": "stub saw the exchange"
+  },
+  {
+   "name": "gameplay.forwards-the-session-header",
+   "ok": true,
+   "detail": "status=200 header=<present>"
+  },
+  {
+   "name": "gameplay.preserves-the-query-string",
+   "ok": true,
+   "detail": "/casino/book-of-ra-classic/session/gameplay?sessionId=42"
+  },
+  {
+   "name": "gameplay.forwards-request-identity-and-round-guards",
+   "ok": true,
+   "detail": "{\"requestId\":\"check-request-0001\",\"version\":\"7\",\"round\":\"round-abc\"}"
+  },
+  {
+   "name": "gameplay.forwards-the-body-verbatim",
+   "ok": true,
+   "detail": "{\"slotEvent\":\"bet\",\"slotBet\":1,\"slotLines\":9}"
+  },
+  {
+   "name": "gameplay.returns-the-platform-envelope-and-recovery-snapshot",
+   "ok": true,
+   "detail": "[\"responseEvent\",\"serverResponse\",\"recovery\"]"
+  },
+  {
+   "name": "gameplay.does-not-forward-the-platform-cookie-name",
+   "ok": true,
+   "detail": "undefined"
+  },
+  {
+   "name": "gameplay.replaces-a-malformed-request-id-with-fresh-entropy",
+   "ok": true,
+   "detail": "200 / cd00b90e9c9b6282ac7310c0"
+  },
+  {
+   "name": "gameplay.lets-the-platform-judge-the-capability",
+   "ok": true,
+   "detail": "status=401"
+  },
+  {
+   "name": "gameplay.rejects-an-oversized-body",
+   "ok": true,
+   "detail": "socket-error"
+  },
+  {
+   "name": "routes.unknown-post-is-404",
+   "ok": true,
+   "detail": "404"
+  },
+  {
+   "name": "config.same-hostname-game-and-platform-refused",
+   "ok": true,
+   "detail": "exit=1 file:///C:/Users/Admin/orca/workspaces/toto/book-of-ra-current/games/book-of-ra-classic/gateway/server.mjs:88\r"
+  },
+  {
+   "name": "config.non-loopback-game-origin-refused",
+   "ok": true,
+   "detail": "exit=1 file:///C:/Users/Admin/orca/workspaces/toto/book-of-ra-current/games/book-of-ra-classic/gateway/server.mjs:101\r"
+  },
+  {
+   "name": "client.bytes-unchanged-after-serving",
+   "ok": true,
+   "detail": "files=282"
+  },
+  {
+   "name": "network.no-unexpected-upstream-calls",
+   "ok": true,
+   "detail": "/casino/book-of-ra-classic/launch/exchange,/casino/book-of-ra-classic/launch/exchange,/casino/book-of-ra-classic/session/gameplay?sessionId=42,/casino/book-of-ra-classic/session/gameplay,/casino/book-of-ra-classic/session/gameplay"
+  }
+ ],
+ "stubPlatformCalls": [
+  {
+   "method": "POST",
+   "url": "/casino/book-of-ra-classic/launch/exchange",
+   "sessionHeader": null,
+   "requestId": null,
+   "version": null,
+   "round": null
+  },
+  {
+   "method": "POST",
+   "url": "/casino/book-of-ra-classic/launch/exchange",
+   "sessionHeader": null,
+   "requestId": null,
+   "version": null,
+   "round": null
+  },
+  {
+   "method": "POST",
+   "url": "/casino/book-of-ra-classic/session/gameplay?sessionId=42",
+   "sessionHeader": "<present>",
+   "requestId": "check-request-0001",
+   "version": "7",
+   "round": "round-abc"
+  },
+  {
+   "method": "POST",
+   "url": "/casino/book-of-ra-classic/session/gameplay",
+   "sessionHeader": "<present>",
+   "requestId": "cd00b90e9c9b6282ac7310c0",
+   "version": null,
+   "round": null
+  },
+  {
+   "method": "POST",
+   "url": "/casino/book-of-ra-classic/session/gameplay",
+   "sessionHeader": "<present>",
+   "requestId": "504f0d3196bdd3ef143531cc",
+   "version": null,
+   "round": null
+  }
+ ]
+}

@@ -1,11 +1,11 @@
 {
-  "validationId": "92e21fd8-4f2f-4171-bac3-54be3558adae",
+  "validationId": "2acf1491-748d-43a7-bdff-005aa7e461ae",
   "profileId": "lucky-lady.rtp40.g1c8ab822fd16",
   "gameId": "lucky-lady",
   "profileHash": "9ea06a6599738b0e9fd5734d4ecc01c59b503aa6a25809b89de7f1a7cd084b90",
   "engineSha256": "0f02bb1e78eafdd99a51015c4bf83848050ca6b6e898123759d1442787d12843",
   "rulesSha256": "4c03dd436f18307d9f98dc2148ff422251faa2d5c1c928062257187883acfc57",
-  "createdAt": "2026-10-04T16:15:49.047Z",
+  "createdAt": "2026-10-08T18:04:23.835Z",
   "seeds": {
     "calibrationPrefix": "calibration (generation-time search, no sampled seeds)",
     "validationPrefix": "validation:9ea06a6599738b0e9fd5734d4ecc01c59b503aa6a25809b89de7f1a7cd084b90:1",

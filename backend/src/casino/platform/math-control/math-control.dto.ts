@@ -10,6 +10,7 @@ import {
   Max,
   MaxLength,
   Min,
+  MinLength,
   ValidateNested,
 } from 'class-validator';
 import {
@@ -72,4 +73,17 @@ export class ValidationOptionsDto {
 export class ActivateMathDto {
   /** Optimistic concurrency: the active-pointer version the operator saw. */
   @IsOptional() @IsInt() @Min(1) expectedVersion?: number;
+}
+
+/**
+ * Reset request, transport layer.
+ *
+ * `expectedVersion` is the same optimistic concurrency token activation uses.
+ * `actionId` is an optional replay-safe key: the shared pointer move ignores it,
+ * while a game panel whose default transition is indexed by action id (Lucky
+ * Lady) uses it, or a server-generated one when it is absent.
+ */
+export class ResetMathDto {
+  @IsOptional() @IsInt() @Min(1) expectedVersion?: number;
+  @IsOptional() @IsString() @MinLength(8) @MaxLength(120) actionId?: string;
 }

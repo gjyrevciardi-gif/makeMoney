@@ -8,6 +8,14 @@
         "outDir": "dist/src"
       },
       {
+        "include": "casino/games/book-of-ra-classic/math/**/*",
+        "outDir": "dist/src"
+      },
+      {
+        "include": "casino/games/book-of-ra-classic/classic.engine.ts",
+        "outDir": "dist/src"
+      },
+      {
         "include": "casino/platform/math-control/*.js",
         "outDir": "dist/src"
       },

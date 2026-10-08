@@ -19,7 +19,11 @@ import {
   type DistributionPolicy,
 } from '../../../platform/math-control/payout-distribution';
 import type { PolicyBankrollReport } from '../../../platform/math-control/payout-policy-bankroll';
-import type { MathPolicy, MathProfileArtifact } from '../../../platform/math-control/math-control.types';
+import type {
+  GameMathDefaultResult,
+  MathPolicy,
+  MathProfileArtifact,
+} from '../../../platform/math-control/math-control.types';
 import { assertGambleScopeResolved } from '../../../platform/math-control/math-control.service';
 import { luckyLadyGeneratorModel } from '../lucky-lady.policy-generator';
 import { LUCKY_LADY_V1 } from '../lucky-lady.definition';
@@ -76,6 +80,43 @@ export class LuckyLadyPayoutService {
     private readonly prisma: PrismaService,
     private readonly jobs: MathControlJobs,
   ) {}
+
+  /**
+   * The game this panel owns, used to register as the DEFAULT-reset delegate.
+   *
+   * The shared `admin/casino/math/:gameId/default` route delegates here for
+   * Lucky Lady so its append-only history and runtime distribution stay
+   * coherent; the legacy `admin/casino/math/lucky-lady/payout/default` route
+   * keeps exactly its previous semantics.
+   */
+  readonly gameId = LUCKY_LADY_PAYOUT_GAME_ID;
+
+  /**
+   * Thin generic-route alias over this panel's own `restoreDefault`.
+   *
+   * It runs the identical advisory-locked transaction, appends the identical
+   * history and audit rows and clears the identical runtime distribution; it
+   * only projects the result into the shared DEFAULT shape.
+   */
+  async resetToDefault(
+    actorId: string,
+    input: { actionId: string; expectedVersion?: number },
+  ): Promise<GameMathDefaultResult> {
+    const result = await this.restoreDefault(actorId, input);
+    // `restoreDefault` always records action DEFAULT, so the produced state is
+    // DEFAULT by construction.
+    return {
+      gameId: result.gameId,
+      mode: 'DEFAULT',
+      version: result.version,
+      profileId: result.active.profileId,
+      profileHash: result.active.profileHash,
+      validationId: result.active.validationId,
+      activatedAt: result.active.activatedAt,
+      activatedBy: result.active.activatedBy,
+      note: result.active.note,
+    };
+  }
 
   // -------------------------------------------------------------------------
   // Security boundary
