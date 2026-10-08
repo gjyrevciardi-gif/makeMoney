@@ -19,7 +19,11 @@
     "game:gates:test": "npm run test --workspace=games/gates/backend",
     "game:book:test": "npm run build:slot-skills && npm run test --workspace=@slot-skills/schema --workspace=@slot-skills/math --workspace=@slot-skills/features --workspace=@slot-skills/runtime --workspace=@slot-skills/host",
     "games:test": "npm run game:gates:test && npm run game:book:test",
-    "acceptance": "node scripts/acceptance.mjs"
+    "acceptance": "node scripts/acceptance.mjs",
+    "demo:up": "node scripts/demo.mjs up",
+    "demo:reset": "node scripts/demo.mjs reset",
+    "demo:status": "node scripts/demo.mjs status",
+    "demo:down": "node scripts/demo.mjs down",
+    "demo:preflight": "node scripts/demo-preflight.mjs"
   }
 }
-

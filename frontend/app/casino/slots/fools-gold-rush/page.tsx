@@ -12,6 +12,7 @@ import {
   formatPoints,
   newIdempotencyKey,
 } from '../../../../lib/casino';
+import { useSettledBalance } from '../../../../lib/casino-queries';
 
 type SlotSymbol = { id: string; name: string; type: 'NORMAL' | 'WILD' | 'SCATTER' };
 
@@ -72,6 +73,7 @@ const GLYPHS: Record<string, string> = {
 const REEL_STOP_MS = 260;
 
 export default function FoolsGoldRushPage() {
+  const refreshBalance = useSettledBalance();
   const [config, setConfig] = useState<SlotConfig | null>(null);
   const [balance, setBalance] = useState('0');
   const [stake, setStake] = useState('100');
@@ -184,7 +186,7 @@ export default function FoolsGoldRushPage() {
       );
       setResult(round);
       animate();
-      setBalance(await fetchBalance());
+      setBalance(await refreshBalance());
       await loadHistory();
     } catch (failure) {
       setError(describeError(failure as { code: string; message: string }));

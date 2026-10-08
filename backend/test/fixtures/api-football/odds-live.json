@@ -1,0 +1,320 @@
+{
+  "get": "odds/live",
+  "parameters": [],
+  "errors": [],
+  "results": 2,
+  "paging": {
+    "current": 1,
+    "total": 1
+  },
+  "response": [
+    {
+      "fixture": {
+        "id": 1581901,
+        "status": {
+          "long": "Second Half",
+          "elapsed": 81,
+          "seconds": "81:19"
+        }
+      },
+      "league": {
+        "id": 334,
+        "season": 2026
+      },
+      "teams": {
+        "home": {
+          "id": 3619,
+          "goals": 1
+        },
+        "away": {
+          "id": 13223,
+          "goals": 0
+        }
+      },
+      "status": {
+        "stopped": false,
+        "blocked": true,
+        "finished": false
+      },
+      "update": "2026-09-14T13:40:26+00:00",
+      "odds": [
+        {
+          "id": 16,
+          "name": "How many goals will Away Team score?",
+          "values": [
+            {
+              "value": "No goal",
+              "odd": "1.111",
+              "handicap": null,
+              "main": null,
+              "suspended": true
+            },
+            {
+              "value": "1",
+              "odd": "6.5",
+              "handicap": null,
+              "main": null,
+              "suspended": true
+            },
+            {
+              "value": "2",
+              "odd": "41",
+              "handicap": null,
+              "main": null,
+              "suspended": true
+            },
+            {
+              "value": "3 or more",
+              "odd": "101",
+              "handicap": null,
+              "main": null,
+              "suspended": true
+            }
+          ]
+        },
+        {
+          "id": 23,
+          "name": "Final Score",
+          "values": [
+            {
+              "value": "1-0",
+              "odd": "1.4",
+              "handicap": null,
+              "main": null,
+              "suspended": true
+            },
+            {
+              "value": "2-0",
+              "odd": "4.5",
+              "handicap": null,
+              "main": null,
+              "suspended": true
+            },
+            {
+              "value": "2-1",
+              "odd": "34",
+              "handicap": null,
+              "main": null,
+              "suspended": true
+            },
+            {
+              "value": "3-0",
+              "odd": "29",
+              "handicap": null,
+              "main": null,
+              "suspended": true
+            }
+          ]
+        },
+        {
+          "id": 25,
+          "name": "Match Goals",
+          "values": [
+            {
+              "value": "Over",
+              "odd": "2.75",
+              "handicap": "1.5",
+              "main": null,
+              "suspended": true
+            },
+            {
+              "value": "Under",
+              "odd": "1.4",
+              "handicap": "1.5",
+              "main": null,
+              "suspended": true
+            },
+            {
+              "value": "Over",
+              "odd": "10.5",
+              "handicap": "2.5",
+              "main": null,
+              "suspended": true
+            },
+            {
+              "value": "Under",
+              "odd": "1.025",
+              "handicap": "2.5",
+              "main": null,
+              "suspended": true
+            }
+          ]
+        },
+        {
+          "id": 27,
+          "name": "Home Team Score a Goal (2nd Half)",
+          "values": [
+            {
+              "value": "Yes",
+              "odd": "4",
+              "handicap": null,
+              "main": null,
+              "suspended": true
+            },
+            {
+              "value": "No",
+              "odd": "1.222",
+              "handicap": null,
+              "main": null,
+              "suspended": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "fixture": {
+        "id": 1629911,
+        "status": {
+          "long": "Second Half",
+          "elapsed": 73,
+          "seconds": "73:17"
+        }
+      },
+      "league": {
+        "id": 17,
+        "season": 2026
+      },
+      "teams": {
+        "home": {
+          "id": 4217,
+          "goals": 0
+        },
+        "away": {
+          "id": 8009,
+          "goals": 0
+        }
+      },
+      "status": {
+        "stopped": false,
+        "blocked": false,
+        "finished": false
+      },
+      "update": "2026-09-14T15:16:53+00:00",
+      "odds": [
+        {
+          "id": 15,
+          "name": "Last Corner",
+          "values": [
+            {
+              "value": "1",
+              "odd": "1.444",
+              "handicap": null,
+              "main": null,
+              "suspended": false
+            },
+            {
+              "value": "2",
+              "odd": "2.625",
+              "handicap": null,
+              "main": null,
+              "suspended": false
+            }
+          ]
+        },
+        {
+          "id": 16,
+          "name": "How many goals will Away Team score?",
+          "values": [
+            {
+              "value": "No goal",
+              "odd": "1.142",
+              "handicap": null,
+              "main": null,
+              "suspended": false
+            },
+            {
+              "value": "1",
+              "odd": "5.5",
+              "handicap": null,
+              "main": null,
+              "suspended": false
+            },
+            {
+              "value": "2",
+              "odd": "29",
+              "handicap": null,
+              "main": null,
+              "suspended": false
+            },
+            {
+              "value": "3 or more",
+              "odd": "26",
+              "handicap": null,
+              "main": null,
+              "suspended": false
+            }
+          ]
+        },
+        {
+          "id": 20,
+          "name": "Match Corners",
+          "values": [
+            {
+              "value": "Over",
+              "odd": "1.363",
+              "handicap": "10",
+              "main": null,
+              "suspended": false
+            },
+            {
+              "value": "Exactly",
+              "odd": "4",
+              "handicap": "10",
+              "main": null,
+              "suspended": false
+            },
+            {
+              "value": "Under",
+              "odd": "9",
+              "handicap": "10",
+              "main": null,
+              "suspended": false
+            },
+            {
+              "value": "Over",
+              "odd": "2.1",
+              "handicap": "11",
+              "main": null,
+              "suspended": false
+            }
+          ]
+        },
+        {
+          "id": 23,
+          "name": "Final Score",
+          "values": [
+            {
+              "value": "1-0",
+              "odd": "3",
+              "handicap": null,
+              "main": null,
+              "suspended": false
+            },
+            {
+              "value": "2-0",
+              "odd": "10",
+              "handicap": null,
+              "main": null,
+              "suspended": false
+            },
+            {
+              "value": "2-1",
+              "odd": "34",
+              "handicap": null,
+              "main": null,
+              "suspended": false
+            },
+            {
+              "value": "3-0",
+              "odd": "34",
+              "handicap": null,
+              "main": null,
+              "suspended": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

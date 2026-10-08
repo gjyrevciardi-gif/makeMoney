@@ -39,3 +39,6 @@ graphify-out/
 tests/visual/output/*
 !tests/visual/output/.gitkeep
 screenshots/
+
+# Buyer demo runtime state (pids, server logs)
+.demo/

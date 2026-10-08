@@ -1,0 +1,154 @@
+{
+  "get": "fixtures",
+  "parameters": {
+    "date": "2026-09-14"
+  },
+  "errors": [],
+  "results": 2,
+  "paging": {
+    "current": 1,
+    "total": 1
+  },
+  "response": [
+    {
+      "fixture": {
+        "id": 1513359,
+        "referee": null,
+        "timezone": "UTC",
+        "date": "2026-09-14T00:00:00+00:00",
+        "timestamp": 1789344000,
+        "periods": {
+          "first": 1789344000,
+          "second": 1789347600
+        },
+        "venue": {
+          "id": null,
+          "name": "Swope Soccer Village",
+          "city": null
+        },
+        "status": {
+          "long": "Match Finished",
+          "short": "FT",
+          "elapsed": 90,
+          "extra": 2
+        }
+      },
+      "league": {
+        "id": 909,
+        "name": "MLS Next Pro",
+        "country": "USA",
+        "logo": "https://media.api-sports.io/football/leagues/909.png",
+        "flag": "https://media.api-sports.io/flags/us.svg",
+        "season": 2026,
+        "round": "Group Stage",
+        "standings": true
+      },
+      "teams": {
+        "home": {
+          "id": 4019,
+          "name": "Sporting KC II",
+          "logo": "https://media.api-sports.io/football/teams/4019.png",
+          "winner": false
+        },
+        "away": {
+          "id": 21141,
+          "name": "Los Angeles FC II",
+          "logo": "https://media.api-sports.io/football/teams/21141.png",
+          "winner": true
+        }
+      },
+      "goals": {
+        "home": 1,
+        "away": 5
+      },
+      "score": {
+        "halftime": {
+          "home": 0,
+          "away": 3
+        },
+        "fulltime": {
+          "home": 1,
+          "away": 5
+        },
+        "extratime": {
+          "home": null,
+          "away": null
+        },
+        "penalty": {
+          "home": null,
+          "away": null
+        }
+      }
+    },
+    {
+      "fixture": {
+        "id": 1551682,
+        "referee": null,
+        "timezone": "UTC",
+        "date": "2026-09-14T00:00:00+00:00",
+        "timestamp": 1789344000,
+        "periods": {
+          "first": 1789344000,
+          "second": 1789347600
+        },
+        "venue": {
+          "id": null,
+          "name": null,
+          "city": "Cartago"
+        },
+        "status": {
+          "long": "Match Finished",
+          "short": "FT",
+          "elapsed": 90,
+          "extra": 5
+        }
+      },
+      "league": {
+        "id": 162,
+        "name": "Primera División",
+        "country": "Costa-Rica",
+        "logo": "https://media.api-sports.io/football/leagues/162.png",
+        "flag": "https://media.api-sports.io/flags/cr.svg",
+        "season": 2026,
+        "round": "Apertura - 8",
+        "standings": true
+      },
+      "teams": {
+        "home": {
+          "id": 820,
+          "name": "CS Cartagines",
+          "logo": "https://media.api-sports.io/football/teams/820.png",
+          "winner": true
+        },
+        "away": {
+          "id": 822,
+          "name": "LD Alajuelense",
+          "logo": "https://media.api-sports.io/football/teams/822.png",
+          "winner": false
+        }
+      },
+      "goals": {
+        "home": 3,
+        "away": 1
+      },
+      "score": {
+        "halftime": {
+          "home": 2,
+          "away": 0
+        },
+        "fulltime": {
+          "home": 3,
+          "away": 1
+        },
+        "extratime": {
+          "home": null,
+          "away": null
+        },
+        "penalty": {
+          "home": null,
+          "away": null
+        }
+      }
+    }
+  ]
+}

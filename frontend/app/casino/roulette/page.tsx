@@ -12,6 +12,7 @@ import {
   formatPoints,
   newIdempotencyKey,
 } from '../../../lib/casino';
+import { useSettledBalance } from '../../../lib/casino-queries';
 
 type RouletteConfig = {
   rtpPercent: string;
@@ -56,6 +57,7 @@ const OUTSIDE_BETS: { type: string; label: string }[] = [
 ];
 
 export default function RoulettePage() {
+  const refreshBalance = useSettledBalance();
   const [config, setConfig] = useState<RouletteConfig | null>(null);
   const [balance, setBalance] = useState('0');
   const [chip, setChip] = useState('50');
@@ -134,7 +136,7 @@ export default function RoulettePage() {
       setResult(round);
       setHistory((previous) => [round, ...previous].slice(0, 12));
       setBets([]);
-      setBalance(await fetchBalance());
+      setBalance(await refreshBalance());
     } catch (failure) {
       setError(describeError(failure as { code: string; message: string }));
     } finally {

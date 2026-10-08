@@ -1,0 +1,13 @@
+{
+  "get": "odds",
+  "parameters": {
+    "date": "2026-09-14"
+  },
+  "errors": [],
+  "results": 10,
+  "paging": {
+    "current": 1,
+    "total": 14
+  },
+  "response": []
+}

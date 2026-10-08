@@ -78,6 +78,91 @@ export class SportsOperationsService {
    * OPEN bets whose event started long enough ago that a final result was
    * expected. Purely diagnostic: no domain, wallet, or ledger state is touched.
    */
+  /**
+   * The dashboard's headline counters.
+   *
+   * Every figure is an aggregate computed by PostgreSQL: no bet, attempt or
+   * conflict row is ever loaded into this process, so the endpoint stays cheap
+   * as those tables grow. It also reads nothing but our own tables — the odds
+   * provider is never called and no quota is spent — so the overview keeps
+   * answering while the provider is unavailable, which is exactly when an
+   * administrator is most likely to be looking at it.
+   *
+   * Each count uses the same predicate as the list rendered beneath it, so a
+   * card can never disagree with the table it sits above.
+   */
+  async overview(actorId: string) {
+    await this.assertAdmin(actorId, 'SPORTS_OVERVIEW');
+    const { staleBetAfterMinutes } = sportsOperationsConfig();
+    const staleThreshold = new Date(Date.now() - staleBetAfterMinutes * 60_000);
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    const [openBets, staleOpenBets, settledByStatus, settlementFailuresLast24h, resultConflicts, openEvents] =
+      await Promise.all([
+        this.prisma.bet.count({ where: { status: 'OPEN' } }),
+        // Counted over the relation rather than over legs: a bet with three
+        // stale legs is one stale bet, which is what `staleBets` below lists.
+        this.prisma.bet.count({
+          where: {
+            status: 'OPEN',
+            legs: { some: { status: 'OPEN', eventStartTime: { lte: staleThreshold } } },
+          },
+        }),
+        // One grouped query answers settled/won/lost/void rather than four counts.
+        this.prisma.bet.groupBy({
+          by: ['status'],
+          where: { status: { in: ['WON', 'LOST', 'VOID'] }, settledAt: { gte: since } },
+          _count: { _all: true },
+        }),
+        this.prisma.sportsSettlementAttempt.count({
+          where: {
+            status: { in: ['FAILED', 'RATE_LIMITED', 'CONFLICT', 'UNSUPPORTED'] },
+            resolvedAt: null,
+            createdAt: { gte: since },
+          },
+        }),
+        // The card reads "require investigation", so an acknowledged conflict is
+        // no longer counted even though the table below still lists it.
+        this.prisma.sportsResultConflict.count({ where: { acknowledgedAt: null } }),
+        // Distinct events carrying an open leg. Bounded by fixtures actually bet
+        // on, not by the size of the leg table.
+        this.prisma.betLeg.groupBy({
+          by: ['provider', 'providerEventId'],
+          where: { status: 'OPEN', bet: { status: 'OPEN' } },
+        }),
+      ]);
+
+    // An open leg whose event already has a terminal result is waiting on
+    // settlement, not on the provider, so it is not "awaiting result".
+    const openEventKeys = openEvents.map((row) => ({
+      provider: row.provider,
+      providerEventId: row.providerEventId,
+    }));
+    const eventsWithResult = openEventKeys.length
+      ? await this.prisma.sportsEventResult.count({
+        where: { status: { in: TERMINAL_RESULTS }, OR: openEventKeys },
+      })
+      : 0;
+
+    const settledCount = (status: 'WON' | 'LOST' | 'VOID') =>
+      settledByStatus.find((row) => row.status === status)?._count._all ?? 0;
+    const winsLast24h = settledCount('WON');
+    const lossesLast24h = settledCount('LOST');
+    const voidsLast24h = settledCount('VOID');
+
+    return {
+      openBets,
+      staleOpenBets,
+      settledLast24h: winsLast24h + lossesLast24h + voidsLast24h,
+      winsLast24h,
+      lossesLast24h,
+      voidsLast24h,
+      settlementFailuresLast24h,
+      resultConflicts,
+      eventsAwaitingResult: Math.max(openEventKeys.length - eventsWithResult, 0),
+    };
+  }
+
   async staleBets(actorId: string, limit: number) {
     await this.assertAdmin(actorId, 'STALE_BETS');
     const { staleBetAfterMinutes } = sportsOperationsConfig();

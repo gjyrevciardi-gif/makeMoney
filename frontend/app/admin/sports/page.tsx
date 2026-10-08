@@ -113,7 +113,56 @@ type ResultConflict = {
 };
 
 type PageResult<T> = { items: T[]; nextCursor?: string | null };
-type ProviderResponse = { providers: ProviderStatus[] };
+/**
+ * The shape `/admin/sports/providers/status` actually returns.
+ *
+ * The dashboard previously declared `{ providers: [] }`, which the endpoint has
+ * never sent, so the table silently rendered "No provider health is currently
+ * available" no matter how the provider was behaving.
+ */
+type ProviderStatusResponse = {
+  provider?: {
+    key?: string | null;
+    configured?: boolean | null;
+    lastRequestAt?: string | null;
+    lastSuccessAt?: string | null;
+    lastFailureAt?: string | null;
+    lastErrorCode?: string | null;
+    consecutiveFailures?: number | null;
+    remainingQuota?: number | null;
+    usedQuota?: number | null;
+    lowQuota?: boolean | null;
+  } | null;
+  settlementWorker?: SettlementWorker | null;
+  cache?: { healthy?: boolean | null } | null;
+};
+
+/** Health is derived here rather than invented by the API. */
+function deriveHealth(provider: NonNullable<ProviderStatusResponse['provider']>) {
+  if (!provider.configured) return 'NOT_CONFIGURED';
+  const failures = provider.consecutiveFailures ?? 0;
+  if (failures >= 3) return 'ERROR';
+  if (failures > 0) return 'DEGRADED';
+  return provider.lastSuccessAt ? 'HEALTHY' : 'UNKNOWN';
+}
+
+function toProviderRows(response: ProviderStatusResponse): ProviderStatus[] {
+  const provider = response.provider;
+  if (!provider) return [];
+  const remainingQuota = provider.remainingQuota ?? null;
+  return [{
+    name: provider.key ?? 'the-odds-api',
+    configured: Boolean(provider.configured),
+    healthStatus: deriveHealth(provider),
+    lastSuccessAt: provider.lastSuccessAt ?? null,
+    lastFailureAt: provider.lastFailureAt ?? null,
+    lastErrorCode: provider.lastErrorCode ?? null,
+    remainingQuota,
+    quotaState: remainingQuota === null ? 'UNKNOWN' : provider.lowQuota ? 'LOW' : 'OK',
+    cacheHealthy: response.cache?.healthy ?? null,
+    settlementWorker: response.settlementWorker ?? null,
+  }];
+}
 
 const EMPTY_OVERVIEW: Overview = {
   openBets: 0,
@@ -222,7 +271,7 @@ export default function SportsOperationsPage() {
 
     const results = await Promise.allSettled([
       readJson<Overview>('/admin/sports/overview'),
-      readJson<ProviderResponse>('/admin/sports/providers/status'),
+      readJson<ProviderStatusResponse>('/admin/sports/providers/status'),
       readJson<PageResult<StaleBet>>('/admin/sports/bets/stale?limit=50'),
       readJson<PageResult<SettlementFailure>>('/admin/sports/settlement/failures?limit=50'),
       readJson<PageResult<ResultConflict>>('/admin/sports/conflicts?limit=50'),
@@ -238,7 +287,7 @@ export default function SportsOperationsPage() {
 
     setAccessDenied(false);
     if (results[0].status === 'fulfilled') setOverview(results[0].value);
-    if (results[1].status === 'fulfilled') setProviders(results[1].value.providers ?? []);
+    if (results[1].status === 'fulfilled') setProviders(toProviderRows(results[1].value));
     if (results[2].status === 'fulfilled') setStaleBets(results[2].value.items ?? []);
     if (results[3].status === 'fulfilled') setFailures(results[3].value.items ?? []);
     if (results[4].status === 'fulfilled') setConflicts(results[4].value.items ?? []);

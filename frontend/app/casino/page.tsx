@@ -3,7 +3,13 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { AppShell } from '../../components/shell/app-shell';
 import { CasinoGameCard } from '../../components/casino/casino-game-card';
+import { ExternalDemoCard } from '../../components/casino/external-demo-card';
 import { describeError, type CasinoGame } from '../../lib/casino';
+import {
+  EXTERNAL_DEMO_GAMES,
+  filterExternalDemoGames,
+  type ExternalDemoGame,
+} from '../../lib/external-demo-games';
 import {
   useCasinoFavorites,
   useCasinoGames,
@@ -60,8 +66,16 @@ export default function CasinoLobby() {
     [filter, recent, games, search, favoriteIds, recentIds],
   );
 
+  // Third-party demos are matched separately and always rendered in their own
+  // labelled group, so a search result can never blend a provider demo into the
+  // list of games we actually settle.
+  const demoMatches = useMemo(() => filterExternalDemoGames(search), [search]);
+
   const searching = normalizeCasinoSearch(search) !== '';
   const filtering = filter !== 'ALL' || searching;
+  // Category, favourites and recent filters describe internal games only, so
+  // demos surface under "All" and in searches rather than inside those tabs.
+  const showDemos = filter === 'ALL';
   const playable = games.filter((game) => game.enabled && !game.maintenance);
   const maintenance = gamesQuery.data?.platform?.casinoMaintenance ?? false;
 
@@ -160,21 +174,38 @@ export default function CasinoLobby() {
           </div>
         )}
 
-        {gamesQuery.data && filtering && (
-          <LobbySection
-            title={searching ? 'Search results' : filterLabel(filter)}
-            kicker={searching ? `MATCHING "${search.trim()}"` : 'FILTERED GAMES'}
-            games={filtered}
-            {...sectionProps}
-            empty={(
-              <div className="casino-empty-state">
-                <strong>No games match{searching ? ` "${search.trim()}"` : ' this filter'}.</strong>
-                <span>Try another title or browse the full game list.</span>
-                <button type="button" onClick={reset}>Reset search and filters</button>
-              </div>
-            )}
-          />
-        )}
+        {gamesQuery.data && filtering && (() => {
+          // A query can match only demos. In that case the internal grid is
+          // skipped entirely rather than shown empty above the demo results,
+          // and the "nothing found" state waits until both lists are empty.
+          const demoResults = showDemos ? demoMatches : [];
+          return (
+            <>
+              {(filtered.length > 0 || demoResults.length === 0) && (
+                <LobbySection
+                  title={searching ? 'Search results' : filterLabel(filter)}
+                  kicker={searching ? `MATCHING "${search.trim()}"` : 'FILTERED GAMES'}
+                  games={filtered}
+                  {...sectionProps}
+                  empty={(
+                    <div className="casino-empty-state">
+                      <strong>No games match{searching ? ` "${search.trim()}"` : ' this filter'}.</strong>
+                      <span>Try another title or browse the full game list.</span>
+                      <button type="button" onClick={reset}>Reset search and filters</button>
+                    </div>
+                  )}
+                />
+              )}
+
+              {demoResults.length > 0 && (
+                <DemoSection
+                  games={demoResults}
+                  kicker={searching ? `MATCHING "${search.trim()}"` : 'PROVIDER-HOSTED PREVIEWS'}
+                />
+              )}
+            </>
+          );
+        })()}
 
         {gamesQuery.data && !filtering && (
           <>
@@ -219,9 +250,16 @@ export default function CasinoLobby() {
           </>
         )}
 
+        {/* Static provider links that depend on nothing of ours, so they render
+            once loading settles whether or not the casino API answered. */}
+        {!filtering && !gamesQuery.isPending && (
+          <DemoSection games={EXTERNAL_DEMO_GAMES} kicker="PROVIDER-HOSTED PREVIEWS" />
+        )}
+
         <p className="casino-disclaimer">
           Virtual points are non-redeemable and have no cash value. Results and payouts are
-          authoritative on the server.
+          authoritative on the server. Demo Games are hosted by third-party providers, are provided
+          for preview only, and never use Fool&apos;s Gold points.
         </p>
       </div>
     </AppShell>
@@ -284,6 +322,34 @@ function LobbySection({
           ))}
         </div>
       ) : empty ?? null}
+    </section>
+  );
+}
+
+/**
+ * Third-party demos, kept in their own section and never merged into a games
+ * grid. The heading states the rule once for the whole group, and every card
+ * repeats it, so the distinction survives being screenshotted or skim-read.
+ */
+function DemoSection({ games, kicker }: { games: readonly ExternalDemoGame[]; kicker: string }) {
+  if (games.length === 0) return null;
+  return (
+    <section className="casino-lobby-section casino-demo-section" aria-labelledby="casino-section-demo-games">
+      <div className="casino-lobby-section-heading">
+        <div>
+          <p>{kicker}</p>
+          <h2 id="casino-section-demo-games">Demo Games</h2>
+        </div>
+        <span>{games.length} {games.length === 1 ? 'demo' : 'demos'}</span>
+      </div>
+      <p className="casino-demo-explainer">
+        Free demos hosted by the game providers themselves. They open in a new tab, run entirely on
+        the provider&apos;s site, and are not part of Fool&apos;s Gold Club. No points are staked,
+        won, or lost, and nothing here affects your balance or history.
+      </p>
+      <div className="casino-lobby-grid casino-demo-grid">
+        {games.map((game) => <ExternalDemoCard key={game.id} game={game} />)}
+      </div>
     </section>
   );
 }

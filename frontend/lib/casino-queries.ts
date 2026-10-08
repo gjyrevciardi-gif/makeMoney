@@ -2,8 +2,10 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { deleteJson, getJson, postJson } from './api';
-import { qk } from './queries';
+import { invalidateAfterWagering, qk } from './queries';
 import type { CasinoGame, CasinoGamesResponse } from './casino';
+import { fetchBalance } from './casino';
+import { useCallback } from 'react';
 
 /**
  * Registry-driven lobby reads.
@@ -71,4 +73,26 @@ export function useToggleFavorite() {
       void client.invalidateQueries({ queryKey: qk.casinoFavorites });
     },
   });
+}
+
+/**
+ * Refreshes the balance a settled casino round has changed.
+ *
+ * Each game keeps its own balance in local state, which used to be refetched
+ * directly. That updated the game panel but left the app header showing a stale
+ * figure until a full page reload, because the header reads the shared `wallet`
+ * query and nothing in the casino ever invalidated it — `invalidateAfterWagering`
+ * documented itself as covering casino rounds but only the sportsbook called it.
+ *
+ * Returning the fresh value keeps the existing `setBalance(await ...)` shape at
+ * every call site while also refreshing the header, casino history and the
+ * recently-played row from one place.
+ */
+export function useSettledBalance() {
+  const client = useQueryClient();
+  return useCallback(async () => {
+    const balance = await fetchBalance();
+    invalidateAfterWagering(client);
+    return balance;
+  }, [client]);
 }

@@ -12,6 +12,7 @@ import {
   formatPoints,
   newIdempotencyKey,
 } from '../../../lib/casino';
+import { useSettledBalance } from '../../../lib/casino-queries';
 
 type MinesConfig = {
   minStake: string;
@@ -34,6 +35,7 @@ type MinesPublicState = {
 const MINE_CHOICES = [1, 3, 5, 10, 15, 24];
 
 export default function MinesPage() {
+  const refreshBalance = useSettledBalance();
   const [config, setConfig] = useState<MinesConfig | null>(null);
   const [balance, setBalance] = useState('0');
   const [stake, setStake] = useState('100');
@@ -82,7 +84,7 @@ export default function MinesPage() {
     setError('');
     try {
       await action();
-      setBalance(await fetchBalance());
+      setBalance(await refreshBalance());
     } catch (failure) {
       setError(describeError(failure as { code: string; message: string }));
     } finally {

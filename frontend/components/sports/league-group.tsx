@@ -42,10 +42,17 @@ export function LeagueGroup({
 
       {open && (
         <div id={`${headingId}-body`}>
+          {/*
+            The legend mirrors the odds area's own structure so its headings sit
+            over the columns they name. Only the match-result group is labelled:
+            the secondary groups vary per fixture, and their prices carry their
+            own labels ("O 2.5", "Yes"), so a fixed heading would end up over the
+            wrong column on any row that lacks them.
+          */}
           <div className="market-legend">
             <span className="legend-spacer">Match result</span>
-            <span className="legend-cells" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
-              <span>1</span><span>X</span><span>2</span>
+            <span className="legend-odds">
+              <span className="legend-cells"><span>1</span><span>X</span><span>2</span></span>
             </span>
           </div>
           {events.map((row) => (

@@ -12,6 +12,7 @@ import {
   formatPoints,
   newIdempotencyKey,
 } from '../../../lib/casino';
+import { useSettledBalance } from '../../../lib/casino-queries';
 
 type BlackjackHand = {
   playerCards: string[];
@@ -49,6 +50,7 @@ const OUTCOME_TEXT: Record<string, string> = {
 };
 
 export default function BlackjackPage() {
+  const refreshBalance = useSettledBalance();
   const [config, setConfig] = useState<BlackjackConfig | null>(null);
   const [balance, setBalance] = useState('0');
   const [stake, setStake] = useState('100');
@@ -86,7 +88,7 @@ export default function BlackjackPage() {
     setError('');
     try {
       setRound(await action());
-      setBalance(await fetchBalance());
+      setBalance(await refreshBalance());
     } catch (failure) {
       setError(describeError(failure as { code: string; message: string }));
     } finally {

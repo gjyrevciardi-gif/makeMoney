@@ -12,6 +12,7 @@ import {
   formatPoints,
   newIdempotencyKey,
 } from '../../../lib/casino';
+import { useSettledBalance } from '../../../lib/casino-queries';
 
 type CrashConfig = {
   rtpPercent: string;
@@ -63,6 +64,7 @@ function curveMultiplier(elapsedMs: number, config: CrashConfig | null) {
 }
 
 export default function CrashPage() {
+  const refreshBalance = useSettledBalance();
   const [config, setConfig] = useState<CrashConfig | null>(null);
   const [balance, setBalance] = useState('0');
   const [stake, setStake] = useState('100');
@@ -148,7 +150,7 @@ export default function CrashPage() {
     setError('');
     try {
       adopt(await action());
-      setBalance(await fetchBalance());
+      setBalance(await refreshBalance());
       await loadHistory();
     } catch (failure) {
       setError(describeError(failure as { code: string; message: string }));

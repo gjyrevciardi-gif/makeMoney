@@ -17,11 +17,13 @@ possible, plus TCP 80 and TCP 443:
 sudo ufw allow from OPERATOR_CIDR to any port 22 proto tcp
 sudo ufw allow 80/tcp
 sudo ufw allow 443/tcp
+sudo ufw allow 443/udp
 sudo ufw enable
 ```
 
-Do not allow or publish TCP 5432 or TCP 6379. PostgreSQL and Redis are
-internal Compose services.
+UDP 443 is needed only if you want HTTP/3; Caddy publishes it and falls back to
+TCP without it. Do not allow or publish TCP 5432 or TCP 6379. PostgreSQL and
+Redis are internal Compose services with no host port bindings at all.
 
 ## 2. DNS and configuration
 
@@ -35,10 +37,20 @@ chmod 600 .env.production
 ```
 
 Set unique random PostgreSQL, Redis, JWT access, and JWT refresh secrets.
-Set `DOMAIN`, `ADMIN_EMAIL`, `COOKIE_SECURE=true`, `TRUST_PROXY=true`, and
+Set `DOMAIN`, `ADMIN_EMAIL`, `COOKIE_SECURE=true`, `TRUST_PROXY=1`, and
 `REGISTRATION_ENABLED=false` after the controlled initial Admin bootstrap.
+`TRUST_PROXY` is the number of proxy hops to trust and must match the stack in
+front of the backend — one Caddy container here. Startup rejects any other
+shape, and no value trusts the whole forwarded chain.
 URL-encode reserved characters in `DATABASE_URL` and `REDIS_URL`. Never put
 real credentials in Git or in this guide.
+
+`ADMIN_EMAIL` is the ACME account address Caddy registers with Let's Encrypt.
+It must be a real mailbox on a public top-level domain; an internal TLD is
+rejected at registration and no certificate is ever issued. To rehearse the
+stack on a host the public internet cannot reach, set
+`CADDY_GLOBAL_OPTIONS=local_certs` so Caddy signs with its internal CA instead
+of attempting a challenge it cannot pass. Leave it unset in production.
 
 ## 3. Render, build, and start
 
@@ -74,8 +86,22 @@ backend logs, and preserve request IDs for any failures.
 
 Schedule `scripts/backup-postgres.sh` with a service account, a restrictive
 backup directory, retention, and encrypted off-host copies. Test each new
-backup by restoring into a disposable database before relying on it for
-disaster recovery.
+backup with `scripts/backup-restore-drill.sh` before relying on it for
+disaster recovery. The drill uses disposable PostgreSQL containers.
+
+Restore production data into a fresh recovery database by default:
+
+```sh
+DATABASE_URL='postgresql://...' scripts/restore-postgres.sh backups/file.dump.gz
+npx prisma migrate status --schema backend/prisma/schema.prisma
+node scripts/integrity-check.js
+```
+
+Safe mode refuses populated databases. An intentional overwrite requires
+`RESTORE_MODE=destructive` and an exact confirmation matching the target
+database name, either at the prompt or through
+`RESTORE_CONFIRM='RESTORE <database_name>'`. Never assume Prisma migrations
+provide automatic rollback.
 
 There are no default Admin credentials. For the first deployment only, either
 temporarily enable registration over HTTPS and create the operator account, or

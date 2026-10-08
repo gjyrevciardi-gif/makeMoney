@@ -1,0 +1,44 @@
+{
+  "get": "odds/live/bets",
+  "parameters": [],
+  "errors": [],
+  "results": 8,
+  "paging": {
+    "current": 1,
+    "total": 1
+  },
+  "response": [
+    {
+      "id": 16,
+      "name": "How many goals will Away Team score?"
+    },
+    {
+      "id": 23,
+      "name": "Final Score"
+    },
+    {
+      "id": 25,
+      "name": "Match Goals"
+    },
+    {
+      "id": 27,
+      "name": "Home Team Score a Goal (2nd Half)"
+    },
+    {
+      "id": 29,
+      "name": "Result / Both Teams To Score"
+    },
+    {
+      "id": 33,
+      "name": "Asian Handicap"
+    },
+    {
+      "id": 35,
+      "name": "To Win 2nd Half"
+    },
+    {
+      "id": 43,
+      "name": "Both Teams To Score (2nd Half)"
+    }
+  ]
+}

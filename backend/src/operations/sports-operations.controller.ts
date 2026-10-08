@@ -31,6 +31,11 @@ export class SportsOperationsController {
     private readonly limits: RateLimitService,
   ) {}
 
+  @Get('overview')
+  overview(@Req() request: AuthenticatedRequest) {
+    return this.operations.overview(request.actor.id);
+  }
+
   @Get('providers/status')
   status(@Req() request: AuthenticatedRequest) {
     return this.operations.status(request.actor.id);

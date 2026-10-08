@@ -8,27 +8,20 @@ import { CADENCE, qk } from './queries';
 
 export type Sport = { key: string; name: string; active: boolean; group?: string };
 
-export type SportsEvent = {
-  provider: string;
-  providerEventId: string;
-  sportKey: string;
-  sportName: string;
-  competitionName?: string;
-  homeTeam: string;
-  awayTeam: string;
-  startTime: string;
-  status: 'UPCOMING' | 'STARTED_UNKNOWN';
-};
+/*
+ * Types and pure market helpers live in ./sports-markets so they can be unit
+ * tested without React or the API client. Re-exported here so callers keep a
+ * single import site.
+ */
+export type {
+  SportsEvent, Selection, MarketKey, MarketGroup, Market, LiveState, BoardEvent,
+} from './sports-markets';
+export {
+  MARKET_GROUP_ORDER, MARKET_GROUP_NAMES, isSelectable, groupMarkets, findMarket, h2hCells,
+  liveScoreText, liveClockText,
+} from './sports-markets';
 
-export type Selection = { key: string; name: string; price: string; point?: string };
-export type MarketKey = 'h2h' | 'spreads' | 'totals';
-export type Market = { key: MarketKey; name: string; selections: Selection[] };
-
-export type BoardEvent = {
-  event: SportsEvent;
-  bookmaker: { key: string; name: string } | null;
-  markets: Market[];
-};
+import type { BoardEvent, Market, SportsEvent } from './sports-markets';
 
 export type SportsBoard = {
   sportKey: string;
@@ -44,7 +37,12 @@ export type EventOdds = {
   markets: Market[];
   fetchedAt: string;
   staleAt: string;
+  /** Present only while the fixture is in play. */
+  live?: import('./sports-markets').LiveState;
+  /** Markets the provider offered, before our mapping narrowed them. */
+  marketCount?: number;
 };
+
 
 /**
  * Sport groups.
@@ -110,25 +108,6 @@ export function matchesSportsSearch(row: BoardEvent, value: string) {
   return query.split(' ').every((token) => haystack.includes(token));
 }
 
-export const findMarket = (markets: Market[], key: MarketKey) =>
-  markets.find((market) => market.key === key);
-
-/**
- * Football keeps 1 / X / 2. Other sports have no draw, so the home and away
- * prices are shown in the two outer cells and the middle is left empty rather
- * than padded with an invented price.
- */
-export function h2hCells(row: BoardEvent): (Selection | null)[] {
-  const market = findMarket(row.markets, 'h2h');
-  if (!market) return [null, null, null];
-  const home = market.selections.find((s) => s.name === row.event.homeTeam) ?? null;
-  const away = market.selections.find((s) => s.name === row.event.awayTeam) ?? null;
-  const draw = market.selections.find((s) => s.name.toLowerCase() === 'draw') ?? null;
-  if (home || away || draw) return [home, draw, away];
-  // Fall back to positional order for a provider naming outcomes differently.
-  return [market.selections[0] ?? null, market.selections[2] ?? null, market.selections[1] ?? null];
-}
-
 export const isStale = (staleAt: string | undefined) =>
   staleAt !== undefined && Date.parse(staleAt) < Date.now();
 
@@ -182,6 +161,15 @@ export const SPORTS_MESSAGES: Record<string, string> = {
   SPORTS_PROVIDER_UNAVAILABLE: 'Sports data is temporarily unavailable.',
   SPORTS_PROVIDER_RATE_LIMITED: 'Sports data is temporarily unavailable.',
   SPORTS_PROVIDER_INVALID_RESPONSE: 'Sports data is temporarily unavailable.',
+  // Operators see the precise cause on /admin/sports; a player is told the same
+  // neutral thing either way, so a bad key or a spent quota leaks nothing.
+  SPORTS_PROVIDER_UNAUTHORIZED: 'Sports data is temporarily unavailable.',
+  SPORTS_PROVIDER_FORBIDDEN: 'Sports data is temporarily unavailable.',
+  // A 422 on a board means our markets (h2h/spreads/totals) do not apply to
+  // that competition - an outright/futures market, typically. That is not an
+  // outage, so it does not get outage copy.
+  SPORTS_PROVIDER_INVALID_REQUEST: 'This competition is not offered here.',
+  SPORTS_PROVIDER_TIMEOUT: 'Sports data is temporarily unavailable.',
   SPORTS_ODDS_UNAVAILABLE: 'Prices are not available for this event right now.',
   SPORTS_EVENT_NOT_FOUND: 'That event is no longer listed.',
   SPORTS_UNSUPPORTED: 'That sport is not offered.',

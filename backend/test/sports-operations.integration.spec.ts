@@ -402,4 +402,125 @@ describe('sportsbook operational monitoring and reconciliation (PostgreSQL + Red
       /THE_ODDS_API_KEY|DATABASE_URL|REDIS_URL|JWT_ACCESS_SECRET|passwordHash|tokenHash/,
     );
   });
+
+  it('serves the dashboard overview to an administrator only', async () => {
+    await request(app.getHttpServer()).get('/admin/sports/overview').expect(401);
+
+    const userToken = await accessToken(userEmail);
+    await request(app.getHttpServer())
+      .get('/admin/sports/overview')
+      .set('Authorization', `Bearer ${userToken}`)
+      .expect(403);
+    // The service re-checks the persisted role, so the guard is not the only gate.
+    await expect(operations.overview(userId)).rejects.toMatchObject({ status: 403 });
+
+    const adminToken = await accessToken(adminEmail);
+    const response = await request(app.getHttpServer())
+      .get('/admin/sports/overview')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .expect(200);
+
+    // The dashboard reads exactly these nine keys. A missing one renders its
+    // card blank instead of as a number, which is how this endpoint's absence
+    // went unnoticed in the first place.
+    expect(Object.keys(response.body).sort()).toEqual([
+      'eventsAwaitingResult',
+      'lossesLast24h',
+      'openBets',
+      'resultConflicts',
+      'settledLast24h',
+      'settlementFailuresLast24h',
+      'staleOpenBets',
+      'voidsLast24h',
+      'winsLast24h',
+    ]);
+    for (const value of Object.values(response.body)) expect(typeof value).toBe('number');
+  });
+
+  it('counts open, stale, settled and failed sportsbook work from authoritative rows', async () => {
+    // The stale threshold is 60 minutes here and the helper starts events two
+    // hours ago, so this one is stale and the future-dated one is merely open.
+    await createOpenBet({ eventId: 'overview-stale' });
+    await createOpenBet({
+      eventId: 'overview-fresh',
+      eventStartTime: new Date(Date.now() + 60 * 60_000),
+    });
+
+    const settle = async (eventId: string, status: 'WON' | 'LOST' | 'VOID', settledAt: Date) => {
+      const bet = await createOpenBet({ eventId });
+      await prisma.bet.update({ where: { id: bet.id }, data: { status, settledAt } });
+    };
+    await settle('overview-won', 'WON', new Date());
+    await settle('overview-lost', 'LOST', new Date());
+    await settle('overview-void', 'VOID', new Date());
+    // Outside the 24 hour window the cards describe.
+    await settle('overview-old', 'WON', new Date(Date.now() - 30 * 60 * 60_000));
+
+    const attempt = (status: 'FAILED' | 'SUCCESS', resolvedAt: Date | null) =>
+      prisma.sportsSettlementAttempt.create({
+        data: {
+          provider: 'fixture',
+          providerEventId: 'overview-stale',
+          attemptType: 'SETTLEMENT',
+          status,
+          startedAt: new Date(),
+          resolvedAt,
+        },
+      });
+    await attempt('FAILED', null);
+    // Already dealt with, so it is no longer outstanding.
+    await attempt('FAILED', new Date());
+    await attempt('SUCCESS', null);
+
+    await prisma.sportsResultConflict.create({
+      data: { provider: 'fixture', providerEventId: 'overview-stale', storedResult: {}, conflictingResult: {} },
+    });
+    await prisma.sportsResultConflict.create({
+      data: {
+        provider: 'fixture',
+        providerEventId: 'overview-fresh',
+        storedResult: {},
+        conflictingResult: {},
+        acknowledgedAt: new Date(),
+      },
+    });
+
+    // One of the two open events already has a terminal result, so it is
+    // waiting on settlement rather than on the provider.
+    await prisma.sportsEventResult.create({
+      data: { provider: 'fixture', providerEventId: 'overview-stale', status: 'FINAL', homeScore: 1, awayScore: 0 },
+    });
+
+    const adminToken = await accessToken(adminEmail);
+    const response = await request(app.getHttpServer())
+      .get('/admin/sports/overview')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .expect(200);
+
+    expect(response.body).toEqual({
+      openBets: 2,
+      staleOpenBets: 1,
+      settledLast24h: 3,
+      winsLast24h: 1,
+      lossesLast24h: 1,
+      voidsLast24h: 1,
+      settlementFailuresLast24h: 1,
+      resultConflicts: 1,
+      eventsAwaitingResult: 1,
+    });
+  });
+
+  it('answers without touching the odds provider, so an outage cannot blank the dashboard', async () => {
+    provider.getEventResult.mockRejectedValue(new Error('provider unavailable'));
+    const adminToken = await accessToken(adminEmail);
+
+    const response = await request(app.getHttpServer())
+      .get('/admin/sports/overview')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .expect(200);
+
+    expect(provider.getEventResult).not.toHaveBeenCalled();
+    expect(response.body.openBets).toBe(0);
+    expect(response.body.eventsAwaitingResult).toBe(0);
+  });
 });

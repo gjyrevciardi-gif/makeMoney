@@ -1,4 +1,4 @@
-import { INestApplication, UnauthorizedException, ValidationPipe } from '@nestjs/common';
+import { ForbiddenException, INestApplication, UnauthorizedException, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import cookieParser from 'cookie-parser';
@@ -65,6 +65,32 @@ describe('authentication and authorization security', () => {
     const pair = await auth.issueTokenPair(userId, 'USER');
     await prisma.refreshToken.updateMany({ data: { expiresAt: new Date(0) } });
     await expect(auth.rotateRefreshToken(pair.refreshToken)).rejects.toBeInstanceOf(UnauthorizedException);
+  });
+
+  it('fails a concurrent refresh closed rather than with a server error', async () => {
+    // Two tabs refreshing the same cookie at once abort one Serializable
+    // transaction with a write conflict. That used to escape as an unhandled
+    // PrismaClientKnownRequestError and a 500; exactly one must now succeed and
+    // the loser must simply be told its token is no longer valid.
+    const pair = await auth.issueTokenPair(userId, 'USER');
+    const results = await Promise.allSettled([
+      auth.rotateRefreshToken(pair.refreshToken),
+      auth.rotateRefreshToken(pair.refreshToken),
+    ]);
+    expect(results.filter(r => r.status === 'fulfilled')).toHaveLength(1);
+    const rejected = results.filter((r): r is PromiseRejectedResult => r.status === 'rejected');
+    expect(rejected).toHaveLength(1);
+    // Unauthorized (stale token) and Forbidden (reuse) are both defensible
+    // depending on how the race resolves; a raw Prisma error never is.
+    const error = rejected[0].reason;
+    expect(error instanceof UnauthorizedException || error instanceof ForbiddenException).toBe(true);
+  });
+
+  it('still treats genuine sequential reuse as reuse', async () => {
+    // The race fix must not soften real reuse detection.
+    const pair = await auth.issueTokenPair(userId, 'USER');
+    await auth.rotateRefreshToken(pair.refreshToken);
+    await expect(auth.rotateRefreshToken(pair.refreshToken)).rejects.toBeInstanceOf(ForbiddenException);
   });
 
   it('makes logout idempotent with a token, twice, and without a cookie', async () => {

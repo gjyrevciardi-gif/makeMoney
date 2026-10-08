@@ -1,11 +1,15 @@
 # Reverse proxy and TLS terminator.
 #
 # Caddy obtains and renews certificates automatically for whatever real hostname
-# DOMAIN resolves to, and redirects HTTP to HTTPS on its own. With a non-public
-# DOMAIN (localhost) it falls back to its internal CA, so the same file works for
-# a local rehearsal of the stack.
+# DOMAIN resolves to, and redirects HTTP to HTTPS on its own.
 {
 	email {$ADMIN_EMAIL}
+	# Empty in production, where publicly trusted certificates are the whole
+	# point. A local rehearsal of this stack cannot satisfy an ACME challenge —
+	# the hostname is not publicly reachable — so set
+	# CADDY_GLOBAL_OPTIONS=local_certs there to sign with Caddy's internal CA
+	# instead. Leaving it unset, as production does, changes nothing.
+	{$CADDY_GLOBAL_OPTIONS}
 	servers {
 		# The upstreams are the only thing behind this proxy, so client headers
 		# are rewritten here rather than trusted.
