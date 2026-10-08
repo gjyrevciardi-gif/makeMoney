@@ -1,0 +1,143 @@
+{
+  "generatedAt": "2026-09-25T12:56:02.280Z",
+  "profile": {
+    "profileId": "book-of-ra.v1.rtp5000",
+    "rtpBps": 5000
+  },
+  "spin": {
+    "roundId": "7b656e9f-f009-4cb4-b2c2-d1b16c243e0d",
+    "roundState": "ROUND_COMPLETE",
+    "winUnits": "0",
+    "payout": "0"
+  },
+  "ledger": {
+    "fresh": [
+      {
+        "type": "CASINO_BET",
+        "amount": "-100"
+      }
+    ]
+  },
+  "autoplay": {
+    "roundState": "ROUND_COMPLETE",
+    "pendingAction": null
+  },
+  "gamble": {
+    "observed": true,
+    "attempts": [
+      {
+        "choice": "black",
+        "attempt": 1,
+        "won": false,
+        "winningColour": "red",
+        "settlementUnits": "0",
+        "complete": true
+      }
+    ],
+    "complete": true,
+    "hasLadder": false
+  },
+  "unverifiedLive": [
+    "live Free Games trigger and +10 retrigger (needs a real 3+ Book event)",
+    "live maximum-length 5-attempt ladder (needs five consecutive correct colours)",
+    "live Free Games refresh recovery (needs an open feature round)"
+  ],
+  "checks": [
+    {
+      "name": "published profile is unchanged (book-of-ra.v1.rtp5000, 10 lines, 5 gamble attempts)",
+      "status": "PASS",
+      "detail": {
+        "profileId": "book-of-ra.v1.rtp5000",
+        "rtpBps": 5000,
+        "paylineCount": 10
+      }
+    },
+    {
+      "name": "the integration session signs in with the real /auth/login",
+      "status": "PASS",
+      "detail": {
+        "status": 200
+      }
+    },
+    {
+      "name": "the accepted UI transport reaches the real backend (POST /v1/spins)",
+      "status": "PASS",
+      "detail": {
+        "status": 200,
+        "roundId": "7b656e9f-f009-4cb4-b2c2-d1b16c243e0d",
+        "roundState": "ROUND_COMPLETE"
+      }
+    },
+    {
+      "name": "the transport returns an authoritative board",
+      "status": "PASS",
+      "detail": {
+        "events": [
+          "grid-reveal"
+        ]
+      }
+    },
+    {
+      "name": "the response never carries the pre-drawn gamble ladder",
+      "status": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "normal spin moves exactly one stake and, when it wins, one credit",
+      "status": "PASS",
+      "detail": {
+        "before": "999450",
+        "after": "999350",
+        "totalWinUnits": "0",
+        "settlementPayout": "0"
+      }
+    },
+    {
+      "name": "the ledger records exactly one debit for the spin",
+      "status": "PASS",
+      "detail": {
+        "entries": [
+          {
+            "type": "CASINO_BET",
+            "amount": "-100"
+          }
+        ]
+      }
+    },
+    {
+      "name": "no leading win this spin, so live win-credit is not proven here",
+      "status": "PASS",
+      "detail": {
+        "payout": "0",
+        "note": "win credit is proven by the deterministic backend suites, not by this spin"
+      }
+    },
+    {
+      "name": "replaying the same idempotency key returns the same round and moves no money",
+      "status": "PASS",
+      "detail": {
+        "roundId": "7b656e9f-f009-4cb4-b2c2-d1b16c243e0d",
+        "idempotent": true
+      }
+    },
+    {
+      "name": "an autoplay-flagged spin never offers the gamble",
+      "status": "PASS",
+      "detail": {
+        "roundState": "ROUND_COMPLETE",
+        "pendingAction": null
+      }
+    },
+    {
+      "name": "refresh recovery reads the real state route and only claims a round when one is open",
+      "status": "PASS",
+      "detail": {
+        "status": 200,
+        "hasPendingRound": true,
+        "roundState": "ROUND_COMPLETE",
+        "featureOpen": false,
+        "note": "Free Games recovery is only proven when an open feature round is actually present"
+      }
+    }
+  ]
+}

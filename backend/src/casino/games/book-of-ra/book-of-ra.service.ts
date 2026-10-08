@@ -19,6 +19,7 @@ import {
   resolveBookOfRaGamble,
   toFeatureState,
   type BookOfRaGambleChoice,
+  type BookOfRaGambleOutcome,
   type BookOfRaGameState,
   type PendingAction,
 } from '@slot-skills/runtime';
@@ -39,6 +40,7 @@ import {
   validateBookOfRaEngine,
 } from './book-of-ra.definition';
 import { SpinBookOfRaDto, BookOfRaActionDto } from './book-of-ra.dto';
+import { projectGamble, type BookOfRaGambleView } from './book-of-ra.gamble-projection';
 
 type WinView = {
   evaluator: string;
@@ -74,9 +76,34 @@ export type BookOfRaRoundView = {
   gambleAttempts: number;
   gambleMaxAttempts: number;
   pendingAction: PendingAction | null;
+  /**
+   * Integration-only public gamble projection: the revealed history and, when
+   * this response resolved an attempt, that attempt's outcome. It never carries
+   * the pre-drawn ladder for attempts the player has not made yet.
+   */
+  gamble: BookOfRaGambleView;
+  /**
+   * Integration-only presentation facts for the spin that produced this view,
+   * copied from the resolved outcome the engine returned:
+   * `board` is the reveal grid *before* any reel transformation, while
+   * `view.board` stays the resolved (already expanded) final grid needed to
+   * present the expansion. Null when no spin has been played.
+   */
+  spinPresentation: BookOfRaSpinPresentation | null;
   settlement: { wager: string; payout: string; settled: boolean };
   balance: string | null;
   idempotent: boolean;
+};
+
+export type BookOfRaSpinPresentation = {
+  board: string[][] | null;
+  freeSpin: boolean;
+  freeSpinIndex: number | null;
+  /** Already-resolved retrigger award, 0 when the spin did not retrigger. */
+  retriggered: number;
+  freeSpinsRemaining: number;
+  specialSymbol: string | null;
+  phase: string;
 };
 
 /**
@@ -352,6 +379,7 @@ export class BookOfRaService implements OnModuleInit {
         settled,
         balance,
         idempotent: false,
+        resolved: resolved.outcome,
       });
       await this.rememberRequest(tx, userId, 'action', dto.idempotencyKey, fingerprint, round.id, response);
       await this.audit(tx, userId, round.id, settled ? 'CASINO_ROUND_SETTLED' : 'CASINO_ROUND_STARTED', {
@@ -663,6 +691,8 @@ export class BookOfRaService implements OnModuleInit {
     settled: boolean;
     balance: bigint | null;
     idempotent: boolean;
+    /** The attempt this specific response resolved, when it resolved one. */
+    resolved?: BookOfRaGambleOutcome;
   }): BookOfRaRoundView {
     const presentation = bookOfRaPresentation(params.state);
     const last = params.state.lastOutcome;
@@ -691,6 +721,18 @@ export class BookOfRaService implements OnModuleInit {
       gambleAttempts: presentation.gambleAttempts,
       gambleMaxAttempts: presentation.gambleMaxAttempts,
       pendingAction: presentation.pendingAction ?? null,
+      gamble: projectGamble(params.state, params.resolved),
+      spinPresentation: last
+        ? {
+            board: last.board ?? null,
+            freeSpin: last.freeSpin === true,
+            freeSpinIndex: typeof last.freeSpinIndex === 'number' ? last.freeSpinIndex : null,
+            retriggered: last.retriggered ?? 0,
+            freeSpinsRemaining: last.freeSpinsRemaining ?? 0,
+            specialSymbol: last.specialSymbol ?? null,
+            phase: last.phase,
+          }
+        : null,
       settlement: {
         wager: params.wager.toString(),
         payout: params.payout.toString(),
