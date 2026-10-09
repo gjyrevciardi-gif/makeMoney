@@ -1,0 +1,7 @@
+﻿58FD8B55B1C8F7FFCB1DEA712B54300148348887261E8E2CB93BB13ADA95DE83  637  backend/test/book-of-ra-classic.shared-history-rollback.spec.ts
+0EF3D1B904A07E802FC76C67B73CEEFE2B66596AC580220BF5CEE0F360816151  1457  backend/src/casino/platform/math-control/math-control.service.ts
+9AE8EF65E8F4616CEEC4350BAAFA942E5AF5C571366B6B81CFD68312D2BCB9FE  212  backend/src/casino/platform/math-control/math-control.controller.ts
+1A513BAC96AAAB4A8C266CEA70CF17E2A2998D1A1D4ECF6FA79E0EC7FF9FE229  786  backend/src/casino/platform/math-control/math-control.types.ts
+AC13CAA08DBD4D6814F64A94EFD77AE9316B34D63C847BD880032386F190819D  103  backend/src/casino/platform/math-control/math-control.dto.ts
+2035AB5C627BE3C3CBB18AA1027B7E0067BF6BA91B6D3E4FAF22AE5DEA039A99  166  backend/src/casino/casino.module.ts
+0C208F123DAB7EDD5C10C11154759F46385D2C90E6A72CE90DF02FD1883D414C  1606  backend/src/casino/games/lucky-lady/payout/lucky-lady-payout.service.ts

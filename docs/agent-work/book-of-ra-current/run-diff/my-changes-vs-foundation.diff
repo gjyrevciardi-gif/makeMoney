@@ -1,0 +1,536 @@
+﻿diff --git a/backend/src/casino/casino.module.ts b/backend/src/casino/casino.module.ts
+index c25c5de..6ec1ea0 100644
+--- a/backend/src/casino/casino.module.ts
++++ b/backend/src/casino/casino.module.ts
+@@ -1,3 +1,6 @@
++import { ClassicController } from './games/book-of-ra-classic/classic.controller';
++import { ClassicAdapter, CLASSIC_OPTIONS } from './games/book-of-ra-classic/classic.adapter';
++import { ClassicMathAdapter } from './games/book-of-ra-classic/classic.math-adapter';
+ import { Module } from '@nestjs/common';
+ import { JwtModule } from '@nestjs/jwt';
+ import { AccessGuard } from '../auth/access.guard';
+@@ -40,7 +43,7 @@ import { MathControlJobs } from './platform/math-control/math-control.jobs';
+ import { LuckyLadyPayoutController } from './games/lucky-lady/payout/lucky-lady-payout.controller';
+ import { LuckyLadyPayoutService } from './games/lucky-lady/payout/lucky-lady-payout.service';
+ import { LuckyLadyMathAdapter } from './games/lucky-lady/lucky-lady.math-adapter';
+-import { GAME_MATH_ADAPTERS } from './platform/math-control/math-control.types';
++import { GAME_MATH_ADAPTERS, GAME_MATH_DEFAULT_RESETTERS } from './platform/math-control/math-control.types';
+ import {
+   GAME_AVAILABILITY,
+   GAME_PLATFORM,
+@@ -55,6 +58,7 @@ import {
+     CasinoConfigController,
+     PlatformSettingsController,
+     LuckyLadyController,
++    ClassicController,
+     MathControlController,
+     LuckyLadyPayoutController,
+   ],
+@@ -99,14 +103,27 @@ import {
+     },
+     // ---- Adapter #1: Lucky Lady's Charm Deluxe ----
+     LuckyLadyAdapter,
++    ClassicAdapter,
++    { provide: CLASSIC_OPTIONS, useValue: {} },
+     // Production defaults: OS CSPRNG draws, no test RNG or failure hooks.
+     { provide: LUCKY_LADY_OPTIONS, useValue: {} },
+     // ---- Game Math Control (shared lifecycle, per-game mathematics) ----
+     LuckyLadyMathAdapter,
++    ClassicMathAdapter,
+     {
+       provide: GAME_MATH_ADAPTERS,
+-      useFactory: (luckyLady: LuckyLadyMathAdapter) => [luckyLady],
+-      inject: [LuckyLadyMathAdapter],
++      useFactory: (luckyLady: LuckyLadyMathAdapter, classic: ClassicMathAdapter) => [luckyLady, classic],
++      inject: [LuckyLadyMathAdapter, ClassicMathAdapter],
++    },
++    // Games whose default state is owned by their own admin panel register one
++    // DEFAULT-reset delegate. Lucky Lady's payout panel keeps that ownership:
++    // the generic route reuses its transaction, history row and distribution
++    // clearing instead of duplicating them, and the legacy panel route is
++    // unchanged.
++    {
++      provide: GAME_MATH_DEFAULT_RESETTERS,
++      useFactory: (payout: LuckyLadyPayoutService) => [payout],
++      inject: [LuckyLadyPayoutService],
+     },
+     GameMathRegistry,
+     MathControlJobs,
+diff --git a/backend/src/casino/games/lucky-lady/payout/lucky-lady-payout.service.ts b/backend/src/casino/games/lucky-lady/payout/lucky-lady-payout.service.ts
+index 075b895..d957067 100644
+--- a/backend/src/casino/games/lucky-lady/payout/lucky-lady-payout.service.ts
++++ b/backend/src/casino/games/lucky-lady/payout/lucky-lady-payout.service.ts
+@@ -19,7 +19,11 @@ import {
+   type DistributionPolicy,
+ } from '../../../platform/math-control/payout-distribution';
+ import type { PolicyBankrollReport } from '../../../platform/math-control/payout-policy-bankroll';
+-import type { MathPolicy, MathProfileArtifact } from '../../../platform/math-control/math-control.types';
++import type {
++  GameMathDefaultResult,
++  MathPolicy,
++  MathProfileArtifact,
++} from '../../../platform/math-control/math-control.types';
+ import { assertGambleScopeResolved } from '../../../platform/math-control/math-control.service';
+ import { luckyLadyGeneratorModel } from '../lucky-lady.policy-generator';
+ import { LUCKY_LADY_V1 } from '../lucky-lady.definition';
+@@ -77,6 +81,43 @@ export class LuckyLadyPayoutService {
+     private readonly jobs: MathControlJobs,
+   ) {}
+ 
++  /**
++   * The game this panel owns, used to register as the DEFAULT-reset delegate.
++   *
++   * The shared `admin/casino/math/:gameId/default` route delegates here for
++   * Lucky Lady so its append-only history and runtime distribution stay
++   * coherent; the legacy `admin/casino/math/lucky-lady/payout/default` route
++   * keeps exactly its previous semantics.
++   */
++  readonly gameId = LUCKY_LADY_PAYOUT_GAME_ID;
++
++  /**
++   * Thin generic-route alias over this panel's own `restoreDefault`.
++   *
++   * It runs the identical advisory-locked transaction, appends the identical
++   * history and audit rows and clears the identical runtime distribution; it
++   * only projects the result into the shared DEFAULT shape.
++   */
++  async resetToDefault(
++    actorId: string,
++    input: { actionId: string; expectedVersion?: number },
++  ): Promise<GameMathDefaultResult> {
++    const result = await this.restoreDefault(actorId, input);
++    // `restoreDefault` always records action DEFAULT, so the produced state is
++    // DEFAULT by construction.
++    return {
++      gameId: result.gameId,
++      mode: 'DEFAULT',
++      version: result.version,
++      profileId: result.active.profileId,
++      profileHash: result.active.profileHash,
++      validationId: result.active.validationId,
++      activatedAt: result.active.activatedAt,
++      activatedBy: result.active.activatedBy,
++      note: result.active.note,
++    };
++  }
++
+   // -------------------------------------------------------------------------
+   // Security boundary
+   // -------------------------------------------------------------------------
+diff --git a/backend/src/casino/platform/math-control/math-control.controller.ts b/backend/src/casino/platform/math-control/math-control.controller.ts
+index bdf8b6b..8104f19 100644
+--- a/backend/src/casino/platform/math-control/math-control.controller.ts
++++ b/backend/src/casino/platform/math-control/math-control.controller.ts
+@@ -5,7 +5,7 @@ import { AccessGuard, AuthenticatedRequest } from '../../../auth/access.guard';
+ import { Capabilities } from '../../../auth/capabilities.decorator';
+ import { RolesGuard } from '../../../auth/roles.guard';
+ import { RATE_LIMITS, RateLimitService } from '../../../common/rate-limit.service';
+-import { ActivateMathDto, MathPolicyDto, ValidationOptionsDto } from './math-control.dto';
++import { ActivateMathDto, MathPolicyDto, ResetMathDto, ValidationOptionsDto } from './math-control.dto';
+ import { MathControlService } from './math-control.service';
+ import { MathControlJobs } from './math-control.jobs';
+ 
+@@ -124,6 +124,27 @@ export class MathControlController {
+     await this.throttle(request.actor.id);
+     return this.math.activate(request.actor.id, params.gameId, params.profileId, body.expectedVersion);
+   }
++
++  /**
++   * Reset this game to its accepted default mathematics for NEW paid rounds.
++   *
++   * Additive and game-agnostic. It moves this game's own pointer to the explicit
++   * DEFAULT state; a game whose default is owned by its own admin panel is
++   * delegated to that panel's existing transition so its history stays coherent.
++   * An unregistered game is the established GAME_MATH_NOT_INTEGRATED 404.
++   */
++  @Post(':gameId/default')
++  async restoreDefault(
++    @Req() request: AuthenticatedRequest,
++    @Param() params: GameParams,
++    @Body() body: ResetMathDto,
++  ) {
++    await this.throttle(request.actor.id);
++    return this.math.resetToDefault(request.actor.id, params.gameId, {
++      actionId: body.actionId,
++      expectedVersion: body.expectedVersion,
++    });
++  }
+ }
+ 
+ /** Horizon override keeps the checkpoint ladder inside the requested horizon. */
+diff --git a/backend/src/casino/platform/math-control/math-control.dto.ts b/backend/src/casino/platform/math-control/math-control.dto.ts
+index 67faa04..c398807 100644
+--- a/backend/src/casino/platform/math-control/math-control.dto.ts
++++ b/backend/src/casino/platform/math-control/math-control.dto.ts
+@@ -10,6 +10,7 @@ import {
+   Max,
+   MaxLength,
+   Min,
++  MinLength,
+   ValidateNested,
+ } from 'class-validator';
+ import {
+@@ -73,3 +74,16 @@ export class ActivateMathDto {
+   /** Optimistic concurrency: the active-pointer version the operator saw. */
+   @IsOptional() @IsInt() @Min(1) expectedVersion?: number;
+ }
++
++/**
++ * Reset request, transport layer.
++ *
++ * `expectedVersion` is the same optimistic concurrency token activation uses.
++ * `actionId` is an optional replay-safe key: the shared pointer move ignores it,
++ * while a game panel whose default transition is indexed by action id (Lucky
++ * Lady) uses it, or a server-generated one when it is absent.
++ */
++export class ResetMathDto {
++  @IsOptional() @IsInt() @Min(1) expectedVersion?: number;
++  @IsOptional() @IsString() @MinLength(8) @MaxLength(120) actionId?: string;
++}
+diff --git a/backend/src/casino/platform/math-control/math-control.service.ts b/backend/src/casino/platform/math-control/math-control.service.ts
+index a63b7ab..89c63b0 100644
+--- a/backend/src/casino/platform/math-control/math-control.service.ts
++++ b/backend/src/casino/platform/math-control/math-control.service.ts
+@@ -1,10 +1,13 @@
+ import {
+   ConflictException,
+   ForbiddenException,
++  Inject,
+   Injectable,
+   InternalServerErrorException,
+   NotFoundException,
++  Optional,
+ } from '@nestjs/common';
++import { randomUUID } from 'node:crypto';
+ import { Prisma, Role } from '@prisma/client';
+ import { PrismaService } from '../../../prisma.service';
+ import { hasCapability } from '../../../auth/capabilities';
+@@ -16,14 +19,17 @@ import { MathControlJobs } from './math-control.jobs';
+ import {
+   defaultSessionConfig,
+ } from './math-control.bankroll';
+-import type {
+-  MathPolicy,
+-  MathProfileArtifact,
+-  MathValidationEvidence,
+-  GameMathAdapter,
+-  ProfileValidationOutcome,
+-  SessionConfig,
+-  ValidationOptions,
++import {
++  GAME_MATH_DEFAULT_RESETTERS,
++  type GameMathAdapter,
++  type GameMathDefaultResetter,
++  type GameMathDefaultResult,
++  type MathPolicy,
++  type MathProfileArtifact,
++  type MathValidationEvidence,
++  type ProfileValidationOutcome,
++  type SessionConfig,
++  type ValidationOptions,
+ } from './math-control.types';
+ 
+ /**
+@@ -49,6 +55,11 @@ export class MathControlService {
+     private readonly prisma: PrismaService,
+     private readonly registry: GameMathRegistry,
+     private readonly jobs: MathControlJobs,
++    // A game whose default state is owned by its own admin panel registers one
++    // delegate here; the shared pointer move below is the fallback. Optional so
++    // existing direct constructions in tests keep working.
++    @Optional() @Inject(GAME_MATH_DEFAULT_RESETTERS)
++    private readonly defaultResetters: GameMathDefaultResetter[] = [],
+   ) {}
+ 
+   private async assertAdmin(actorId: string, operation: string) {
+@@ -221,7 +232,12 @@ export class MathControlService {
+             ? (result.analysis.maxRoundMultiplier as number)
+             : parsed.policy.maxWinMultiplier).toFixed(6),
+         ),
+-        policy: parsed.policy as unknown as Prisma.InputJsonValue,
++        // Persist the artifact's own policy, not the raw request: an adapter may
++        // stamp explicit metadata that is part of the frozen hash (Classic stamps
++        // `maxWinEnabled: true` for a RESOLVED_SPIN profile). Storing the request
++        // would make artifactFromRow re-derive a different hash and fail every
++        // later validate/activate with MATH_ARTIFACT_HASH_MISMATCH.
++        policy: artifact.policy as unknown as Prisma.InputJsonValue,
+         analytic: result.analysis as unknown as Prisma.InputJsonValue,
+         payload: artifact.payload as Prisma.InputJsonValue,
+         status: 'DRAFT',
+@@ -403,7 +419,8 @@ export class MathControlService {
+ 
+       const checks = (validation.checks ?? []) as Array<{ id: string; status: string; value?: unknown }>;
+       const failed = checks.filter((entry) => entry.status !== 'PASS').map((entry) => entry.id);
+-      const missing = REQUIRED_ACTIVATION_CHECKS.filter((id) => !checks.some((entry) => entry.id === id));
++      const missing = requiredActivationChecks(artifact.policy.maxWinScope)
++        .filter((id) => !checks.some((entry) => entry.id === id));
+       const grade = ((validation.metrics ?? {}) as { grade?: string }).grade ?? 'PREVIEW';
+       if (missing.length > 0 || failed.length > 0 || grade !== 'ACTIVATION') {
+         throw new ConflictException({
+@@ -495,6 +512,142 @@ export class MathControlService {
+     };
+   }
+ 
++  /**
++   * Reset this game to its accepted default mathematics for NEW paid rounds.
++   *
++   * Additive and game-agnostic. The pointer move is scoped to exactly this
++   * `gameId`, bumps the monotonic revision, and appends an audit row in the same
++   * transaction, exactly as activate() does. Nothing here deletes a profile, a
++   * validation or a prior activation, and a round already in flight keeps the
++   * identity it was opened under because the runtime reads the pointer once.
++   *
++   * A game whose default is owned by its own admin panel is delegated to that
++   * panel's existing transition, so its history and runtime state stay coherent.
++   * The registry is the single source of truth for which games have mathematics
++   * integrated: an unregistered game is the established 404 contract.
++   *
++   * The state is decided by the pointer's kind and profile row, never by an RTP
++   * value, so a zero-return custom profile is CUSTOM (control on), not DEFAULT.
++   */
++  async resetToDefault(
++    actorId: string,
++    gameId: string,
++    input: { actionId?: string; expectedVersion?: number } = {},
++  ): Promise<GameMathDefaultResult> {
++    await this.assertAdmin(actorId, 'CASINO_MATH_DEFAULT');
++    // Unknown/integrated-only game: the registry throws the established
++    // GAME_MATH_NOT_INTEGRATED 404. Never a silent fallback.
++    const adapter = this.registry.adapter(gameId);
++
++    const delegate = (this.defaultResetters ?? []).find((entry) => entry.gameId === gameId);
++    if (delegate) {
++      const actionId = (input.actionId ?? '').trim();
++      return delegate.resetToDefault(actorId, {
++        actionId: actionId.length > 0 ? actionId : `math-default-${gameId}-${randomUUID()}`,
++        expectedVersion: input.expectedVersion,
++      });
++    }
++    // The registered default this game falls back to, from the game's own adapter
++    // (Classic: the frozen rtp50.v1 artefact). A game that declares none keeps the
++    // empty identity; nothing is ever borrowed from another game.
++    const registered = adapter.defaultProfile?.() ?? null;
++    return this.resetSharedDefault(actorId, gameId, input.expectedVersion, registered);
++  }
++
++  /** The shared pointer move to DEFAULT, under the same CAS discipline as activate(). */
++  private async resetSharedDefault(
++    actorId: string,
++    gameId: string,
++    expectedVersion?: number,
++    registered: { profileId: string; profileHash: string } | null = null,
++  ): Promise<GameMathDefaultResult> {
++    const pointer = await this.prisma.$transaction(async (tx) => {
++      const current = await tx.gameActiveMathProfile.findUnique({ where: { gameId } });
++      const defaultProfileId = registered?.profileId ?? '';
++      const defaultProfileHash = registered?.profileHash ?? '';
++
++      // The optimistic guard is evaluated before the idempotent early return, so a
++      // stale expectedVersion is refused even when the game is already on default.
++      if (current && expectedVersion !== undefined && current.version !== expectedVersion) {
++        throw new ConflictException({
++          code: 'ACTIVE_MATH_PROFILE_CONFLICT',
++          message: `Active mathematics moved to version ${current.version}.`,
++        });
++      }
++      if (current && current.kind === 'DEFAULT' && current.profileRowId === null) {
++        // Already default: idempotent, no version bump and no duplicate audit row.
++        return current;
++      }
++
++      if (!current) {
++        // Never activated: the game already runs its accepted default. The row is
++        // still materialised so the state is visible and the revision anchored.
++        const created = await tx.gameActiveMathProfile.create({
++          data: {
++            gameId,
++            profileRowId: null,
++            profileId: defaultProfileId,
++            profileHash: defaultProfileHash,
++            validationId: null,
++            kind: 'DEFAULT',
++            payoutCandidateId: null,
++            version: 1,
++            activatedBy: actorId,
++          },
++        });
++        await this.auditDefault(tx, actorId, gameId, { from: 'NEVER_ACTIVATED', version: created.version });
++        return created;
++      }
++
++      const updated = await tx.gameActiveMathProfile.updateMany({
++        where: { gameId, version: current.version },
++        data: {
++          profileRowId: null,
++          profileId: defaultProfileId,
++          profileHash: defaultProfileHash,
++          validationId: null,
++          kind: 'DEFAULT',
++          payoutCandidateId: null,
++          version: current.version + 1,
++          activatedBy: actorId,
++          activatedAt: new Date(),
++        },
++      });
++      if (updated.count !== 1) {
++        throw new ConflictException({
++          code: 'ACTIVE_MATH_PROFILE_CONFLICT',
++          message: 'Another activation won the race; reload and retry.',
++        });
++      }
++      const next = await tx.gameActiveMathProfile.findUniqueOrThrow({ where: { gameId } });
++      await this.auditDefault(tx, actorId, gameId, {
++        from: 'CUSTOM',
++        previousProfileId: current.profileId || null,
++        previousProfileHash: current.profileHash || null,
++        defaultProfileId: registered?.profileId ?? null,
++        version: next.version,
++      });
++      return next;
++    });
++
++    return {
++      gameId,
++      mode: 'DEFAULT' as const,
++      version: pointer.version,
++      // For a game with a registered default this is that immutable identity, so
++      // CURRENT proves which default is live rather than only that a pointer was
++      // cleared. A game with no declared default keeps the empty identity.
++      profileId: registered?.profileId ?? null,
++      profileHash: registered?.profileHash ?? null,
++      validationId: null,
++      activatedAt: pointer.activatedAt.toISOString(),
++      activatedBy: pointer.activatedBy,
++      note:
++        `The registered default mathematics${registered ? ` (${registered.profileId})` : ''} are live for ` +
++        'NEW paid rounds; a round in flight keeps the mathematics it was opened under.',
++    };
++  }
++
+   /**
+    * The runtime seam: the profile a NEW paid round must pin.
+    *
+@@ -602,6 +755,29 @@ export class MathControlService {
+     });
+   }
+ 
++  /** The DEFAULT audit row commits in the same transaction as the pointer move. */
++  private auditDefault(
++    tx: Prisma.TransactionClient,
++    actorId: string,
++    gameId: string,
++    metadata: Record<string, unknown>,
++  ) {
++    return tx.auditLog.create({
++      data: {
++        actorId,
++        targetType: 'CASINO_MATH_CONTROL',
++        targetId: gameId,
++        // `AuditAction` is a database enum, and a distinct
++        // `CASINO_MATH_PROFILE_DEFAULT` value would need a migration. The
++        // established lifecycle action is reused with the transition spelled out
++        // in the metadata, exactly like the payout panel's own DEFAULT rows.
++        action: 'CASINO_MATH_PAYOUT_LIFECYCLE',
++        result: 'OK',
++        metadata: { action: 'DEFAULT', ...metadata } as Prisma.InputJsonValue,
++      },
++    });
++  }
++
+   /** The activation audit row commits in the same transaction as the pointer. */
+   private auditIn(
+     tx: Prisma.TransactionClient,
+@@ -643,6 +819,25 @@ export const REQUIRED_ACTIVATION_CHECKS = [
+   'EVIDENCE_GRADE_ACTIVATION',
+ ] as const;
+ 
++/**
++ * The activation evidence a profile must carry, by ceiling scope.
++ *
++ * `RTP_WITHIN_BOUND_TIMES_HIT_RATE` is the whole-round identity
++ * `E[X] <= M * P(X > 0)`: it only holds when one paid round resolves to at most
++ * one bounded outcome. A `RESOLVED_SPIN` profile deliberately bounds each paid
++ * and free resolution while a feature chain may aggregate many of them, so the
++ * identity is not asserted there - the game adapters state the same rule. Requiring
++ * it for `RESOLVED_SPIN` made activation impossible for exactly the grammar that
++ * proves a per-resolution ceiling, while the per-resolution ceiling itself is
++ * still proved by `MAX_WIN_PROVEN_WITHIN_CEILING`. Whole-round scopes keep the
++ * complete list, so their gate is unchanged.
++ */
++export function requiredActivationChecks(scope: string): readonly string[] {
++  return scope === 'RESOLVED_SPIN'
++    ? REQUIRED_ACTIVATION_CHECKS.filter((id) => id !== 'RTP_WITHIN_BOUND_TIMES_HIT_RATE')
++    : [...REQUIRED_ACTIVATION_CHECKS];
++}
++
+ export function clampInt(value: number, min: number, max: number): number {
+   if (!Number.isFinite(value)) return min;
+   return Math.min(max, Math.max(min, Math.trunc(value)));
+diff --git a/backend/src/casino/platform/math-control/math-control.types.ts b/backend/src/casino/platform/math-control/math-control.types.ts
+index 57dc54e..ab8e6dd 100644
+--- a/backend/src/casino/platform/math-control/math-control.types.ts
++++ b/backend/src/casino/platform/math-control/math-control.types.ts
+@@ -11,6 +11,46 @@
+ /** Injection token for the per-game mathematics adapters. */
+ export const GAME_MATH_ADAPTERS = 'GAME_MATH_ADAPTERS';
+ 
++/**
++ * Injection token for the per-game DEFAULT reset delegates.
++ *
++ * Most games let the shared lifecycle move their own pointer to the explicit
++ * `DEFAULT` state. A game whose default state is owned by a dedicated admin
++ * panel (Lucky Lady's payout panel writes history and clears a runtime
++ * distribution in the same transaction) registers one delegate here, so the
++ * generic route reuses that exact behaviour instead of duplicating it.
++ */
++export const GAME_MATH_DEFAULT_RESETTERS = 'GAME_MATH_DEFAULT_RESETTERS';
++
++/**
++ * What a DEFAULT transition produced, reported uniformly whichever path ran.
++ *
++ * `mode` is `DEFAULT` for this operation by contract; a custom (including a
++ * zero-return) profile is `CUSTOM`. The state is keyed on the pointer's kind and
++ * profile row, never on an RTP value, so a zero-return custom profile is not
++ * mistaken for "control off".
++ */
++export type GameMathDefaultResult = {
++  gameId: string;
++  mode: 'DEFAULT';
++  version: number;
++  profileId: string | null;
++  profileHash: string | null;
++  validationId: string | null;
++  activatedAt: string | null;
++  activatedBy: string | null;
++  note: string;
++};
++
++/** One game's DEFAULT-reset delegate, registered under its exact gameId. */
++export interface GameMathDefaultResetter {
++  readonly gameId: string;
++  resetToDefault(
++    actorId: string,
++    input: { actionId: string; expectedVersion?: number },
++  ): Promise<GameMathDefaultResult>;
++}
++
+ /**
+  * Payout classes a profile can be described in.
+  *
+@@ -584,6 +624,16 @@ export type PolicyValidationResult =
+  */
+ export interface GameMathAdapter {
+   readonly gameId: string;
++  /**
++   * The game's registered, immutable default mathematics, when it declares one.
++   *
++   * The shared DEFAULT reset records this identity on the pointer so CURRENT can
++   * prove which default is live instead of only clearing a custom pointer. It is
++   * always the game's own declared default, never inferred from a hash and never
++   * borrowed from another game; a game that declares none keeps the empty
++   * identity. A panel-owned default (Lucky Lady) keeps its own contract instead.
++   */
++  defaultProfile?(): { profileId: string; profileHash: string } | null;
+   /** Cheap identity of the mathematics this process executes, without a sweep. */
+   identity(): { engineSha256: string; rulesSha256: string };
+   /**

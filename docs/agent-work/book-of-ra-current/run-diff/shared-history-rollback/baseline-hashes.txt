@@ -1,0 +1,6 @@
+ab8e6dd988fecb1d42bcb5e241dba736f55fc099	26525	backend/src/casino/platform/math-control/math-control.types.ts
+c39880755ceac6ac4c0e940aefd6a5cfaf2792a2	3402	backend/src/casino/platform/math-control/math-control.dto.ts
+8104f19f21f1d316f67d35688343fdf5605d3ce1	6528	backend/src/casino/platform/math-control/math-control.controller.ts
+dc2fa52941d80adacc866878989639e517520273	38160	backend/src/casino/platform/math-control/math-control.service.ts
+6ec1ea0896a6562726a05a4227ad5fdc14fcc830	6328	backend/src/casino/casino.module.ts
+d957067e0527271e47d7057f587768aa97328c45	67516	backend/src/casino/games/lucky-lady/payout/lucky-lady-payout.service.ts

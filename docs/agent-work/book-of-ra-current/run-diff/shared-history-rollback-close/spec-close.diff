@@ -1,0 +1,174 @@
+﻿diff --git a/docs/agent-work/book-of-ra-current/run-diff/shared-history-rollback-close/BEFORE-book-of-ra-classic.shared-history-rollback.spec.ts b/docs/agent-work/book-of-ra-current/run-diff/shared-history-rollback-close/AFTER-book-of-ra-classic.shared-history-rollback.spec.ts
+index a95f86b..d98438f 100644
+--- a/docs/agent-work/book-of-ra-current/run-diff/shared-history-rollback-close/BEFORE-book-of-ra-classic.shared-history-rollback.spec.ts
++++ b/docs/agent-work/book-of-ra-current/run-diff/shared-history-rollback-close/AFTER-book-of-ra-classic.shared-history-rollback.spec.ts
+@@ -166,29 +166,47 @@ describe('book of ra classic shared history + rollback (PostgreSQL + Redis)', ()
+ 
+   const activationChecks = (scope: string, provedMax: number) =>
+     requiredActivationChecks(scope).map((id) => ({
+       id,
+       status: 'PASS',
+       ...(id === 'MAX_WIN_PROVEN_WITHIN_CEILING' ? { value: { provedMax } } : {}),
+     }));
+ 
++  /**
++   * The fixture's expected return, read from the artifact's own recorded
++   * analytic metadata (the per-line `expectedRtpPercent` the Classic adapter
++   * publishes on the payload) rather than re-derived by a generator, a Monte
++   * Carlo run or a validation rerun.
++   */
++  const fixtureExpectedRtpPercent = (artifact: MathProfileArtifact): number => {
++    const payload = artifact.payload as ClassicProfile;
++    return Number(payload.tables['9'].expectedRtpPercent);
++  };
++
+   const seedValidatedProfile = async (artifact: MathProfileArtifact) => {
+     const row = await prisma.gameMathProfile.create({
+       data: {
+         gameId: artifact.gameId,
+         profileId: artifact.profileId,
+         canonicalHash: artifact.canonicalHash,
+         engineSha256: artifact.engineSha256,
+         rulesSha256: artifact.rulesSha256,
+         targetRtpPercent: new Prisma.Decimal(artifact.policy.targetRtpPercent.toFixed(6)),
+         measuredRtpPercent: null,
+         maxWinMultiplier: new Prisma.Decimal(artifact.policy.maxWinMultiplier.toFixed(6)),
+         policy: artifact.policy as unknown as Prisma.InputJsonValue,
+-        analytic: { kind: 'SHARED_HISTORY_FIXTURE' } as Prisma.InputJsonValue,
++        // The stored analytic object follows the real preview contract
++        // (`ProfileAnalysis`): `exactRtpPercent` carries the artifact's own
++        // recorded expected return, so the PREVIEW proof compares against this
++        // fixture value instead of restating the requested target.
++        analytic: {
++          kind: 'SHARED_HISTORY_FIXTURE',
++          exactRtpPercent: fixtureExpectedRtpPercent(artifact),
++        } as Prisma.InputJsonValue,
+         payload: artifact.payload as Prisma.InputJsonValue,
+         status: 'VALIDATED',
+         generatedBy: adminId,
+         createdAt: FIXTURE_CREATED_AT,
+       },
+     });
+     await prisma.gameMathProfileValidation.create({
+       data: {
+@@ -432,17 +450,92 @@ describe('book of ra classic shared history + rollback (PostgreSQL + Redis)', ()
+     const round = await playPaidRound('f'.repeat(64), 'classic-history-round-1', 'classic-history-seed-1');
+     expect(round.settings.serverResponse.mathConfig).toMatchObject({
+       activeMathProfile: CLASSIC_PROFILE_A,
+       profileHash: a.canonicalHash,
+     });
+     expect(round.played.recovery.profile).toEqual({ id: CLASSIC_PROFILE_A, hash: a.canonicalHash, version: 4 });
+     expect(round.state).toMatchObject({ profileId: CLASSIC_PROFILE_A });
+ 
+-    // No cross-game mutation and nothing unintegrated was touched.
++    // ---- the exact chain continues past the rollback: an EXPLICIT DEFAULT,
++    // then a fresh ACTIVATE of B. A rollback onto DEFAULT is a different
++    // transition and is deliberately not substituted for the explicit reset.
++    const explicitDefault = await restoreDefault({
++      actionId: 'classic-default-after-rollback-0001',
++      expectedVersion: 4,
++    });
++    expect(explicitDefault).toMatchObject({
++      mode: 'DEFAULT',
++      version: 5,
++      profileId: CLASSIC_DEFAULT_PROFILE_ID,
++      profileHash: defaultClassicProfile().hash,
++    });
++    expect(await pointer(CLASSIC_ID)).toMatchObject({
++      kind: 'DEFAULT',
++      profileRowId: null,
++      profileId: CLASSIC_DEFAULT_PROFILE_ID,
++      profileHash: defaultClassicProfile().hash,
++      version: 5,
++    });
++    // The runtime seam falls back to the game's registered default; CURRENT
++    // reports the registered default identity at the new revision.
++    await expect(math.activeProfile(CLASSIC_ID)).resolves.toBeNull();
++    expect((await current(CLASSIC_ID)).active).toMatchObject({
++      kind: 'DEFAULT',
++      version: 5,
++      profileId: CLASSIC_DEFAULT_PROFILE_ID,
++      profileHash: defaultClassicProfile().hash,
++    });
++
++    // ACTIVATE B again: the live state is genuinely B and the stale DEFAULT is
++    // gone from the runtime seam.
++    const reactivated = await activate(CLASSIC_PROFILE_B, 5);
++    expect(reactivated).toMatchObject({ profileId: CLASSIC_PROFILE_B, version: 6 });
++    expect(await pointer(CLASSIC_ID)).toMatchObject({
++      kind: 'GENERATED',
++      profileRowId: expect.any(String),
++      profileId: CLASSIC_PROFILE_B,
++      profileHash: b.canonicalHash,
++      payoutCandidateId: null,
++      version: 6,
++    });
++    const effective = await math.activeProfile(CLASSIC_ID);
++    expect(effective?.version).toBe(6);
++    expect(effective?.artifact.canonicalHash).toBe(b.canonicalHash);
++    expect((await current(CLASSIC_ID)).active).toMatchObject({
++      kind: 'GENERATED',
++      version: 6,
++      profileId: CLASSIC_PROFILE_B,
++      profileHash: b.canonicalHash,
++    });
++
++    // The whole chain is one monotonic, game-scoped history: no version is
++    // skipped and no other game's identity leaks in.
++    const chain = (await history(CLASSIC_ID)).entries;
++    expect(chain.map((entry) => [entry.action, entry.kind, entry.version])).toEqual([
++      ['ACTIVATE', 'GENERATED', 6],
++      ['DEFAULT', 'DEFAULT', 5],
++      ['ROLLBACK', 'GENERATED', 4],
++      ['ACTIVATE', 'GENERATED', 3],
++      ['ACTIVATE', 'GENERATED', 2],
++      ['DEFAULT', 'DEFAULT', 1],
++    ]);
++    expect(chain.map((entry) => entry.profileId)).toEqual([
++      CLASSIC_PROFILE_B,
++      null,
++      CLASSIC_PROFILE_A,
++      CLASSIC_PROFILE_B,
++      CLASSIC_PROFILE_A,
++      null,
++    ]);
++    expect(JSON.stringify(chain)).not.toMatch(/lucky-lady/);
++    expect(JSON.stringify(chain)).not.toMatch(/deluxe/i);
++
++    // No cross-game mutation and nothing unintegrated was touched, across the
++    // entire transition chain.
+     expect(await prisma.gameActiveMathProfile.findMany({ where: { gameId: LUCKY_LADY_PAYOUT_GAME_ID } })).toEqual(other.pointer);
+     expect(await prisma.luckyLadyPayoutActivation.count({ where: { gameId: LUCKY_LADY_PAYOUT_GAME_ID } })).toBe(other.history);
+     expect(await prisma.auditLog.count({ where: { targetId: LUCKY_LADY_PAYOUT_GAME_ID } })).toBe(other.audit);
+     expect(await prisma.gameActiveMathProfile.count({ where: { gameId: DELUXE_GAME_ID } })).toBe(0);
+   });
+ 
+   it('rolls back onto the registered DEFAULT, then activates B with no stale tombstone', async () => {
+     const a = classicCandidate(CLASSIC_PROFILE_A);
+@@ -520,16 +613,26 @@ describe('book of ra classic shared history + rollback (PostgreSQL + Redis)', ()
+     expect(preview.profile).toMatchObject({
+       gameId: CLASSIC_ID,
+       profileId: CLASSIC_PROFILE_A,
+       canonicalHash: a.canonicalHash,
+       status: 'VALIDATED',
+     });
+     expect(Number(preview.profile.targetRtpPercent)).toBe(a.policy.targetRtpPercent);
+     expect(Number(preview.profile.maxWinMultiplier)).toBe(a.policy.maxWinMultiplier);
++    // Explicit expected-RTP proof through the real PREVIEW payload: the stored
++    // analytic object exposes the fixture's own recorded expected return under
++    // the actual `ProfileAnalysis` field, coherent with this profile's expected
++    // target (the accepted 0.01pp validation tolerance) and identity - never a
++    // restatement of `targetRtpPercent`.
++    const fixtureRtpPercent = fixtureExpectedRtpPercent(a);
++    const previewAnalytic = preview.profile.analytic as { exactRtpPercent?: number | null };
++    expect(previewAnalytic.exactRtpPercent).toBeCloseTo(fixtureRtpPercent, 8);
++    expect(Math.abs(Number(previewAnalytic.exactRtpPercent) - a.policy.targetRtpPercent)).toBeLessThanOrEqual(0.01);
++    expect(preview.profile.profileId).toBe(CLASSIC_PROFILE_A);
+     expect(preview.profile.policy).toMatchObject({ gameId: CLASSIC_ID, maxWinScope: 'RESOLVED_SPIN', maxWinEnabled: true });
+     expect(preview.validations[0]).toMatchObject({ result: 'PASS', metrics: { grade: 'ACTIVATION' } });
+     expect(preview.active).toBe(false);
+     expect(JSON.stringify(preview)).not.toMatch(/lucky-lady/);
+     expect(JSON.stringify(preview)).not.toMatch(/deluxe/i);
+ 
+     // Reading a candidate is not an activation: CURRENT, the pointer and the
+     // history are all byte-identical afterwards.
