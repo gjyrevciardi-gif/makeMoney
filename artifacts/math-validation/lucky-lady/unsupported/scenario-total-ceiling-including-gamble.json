@@ -1,0 +1,34 @@
+{
+  "target": 50,
+  "scenario": "total-ceiling-including-gamble",
+  "status": "UNSUPPORTED",
+  "reasons": [
+    {
+      "constraint": "GAMBLE_UNBOUNDED_TOTAL_CEILING",
+      "requested": "50x including the optional gamble",
+      "achievable": "no finite ceiling",
+      "detail": "the red/black gamble doubles the pending win and returns to the GAMBLE phase with no attempt cap, so any reachable win can be doubled arbitrarily many times; only a ceiling that excludes the optional gamble can be proved"
+    }
+  ],
+  "bestEffort": null,
+  "policy": {
+    "gameId": "lucky-lady",
+    "targetRtpPercent": 50,
+    "maxWinMultiplier": 50,
+    "maxWinScope": "TOTAL_INCLUDING_OPTIONAL_GAMBLE",
+    "pacing": "BALANCED",
+    "customPacing": null,
+    "hitRate": {
+      "mode": "AUTO"
+    },
+    "partialReturn": "LOW",
+    "volatility": "MED",
+    "bigWinMinMultiplier": 10,
+    "bigWinMaxMultiplier": 50,
+    "featureContribution": {
+      "minPercent": 0,
+      "maxPercent": 60
+    },
+    "presets": []
+  }
+}

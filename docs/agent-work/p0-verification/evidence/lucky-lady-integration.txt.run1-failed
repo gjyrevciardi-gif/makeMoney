@@ -1,0 +1,33 @@
+
+> test
+> node -e "const raw=process.env.DATABASE_URL||''; if(!raw) throw new Error('DATABASE_URL is required for backend tests'); const name=new URL(raw).pathname.replace(/^\/+/, '').split('/')[0]||''; const safe=name.toLowerCase().includes('_test'); if(!safe || name.toLowerCase()==='fools_gold' || name.toLowerCase()==='postgres') throw new Error('Unsafe test database: ' + name);" && node --experimental-vm-modules ../node_modules/jest/bin/jest.js --runInBand test/lucky-lady.integration.spec.ts
+
+(node:28848) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"event":"HTTP_REQUEST","requestId":"a7f07839-60e6-478e-8c70-0823a6e1a7aa","method":"POST","route":"/casino/lucky-lady/launch","statusCode":201,"durationMs":74}
+FAIL test/lucky-lady.integration.spec.ts (35.384 s)
+  ● Lucky Lady platform integration (PostgreSQL) › HTTP surface › runs the launch, exchange and gameplay protocol over HTTP
+
+    expected 403 "Forbidden", got 201 "Created"
+
+      at Object.<anonymous> (test/C:/Users/Admin/orca/workspaces/toto/toto-game-adapter-template/backend/test/lucky-lady.integration.spec.ts:1142:10)
+      ----
+      at Test._assertStatus (../node_modules/supertest/lib/test.js:309:14)
+      at ../node_modules/supertest/lib/test.js:365:13
+      at Test._assertFunction (../node_modules/supertest/lib/test.js:342:13)
+      at Test.assert (../node_modules/supertest/lib/test.js:195:23)
+      at localAssert (../node_modules/supertest/lib/test.js:138:14)
+      at Server.<anonymous> (../node_modules/supertest/lib/test.js:152:11)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 28 passed, 29 total
+Snapshots:   0 total
+Time:        35.733 s
+Ran all test suites matching test/lucky-lady.integration.spec.ts.
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path C:\Users\Admin\orca\workspaces\toto\toto-game-adapter-template\backend
+npm error workspace backend
+npm error location C:\Users\Admin\orca\workspaces\toto\toto-game-adapter-template\backend
+npm error command failed
+npm error command C:\WINDOWS\SYSTEM32\cmd.exe /d /s /c node -e "const raw=process.env.DATABASE_URL||''; if(!raw) throw new Error('DATABASE_URL is required for backend tests'); const name=new URL(raw).pathname.replace(/^\/+/, '').split('/')[0]||''; const safe=name.toLowerCase().includes('_test'); if(!safe || name.toLowerCase()==='fools_gold' || name.toLowerCase()==='postgres') throw new Error('Unsafe test database: ' + name);" && node --experimental-vm-modules ../node_modules/jest/bin/jest.js --runInBand test/lucky-lady.integration.spec.ts

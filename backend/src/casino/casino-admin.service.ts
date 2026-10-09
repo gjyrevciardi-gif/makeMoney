@@ -1,6 +1,7 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+﻿import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { CasinoGameType, CasinoRoundStatus, Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
+import { hasCapability, type Capability } from '../auth/capabilities';
 import { CasinoRoundService } from './casino-round.service';
 
 /**
@@ -18,12 +19,12 @@ export class CasinoAdminService {
     private readonly rounds: CasinoRoundService,
   ) {}
 
-  private async assertAdmin(actorId: string, operation: string) {
+  private async assertAdmin(actorId: string, operation: string, capability: Capability = 'GAME_ADMIN') {
     const actor = await this.prisma.user.findUnique({
       where: { id: actorId },
-      select: { role: true },
+      select: { role: true, disabled: true },
     });
-    if (actor?.role === Role.ADMIN) return;
+    if (actor && !actor.disabled && hasCapability(actor.role, capability)) return;
     await this.prisma.auditLog.create({
       data: {
         actorId,
@@ -169,12 +170,14 @@ export class CasinoAdminService {
    * casino rounds. Password and refresh-token hashes are never selected.
    */
   async userDetail(actorId: string, userId: string) {
-    await this.assertAdmin(actorId, 'ADMIN_USER_DETAIL');
+    await this.assertAdmin(actorId, 'ADMIN_USER_DETAIL', 'USER_MANAGE');
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: {
         id: true,
         email: true,
+        username: true,
+        createdById: true,
         role: true,
         createdAt: true,
         wallet: { select: { id: true, balance: true, createdAt: true } },

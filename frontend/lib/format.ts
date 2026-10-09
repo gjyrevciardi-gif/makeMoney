@@ -69,6 +69,14 @@ export function humanize(value: string) {
     .join(' ');
 }
 
-/** First letter of an email, for the avatar. Never renders the whole address. */
-export const initialOf = (email: string | undefined) =>
-  (email?.trim()[0] ?? '?').toUpperCase();
+/** First letter of a name, for the avatar. Never renders the whole address. */
+export const initialOf = (name: string | null | undefined) =>
+  (name?.trim()[0] ?? '?').toUpperCase();
+
+/** A role in plain words. */
+export const roleLabel = (role: string | null | undefined) =>
+  role === 'SUPER_ADMIN' ? 'Super administrator' : role === 'ADMIN' ? 'Administrator' : role === 'MANAGER' ? 'Manager' : role === 'USER' ? 'Player' : '—';
+
+/** What to call an account: its username, else its email (older accounts), else a dash. */
+export const displayName = (account: { username?: string | null; email?: string | null } | null | undefined) =>
+  account?.username ?? account?.email ?? '—';

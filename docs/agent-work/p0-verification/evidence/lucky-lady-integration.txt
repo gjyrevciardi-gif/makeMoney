@@ -1,0 +1,20 @@
+
+> test
+> node -e "const raw=process.env.DATABASE_URL||''; if(!raw) throw new Error('DATABASE_URL is required for backend tests'); const name=new URL(raw).pathname.replace(/^\/+/, '').split('/')[0]||''; const safe=name.toLowerCase().includes('_test'); if(!safe || name.toLowerCase()==='fools_gold' || name.toLowerCase()==='postgres') throw new Error('Unsafe test database: ' + name);" && node --experimental-vm-modules ../node_modules/jest/bin/jest.js --runInBand test/lucky-lady.integration.spec.ts
+
+(node:1320) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"event":"HTTP_REQUEST","requestId":"fec531c2-86c2-4d81-9255-562926e974df","method":"POST","route":"/casino/lucky-lady/launch","statusCode":201,"durationMs":62}
+{"event":"HTTP_REQUEST","requestId":"1a662526-0a0c-405f-a66c-973240facc25","method":"POST","route":"/casino/lucky-lady/launch","statusCode":201,"durationMs":19}
+{"event":"HTTP_REQUEST","requestId":"71aa0f7d-ec5e-402c-ab1c-c993bf86cc82","method":"POST","route":"/casino/lucky-lady/launch/exchange","statusCode":200,"durationMs":20}
+{"event":"HTTP_REQUEST","requestId":"88ce9635-154f-4b11-9d0a-51fa8e919973","method":"POST","route":"/casino/lucky-lady/launch/exchange","statusCode":200,"durationMs":33}
+{"event":"HTTP_REQUEST","requestId":"eee7ec0f-075f-4359-85e7-6e2fec9cf348","method":"POST","route":"/casino/lucky-lady/session/gameplay","statusCode":200,"durationMs":51}
+{"event":"HTTP_REQUEST","requestId":"2bf3f4f2-13d8-4fe8-8d04-1931ade95553","method":"POST","route":"/casino/lucky-lady/session/gameplay","statusCode":200,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"2049a6d8-ec32-437a-99dd-79a7917459e1","method":"POST","route":"/casino/lucky-lady/session/gameplay","statusCode":200,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"271efa29-d7db-4d3b-a38f-e7362c2774bc","method":"POST","route":"/casino/lucky-lady/session/gameplay","statusCode":200,"durationMs":0}
+{"event":"HTTP_REQUEST","requestId":"8a8a403d-d06e-4c5a-b3cf-43ce052eb0d8","method":"POST","route":"/casino/lucky-lady/session/gameplay","statusCode":200,"durationMs":131}
+Test Suites: 1 passed, 1 total
+Tests:       29 passed, 29 total
+Snapshots:   0 total
+Time:        35.634 s, estimated 36 s
+Ran all test suites matching test/lucky-lady.integration.spec.ts.

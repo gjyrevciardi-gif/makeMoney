@@ -1,9 +1,8 @@
 import { Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
-import { Role } from '@prisma/client';
 import { Type } from 'class-transformer';
 import { IsInt, Matches, Max, Min } from 'class-validator';
 import { AccessGuard, AuthenticatedRequest } from '../auth/access.guard';
-import { Roles } from '../auth/roles.decorator';
+import { Capabilities } from '../auth/capabilities.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { RATE_LIMITS, RateLimitService } from '../common/rate-limit.service';
 import { SportsOperationsService } from './sports-operations.service';
@@ -24,7 +23,7 @@ class EventParams {
  */
 @Controller('admin/sports')
 @UseGuards(AccessGuard, RolesGuard)
-@Roles(Role.ADMIN)
+@Capabilities('PLATFORM_MANAGE')
 export class SportsOperationsController {
   constructor(
     private readonly operations: SportsOperationsService,

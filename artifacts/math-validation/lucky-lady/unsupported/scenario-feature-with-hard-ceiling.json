@@ -1,0 +1,34 @@
+{
+  "target": 50,
+  "scenario": "feature-with-hard-ceiling",
+  "status": "UNSUPPORTED",
+  "reasons": [
+    {
+      "constraint": "FEATURE_AND_HARD_CEILING_CONFLICT",
+      "requested": "at least 10% of return from features inside a 50x ceiling",
+      "achievable": "a feature-free profile inside a finite ceiling, or a feature profile with no finite ceiling",
+      "detail": "A reachable free-spin award can retrigger without a configured count limit, so a complete paid round has no finite return bound that a player cannot exceed. Requesting feature contribution above zero together with a finite hard ceiling is therefore unprovable, and this adapter refuses instead of narrowing the claim."
+    }
+  ],
+  "bestEffort": null,
+  "policy": {
+    "gameId": "lucky-lady",
+    "targetRtpPercent": 50,
+    "maxWinMultiplier": 50,
+    "maxWinScope": "PAID_ROUND_BEFORE_OPTIONAL_GAMBLE",
+    "pacing": "BALANCED",
+    "customPacing": null,
+    "hitRate": {
+      "mode": "AUTO"
+    },
+    "partialReturn": "LOW",
+    "volatility": "MED",
+    "bigWinMinMultiplier": 10,
+    "bigWinMaxMultiplier": 50,
+    "featureContribution": {
+      "minPercent": 10,
+      "maxPercent": 60
+    },
+    "presets": []
+  }
+}

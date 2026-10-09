@@ -5,11 +5,13 @@
     "start:dev": "nest start --watch",
     "build": "nest build",
     "typecheck": "tsc --noEmit",
-    "test": "node -e \"const raw=process.env.DATABASE_URL||''; if(!raw) throw new Error('DATABASE_URL is required for backend tests'); const name=new URL(raw).pathname.replace(/^\\/+/, '').split('/')[0]||''; const safe=name.toLowerCase().includes('_test'); if(!safe || name.toLowerCase()==='fools_gold' || name.toLowerCase()==='postgres') throw new Error('Unsafe test database: ' + name);\" && jest --runInBand",
+    "test": "node -e \"const raw=process.env.DATABASE_URL||''; if(!raw) throw new Error('DATABASE_URL is required for backend tests'); const name=new URL(raw).pathname.replace(/^\\/+/, '').split('/')[0]||''; const safe=name.toLowerCase().includes('_test'); if(!safe || name.toLowerCase()==='fools_gold' || name.toLowerCase()==='postgres') throw new Error('Unsafe test database: ' + name);\" && node --experimental-vm-modules ../node_modules/jest/bin/jest.js --runInBand",
     "test:backend": "npm run test",
     "test:integration:safe": "npm run test",
     "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev"
+    "prisma:migrate": "prisma migrate dev",
+    "rbac:bootstrap-super-admin": "node scripts/bootstrap-super-admin.mjs",
+    "rbac:reset-mfa": "node scripts/reset-mfa.mjs"
   },
   "dependencies": {
     "@nestjs/common": "^11.1.6",

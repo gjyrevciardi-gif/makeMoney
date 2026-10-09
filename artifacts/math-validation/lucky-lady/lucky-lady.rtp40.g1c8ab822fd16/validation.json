@@ -1,0 +1,384 @@
+{
+  "validationId": "evidence:lucky-lady.rtp40.g1c8ab822fd16",
+  "profileId": "lucky-lady.rtp40.g1c8ab822fd16",
+  "gameId": "lucky-lady",
+  "profileHash": "9ea06a6599738b0e9fd5734d4ecc01c59b503aa6a25809b89de7f1a7cd084b90",
+  "engineSha256": "0f02bb1e78eafdd99a51015c4bf83848050ca6b6e898123759d1442787d12843",
+  "rulesSha256": "4c03dd436f18307d9f98dc2148ff422251faa2d5c1c928062257187883acfc57",
+  "createdAt": "2026-10-01T04:15:46.015Z",
+  "seeds": {
+    "calibrationPrefix": "bounded-anchor-bisection (no sampled seeds)",
+    "validationPrefix": "validation:9ea06a6599738b0e9fd5734d4ecc01c59b503aa6a25809b89de7f1a7cd084b90:1",
+    "bankrollPrefix": "bankroll:9ea06a6599738b0e9fd5734d4ecc01c59b503aa6a25809b89de7f1a7cd084b90:1"
+  },
+  "runs": [
+    {
+      "kind": "ANALYTIC_REPRODUCTION",
+      "seedFree": true,
+      "rtpPercent": 39.99973042740686,
+      "agreementBps": 0
+    },
+    {
+      "kind": "MONTE_CARLO",
+      "seedPrefix": "validation:9ea06a6599738b0e9fd5734d4ecc01c59b503aa6a25809b89de7f1a7cd084b90:1",
+      "rounds": 40000,
+      "paidWagerUnits": 400000,
+      "returnedUnits": 157213,
+      "measuredRtpPercent": 39.30325,
+      "ci95Bps": 140.34228581819065,
+      "hitRate": 0.082225,
+      "zeroRate": 0.917775,
+      "lossRate": 0.917775,
+      "partialRate": 0,
+      "breakEvenRate": 0,
+      "breakEvenBandRate": 0,
+      "classHistogram": {
+        "ZERO": 36711,
+        "PARTIAL_RETURN": 0,
+        "BREAK_EVEN": 0,
+        "SMALL": 0,
+        "MEDIUM": 3285,
+        "BIG": 4,
+        "MAX": 0
+      },
+      "fineHistogram": {
+        "zero": 36711,
+        "gt0_lt0.5": 0,
+        "gte0.5_lt1": 0,
+        "gte1_lt2": 0,
+        "gte2_lt5": 1658,
+        "gte5_lt10": 1627,
+        "gte10_lt20": 4,
+        "gte20_lt30": 0,
+        "gte30_lt40": 0,
+        "gte40_lte50": 0,
+        "gt50": 0
+      },
+      "maxObservedMultiplier": 12,
+      "featureTriggerRate": 0,
+      "featureRetriggerRate": 0,
+      "featureRtpPercent": 0,
+      "volatilityStdDev": 1.4320641410019452,
+      "abortedRounds": 0
+    }
+  ],
+  "metrics": {
+    "kind": "MONTE_CARLO",
+    "seedPrefix": "validation:9ea06a6599738b0e9fd5734d4ecc01c59b503aa6a25809b89de7f1a7cd084b90:1",
+    "rounds": 40000,
+    "paidWagerUnits": 400000,
+    "returnedUnits": 157213,
+    "measuredRtpPercent": 39.30325,
+    "ci95Bps": 140.34228581819065,
+    "hitRate": 0.082225,
+    "zeroRate": 0.917775,
+    "lossRate": 0.917775,
+    "partialRate": 0,
+    "breakEvenRate": 0,
+    "breakEvenBandRate": 0,
+    "classHistogram": {
+      "ZERO": 36711,
+      "PARTIAL_RETURN": 0,
+      "BREAK_EVEN": 0,
+      "SMALL": 0,
+      "MEDIUM": 3285,
+      "BIG": 4,
+      "MAX": 0
+    },
+    "fineHistogram": {
+      "zero": 36711,
+      "gt0_lt0.5": 0,
+      "gte0.5_lt1": 0,
+      "gte1_lt2": 0,
+      "gte2_lt5": 1658,
+      "gte5_lt10": 1627,
+      "gte10_lt20": 4,
+      "gte20_lt30": 0,
+      "gte30_lt40": 0,
+      "gte40_lte50": 0,
+      "gt50": 0
+    },
+    "maxObservedMultiplier": 12,
+    "featureTriggerRate": 0,
+    "featureRetriggerRate": 0,
+    "featureRtpPercent": 0,
+    "volatilityStdDev": 1.4320641410019452,
+    "abortedRounds": 0
+  },
+  "bankroll": {
+    "denomination": "simulation-only centi-points (1 unit = 0.01 PTS); the live game ladder stays whole points",
+    "config": {
+      "startUnits": 10000,
+      "stakeUnits": 20,
+      "horizonPaidSpins": 3000,
+      "aliveCheckpoints": [
+        100,
+        250,
+        500,
+        1000,
+        2500
+      ],
+      "balanceCheckpoints": [
+        100,
+        250,
+        500,
+        1000
+      ],
+      "reachTargets": [
+        12500,
+        15000,
+        20000
+      ],
+      "fallTargets": [
+        8000,
+        6000,
+        4000,
+        2000
+      ],
+      "ruinCheckpoints": [
+        100,
+        250,
+        500,
+        1000
+      ]
+    },
+    "sampleSize": 300,
+    "seeds": {
+      "prefix": "bankroll:9ea06a6599738b0e9fd5734d4ecc01c59b503aa6a25809b89de7f1a7cd084b90:1",
+      "count": 300,
+      "first": "bankroll:9ea06a6599738b0e9fd5734d4ecc01c59b503aa6a25809b89de7f1a7cd084b90:1:0",
+      "last": "bankroll:9ea06a6599738b0e9fd5734d4ecc01c59b503aa6a25809b89de7f1a7cd084b90:1:299"
+    },
+    "horizonPaidSpins": 3000,
+    "censoredCount": 0,
+    "ruinedCount": 300,
+    "observedLengthPaidSpins": {
+      "mean": 829.6833333333333,
+      "median": 826,
+      "p10": 742,
+      "p25": 781.5,
+      "p75": 867.25,
+      "p90": 921.1,
+      "p95": 954.1500000000001
+    },
+    "turnoverPaidSpins": {
+      "mean": 829.6833333333333,
+      "median": 826,
+      "p10": 742,
+      "p25": 781.5,
+      "p75": 867.25,
+      "p90": 921.1,
+      "p95": 954.1500000000001
+    },
+    "balanceAt": {
+      "100": {
+        "mean": 8803.96,
+        "median": 8784,
+        "p10": 8457,
+        "p25": 8570,
+        "p75": 8982.5,
+        "p90": 9163.400000000001,
+        "p95": 9364.5
+      },
+      "250": {
+        "mean": 7004.526666666667,
+        "median": 6986,
+        "p10": 6430.8,
+        "p25": 6703,
+        "p75": 7280,
+        "p90": 7576,
+        "p95": 7789.3
+      },
+      "500": {
+        "mean": 3986.1466666666665,
+        "median": 3942,
+        "p10": 3129.6,
+        "p25": 3533,
+        "p75": 4458.5,
+        "p90": 4847,
+        "p95": 4998.8
+      },
+      "1000": {
+        "mean": 11.286666666666667,
+        "median": 8,
+        "p10": 2,
+        "p25": 4,
+        "p75": 14,
+        "p90": 18,
+        "p95": 18
+      }
+    },
+    "aliveAt": {
+      "100": 1,
+      "250": 1,
+      "500": 1,
+      "1000": 0.013333333333333334,
+      "2500": 0
+    },
+    "reachProbability": {
+      "12500": 0,
+      "15000": 0,
+      "20000": 0
+    },
+    "fallBelowProbability": {
+      "2000": 1,
+      "4000": 1,
+      "6000": 1,
+      "8000": 1
+    },
+    "ruinBy": {
+      "100": 0,
+      "250": 0,
+      "500": 0,
+      "1000": 0.9866666666666667
+    },
+    "observedBustQuantiles": {
+      "mean": 829.6833333333333,
+      "median": 826,
+      "p10": 742,
+      "p25": 781.5,
+      "p75": 867.25,
+      "p90": 921.1,
+      "p95": 954.1500000000001
+    },
+    "maxDrawdown": {
+      "mean": 10023.466666666667,
+      "median": 9997,
+      "p10": 9984,
+      "p25": 9990,
+      "p75": 10038,
+      "p90": 10100.2,
+      "p95": 10152
+    },
+    "featureRoundRate": 0,
+    "retriggerRoundRate": 0,
+    "featureReturnShare": 0,
+    "measuredRtpPercent": 39.78951808923083,
+    "houseEdgePercent": 60.21048191076917,
+    "notes": [
+      "Measured return is total return over total PAID wager, never an ending balance over a starting balance.",
+      "A session that reached the horizon is censored, not ruined; its bust time is unknown inside the horizon.",
+      "Length is the restricted observed duration (paid spins completed), quantiles by linear interpolation between closest ranks (R-7).",
+      "Balance checkpoints hold the terminal dust balance of a busted session so later checkpoints stay representative.",
+      "A checkpoint beyond the configured horizon is unobserved and reported as null rather than as a zero.",
+      "Survival, reach and fall probabilities account for the initial balance and every credited complete round.",
+      "reachTargets (simulation units): {\"12500 units\":\"125.00 PTS\",\"15000 units\":\"150.00 PTS\",\"20000 units\":\"200.00 PTS\"}"
+    ]
+  },
+  "checks": [
+    {
+      "id": "EXACT_RTP_MATCHES_TARGET",
+      "status": "PASS",
+      "detail": "exact 39.9997% vs requested 40% (tolerance 0.25pp)",
+      "value": {
+        "exact": 39.99973042740686,
+        "requested": 40
+      }
+    },
+    {
+      "id": "MONTE_CARLO_MATCHES_TARGET",
+      "status": "PASS",
+      "detail": "40000 independent rounds measured 39.3032% against the proved 39.9997% (tolerance 4.2103pp)",
+      "value": {
+        "measured": 39.30325,
+        "proved": 39.99973042740686,
+        "ci95Bps": 140.34228581819065
+      }
+    },
+    {
+      "id": "MONTE_CARLO_CI_COVERS_TARGET",
+      "status": "PASS",
+      "detail": "measured 39.3032% +/- 1.4034pp",
+      "value": {
+        "ciHalfWidthPercent": 1.4034228581819064
+      }
+    },
+    {
+      "id": "MAX_WIN_PROVEN_WITHIN_CEILING",
+      "status": "PASS",
+      "detail": "proved ceiling 12.0000x vs requested 50x; no reachable board awards 3 or more scatters, so the feature cannot run",
+      "value": {
+        "provedMax": 12,
+        "requested": 50
+      }
+    },
+    {
+      "id": "RTP_WITHIN_BOUND_TIMES_HIT_RATE",
+      "status": "PASS",
+      "detail": "E[X] = 0.399997 <= M x P(X>0) = 4.125115",
+      "value": {
+        "expectedMultiplier": 0.3999973042740686,
+        "boundTimesHitRate": 4.12511523395
+      }
+    },
+    {
+      "id": "OPTIONAL_GAMBLE_SCOPE_STATED",
+      "status": "PASS",
+      "detail": "ceiling applies to the complete paid round and explicitly excludes the optional gamble decision",
+      "value": {
+        "scope": "PAID_ROUND_BEFORE_OPTIONAL_GAMBLE"
+      }
+    },
+    {
+      "id": "HIT_RATE_AUTO",
+      "status": "PASS",
+      "detail": "observed hit rate 0.0825 (AUTO, not constrained)",
+      "value": {
+        "hit": 0.082502304679
+      }
+    },
+    {
+      "id": "PARTIAL_RETURN_TIER",
+      "status": "PASS",
+      "detail": "partial-return share 0.0000 requested LOW (0..0.15)",
+      "value": {
+        "partialShare": 0,
+        "tier": "LOW"
+      }
+    },
+    {
+      "id": "VOLATILITY_TIER",
+      "status": "PASS",
+      "detail": "return standard deviation 1.4509 requested MED (1..3)",
+      "value": {
+        "volatility": 1.4509316290321421,
+        "tier": "MED"
+      }
+    },
+    {
+      "id": "BIG_WIN_BAND_REACHABLE",
+      "status": "PASS",
+      "detail": "largest single board 12.0000x, band starts at 10x",
+      "value": {
+        "maxBoard": 12
+      }
+    },
+    {
+      "id": "FEATURE_CONTRIBUTION",
+      "status": "PASS",
+      "detail": "feature contributed 0.0000% of observed return, requested 0..60%",
+      "value": {
+        "featureShare": 0
+      }
+    },
+    {
+      "id": "BANKROLL_COHORT_COMPLETED",
+      "status": "PASS",
+      "detail": "300 complete sessions, horizon 3000 paid spins, 0 censored, 300 busted",
+      "value": {
+        "sampleSize": 300,
+        "censored": 0,
+        "ruined": 300
+      }
+    },
+    {
+      "id": "BANKROLL_ACCOUNTING_EXACT",
+      "status": "PASS",
+      "detail": "total return / total paid wager = 39.7895%",
+      "value": {
+        "measuredRtpPercent": 39.78951808923083
+      }
+    }
+  ],
+  "result": "PASS"
+}

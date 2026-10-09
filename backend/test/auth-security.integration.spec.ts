@@ -38,6 +38,7 @@ describe('authentication and authorization security', () => {
     await prisma.$executeRawUnsafe('TRUNCATE TABLE "LedgerEntry", "BetLeg", "Bet", "AuditLog", "RefreshToken", "Wallet", "User" CASCADE');
     const user = await auth.register(userEmail, 'correct-horse-battery'); userId = user.id;
     const admin = await prisma.user.create({ data: { email: adminEmail, passwordHash: await import('argon2').then(a => a.hash('correct-horse-battery')), role: 'ADMIN', wallet: { create: {} } } }); adminId = admin.id;
+    await prisma.user.updateMany({ where: { role: 'USER' }, data: { createdById: admin.id } });
   });
 
   it('runs login → refresh → reuse detection, hashes tokens, and revokes the family', async () => {

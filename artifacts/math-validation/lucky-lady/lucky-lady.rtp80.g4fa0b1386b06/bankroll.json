@@ -1,0 +1,160 @@
+{
+  "denomination": "simulation-only centi-points (1 unit = 0.01 PTS); the live game ladder stays whole points",
+  "config": {
+    "startUnits": 10000,
+    "stakeUnits": 20,
+    "horizonPaidSpins": 3000,
+    "aliveCheckpoints": [
+      100,
+      250,
+      500,
+      1000,
+      2500
+    ],
+    "balanceCheckpoints": [
+      100,
+      250,
+      500,
+      1000
+    ],
+    "reachTargets": [
+      12500,
+      15000,
+      20000
+    ],
+    "fallTargets": [
+      8000,
+      6000,
+      4000,
+      2000
+    ],
+    "ruinCheckpoints": [
+      100,
+      250,
+      500,
+      1000
+    ]
+  },
+  "sampleSize": 300,
+  "seeds": {
+    "prefix": "bankroll:b0968a068b6e054e7ddec091cf184dfb4f0d6c6ae0f929e60a1fcfba8c4eadcb:1",
+    "count": 300,
+    "first": "bankroll:b0968a068b6e054e7ddec091cf184dfb4f0d6c6ae0f929e60a1fcfba8c4eadcb:1:0",
+    "last": "bankroll:b0968a068b6e054e7ddec091cf184dfb4f0d6c6ae0f929e60a1fcfba8c4eadcb:1:299"
+  },
+  "horizonPaidSpins": 3000,
+  "censoredCount": 45,
+  "ruinedCount": 255,
+  "observedLengthPaidSpins": {
+    "mean": 2468.2433333333333,
+    "median": 2469.5,
+    "p10": 1934.9,
+    "p25": 2178,
+    "p75": 2794.25,
+    "p90": 3000,
+    "p95": 3000
+  },
+  "turnoverPaidSpins": {
+    "mean": 2468.2433333333333,
+    "median": 2469.5,
+    "p10": 1934.9,
+    "p25": 2178,
+    "p75": 2794.25,
+    "p90": 3000,
+    "p95": 3000
+  },
+  "balanceAt": {
+    "100": {
+      "mean": 9626.686666666666,
+      "median": 9604,
+      "p10": 9111.2,
+      "p25": 9358,
+      "p75": 9894.5,
+      "p90": 10152.4,
+      "p95": 10240.7
+    },
+    "250": {
+      "mean": 9021.18,
+      "median": 8965,
+      "p10": 8241,
+      "p25": 8587.5,
+      "p75": 9392,
+      "p90": 9844.800000000001,
+      "p95": 10098.7
+    },
+    "500": {
+      "mean": 8027.666666666667,
+      "median": 7950,
+      "p10": 6920.8,
+      "p25": 7444,
+      "p75": 8600,
+      "p90": 9238,
+      "p95": 9494.3
+    },
+    "1000": {
+      "mean": 6023.546666666667,
+      "median": 6039,
+      "p10": 4564.8,
+      "p25": 5180,
+      "p75": 6804,
+      "p90": 7572.6,
+      "p95": 8163.200000000001
+    }
+  },
+  "aliveAt": {
+    "100": 1,
+    "250": 1,
+    "500": 1,
+    "1000": 1,
+    "2500": 0.4766666666666667
+  },
+  "reachProbability": {
+    "12500": 0,
+    "15000": 0,
+    "20000": 0
+  },
+  "fallBelowProbability": {
+    "2000": 0.99,
+    "4000": 0.9933333333333333,
+    "6000": 1,
+    "8000": 1
+  },
+  "ruinBy": {
+    "100": 0,
+    "250": 0,
+    "500": 0,
+    "1000": 0
+  },
+  "observedBustQuantiles": {
+    "mean": 2374.4039215686275,
+    "median": 2390,
+    "p10": 1920.4,
+    "p25": 2113.5,
+    "p75": 2645,
+    "p90": 2817.2,
+    "p95": 2899.9
+  },
+  "maxDrawdown": {
+    "mean": 10036.22,
+    "median": 10073,
+    "p10": 9903.6,
+    "p25": 9996,
+    "p75": 10238.5,
+    "p90": 10442.6,
+    "p95": 10556.1
+  },
+  "featureRoundRate": 0,
+  "retriggerRoundRate": 0,
+  "featureReturnShare": 0,
+  "measuredRtpPercent": 80.16309845193545,
+  "houseEdgePercent": 19.836901548064546,
+  "notes": [
+    "Measured return is total return over total PAID wager, never an ending balance over a starting balance.",
+    "A session that reached the horizon is censored, not ruined; its bust time is unknown inside the horizon.",
+    "Length is the restricted observed duration (paid spins completed), quantiles by linear interpolation between closest ranks (R-7).",
+    "Balance checkpoints hold the terminal dust balance of a busted session so later checkpoints stay representative.",
+    "A checkpoint beyond the configured horizon is unobserved and reported as null rather than as a zero.",
+    "Survival, reach and fall probabilities account for the initial balance and every credited complete round.",
+    "reachTargets (simulation units): {\"12500 units\":\"125.00 PTS\",\"15000 units\":\"150.00 PTS\",\"20000 units\":\"200.00 PTS\"}"
+  ]
+}

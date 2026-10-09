@@ -1,0 +1,1287 @@
+{
+  "label": "rtp70-retention",
+  "testOnly": true,
+  "activation": false,
+  "status": "VALIDATED",
+  "generatedAt": "2026-01-01T00:00:00.000Z",
+  "generator": {
+    "solverVersion": "payout-policy-solver.v1",
+    "requestHash": "731f2b3f6f556fdf1a768439a53597aba5fcca497822b0602a88c22942866318",
+    "request": {
+      "raw": {
+        "targetRtpPercent": "70",
+        "objective": "RETENTION"
+      },
+      "normalized": {
+        "targetRtpPercent": "70",
+        "objective": "RETENTION",
+        "granularity": 1000000,
+        "tolerancePercent": "0.01",
+        "minimumWeight": {
+          "LOSS": 10000,
+          "PARTIAL_HIGH": 10000,
+          "SMALL": 10000
+        },
+        "maximumWeight": {}
+      },
+      "semanticConstraints": {},
+      "appliedFloors": [
+        "LOSS >= 10000 units (0.01 of the grid)",
+        "PARTIAL_HIGH >= 10000 units (0.01 of the grid)",
+        "SMALL >= 10000 units (0.01 of the grid, positive-profit floor)"
+      ]
+    },
+    "solver": {
+      "version": "payout-policy-solver.v1",
+      "objective": "RETENTION",
+      "support": [
+        "PARTIAL_LOW",
+        "SMALL"
+      ],
+      "method": "EXACT_TWO_CLASS",
+      "enumeratedPairs": 15,
+      "enumeratedTriples": 20
+    },
+    "expected": {
+      "rtpPercentExact": "70.000045",
+      "rtpPercent": 70.00004487345238,
+      "absoluteErrorPercentExact": "0.000045",
+      "absoluteErrorPercent": 0.00004487345238469676,
+      "tolerancePercent": "0.01"
+    },
+    "policyId": "lucky-lady.gen.retention.rtp70.30c51cb0b7",
+    "policyHash": "8c33e552a431e384eca129a6c694e0ccc0d0175f594c3208bfdec17da0552c44",
+    "weights": {
+      "LOSS": 10000,
+      "PARTIAL_LOW": 705683,
+      "PARTIAL_HIGH": 10000,
+      "BREAK_EVEN": 0,
+      "SMALL": 274317,
+      "MEDIUM": 0,
+      "BIG": 0,
+      "MAX": 0,
+      "FEATURE_TRIGGER": 0
+    },
+    "checks": [
+      {
+        "id": "ACCEPTED_POLICY_VALIDATION",
+        "status": "PASS",
+        "detail": "the accepted distribution-policy validator accepted the generated policy"
+      },
+      {
+        "id": "SUPPORT_PROOF_UNDER_FINAL_WEIGHTS",
+        "status": "PASS",
+        "detail": "the accepted support builder proved 108 boards and the per-resolution ceiling"
+      },
+      {
+        "id": "WEIGHTS_SUM_TO_GRANULARITY",
+        "status": "PASS",
+        "detail": "weights sum to 1000000 of the 1000000-unit grid",
+        "value": {
+          "sum": 1000000,
+          "granularity": 1000000
+        }
+      },
+      {
+        "id": "WEIGHTS_NON_NEGATIVE_INTEGERS",
+        "status": "PASS",
+        "detail": "every weight is a non-negative safe integer"
+      },
+      {
+        "id": "ONLY_REACHABLE_CLASSES_CARRY_WEIGHT",
+        "status": "PASS",
+        "detail": "unreachable classes carry zero weight (BREAK_EVEN, BIG, MAX)"
+      },
+      {
+        "id": "WEIGHTED_CLASSES_HAVE_PROVED_EXPECTATION",
+        "status": "PASS",
+        "detail": "every weighted class has reachable members and a proved expectation"
+      },
+      {
+        "id": "MAX_WIN_RESOLVED_SPIN_WITHIN_CEILING",
+        "status": "PASS",
+        "detail": "proved per-resolution max 50x (paid 20x, free 50x) vs the declared 50x ceiling; the feature aggregate is deliberately uncapped",
+        "value": {
+          "paidSpinMax": 20,
+          "freeSpinMax": 50,
+          "resolvedSpinMax": 50,
+          "ceiling": 50
+        }
+      },
+      {
+        "id": "MAX_WIN_CAP_IS_EXACT_ON_THE_SIMULATION_GRID",
+        "status": "PASS",
+        "detail": "cap 50x x 20 stake units = 1000 exact simulation units",
+        "value": {
+          "capUnits": 1000
+        }
+      },
+      {
+        "id": "EXPECTED_RTP_MATCHES_TARGET",
+        "status": "PASS",
+        "detail": "exact expected 70.000045% vs requested 70% (exact absolute error 0.000045pp, tolerance 0.01pp)",
+        "value": {
+          "expected": "70.000045",
+          "target": "70",
+          "error": "0.000045"
+        }
+      },
+      {
+        "id": "TARGET_ZERO_IS_A_PROVED_ZERO_RETURN_POLICY",
+        "status": "PASS",
+        "detail": "not applicable (target is not 0%)"
+      },
+      {
+        "id": "REQUESTED_MINIMUM_WEIGHTS_HELD",
+        "status": "PASS",
+        "detail": "minimum weights held: {\"LOSS\":10000,\"PARTIAL_HIGH\":10000,\"SMALL\":10000}"
+      },
+      {
+        "id": "FEATURE_EXPECTATION_PROVED_OR_ABSENT",
+        "status": "PASS",
+        "detail": "FEATURE_TRIGGER expectation 732.683481 (paid 19.988012, feature 712.695469)"
+      },
+      {
+        "id": "POLICY_HASH_IS_CANONICAL",
+        "status": "PASS",
+        "detail": "policy hash 8c33e552a431e384eca129a6c694e0ccc0d0175f594c3208bfdec17da0552c44 is stable across a serialization round trip",
+        "value": {
+          "policyHash": "8c33e552a431e384eca129a6c694e0ccc0d0175f594c3208bfdec17da0552c44"
+        }
+      },
+      {
+        "id": "POSITIVE_PROFIT_WEIGHT_WHEN_TARGET_POSITIVE",
+        "status": "PASS",
+        "detail": "274317 grid units on classes with a proved expectation above 1x (floor 10000)"
+      },
+      {
+        "id": "POSITIVE_LOSS_WEIGHT_WHEN_TARGET_POSITIVE",
+        "status": "PASS",
+        "detail": "LOSS weight 10000 units"
+      }
+    ],
+    "stages": [
+      {
+        "stage": "GENERATING",
+        "detail": "request 731f2b3f6f55 accepted; objective RETENTION"
+      },
+      {
+        "stage": "GENERATED",
+        "detail": "solved 1000000 grid units across PARTIAL_LOW+SMALL (EXACT_TWO_CLASS)"
+      },
+      {
+        "stage": "VALIDATING",
+        "detail": "15 acceptance checks"
+      },
+      {
+        "stage": "VALIDATED",
+        "detail": "every analytical check passed; activation is not part of this pipeline"
+      }
+    ],
+    "reasons": [],
+    "model": {
+      "modelId": "lucky-lady.model.bounded-generator.v1",
+      "modelHash": "4d66174ec81e2f9ac4701de1f54b98ac96e065d968f422e76036f3c001915bc9",
+      "engineSha256": "0f02bb1e78eafdd99a51015c4bf83848050ca6b6e898123759d1442787d12843",
+      "rulesSha256": "4c03dd436f18307d9f98dc2148ff422251faa2d5c1c928062257187883acfc57",
+      "maxWinScope": "RESOLVED_SPIN",
+      "maxWinMultiplier": 50,
+      "maxBandMin": 20,
+      "reachableClasses": [
+        {
+          "classId": "LOSS",
+          "conditionalEv": {
+            "numerator": "0",
+            "denominator": "1"
+          },
+          "conditionalPaidEv": {
+            "numerator": "0",
+            "denominator": "1"
+          },
+          "conditionalFeatureEv": null
+        },
+        {
+          "classId": "PARTIAL_LOW",
+          "conditionalEv": {
+            "numerator": "3002",
+            "denominator": "10005"
+          },
+          "conditionalPaidEv": {
+            "numerator": "3002",
+            "denominator": "10005"
+          },
+          "conditionalFeatureEv": null
+        },
+        {
+          "classId": "PARTIAL_HIGH",
+          "conditionalEv": {
+            "numerator": "4",
+            "denominator": "5"
+          },
+          "conditionalPaidEv": {
+            "numerator": "4",
+            "denominator": "5"
+          },
+          "conditionalFeatureEv": null
+        },
+        {
+          "classId": "SMALL",
+          "conditionalEv": {
+            "numerator": "3505",
+            "denominator": "2002"
+          },
+          "conditionalPaidEv": {
+            "numerator": "3505",
+            "denominator": "2002"
+          },
+          "conditionalFeatureEv": null
+        },
+        {
+          "classId": "MEDIUM",
+          "conditionalEv": {
+            "numerator": "85147769673026",
+            "denominator": "5015030025005"
+          },
+          "conditionalPaidEv": {
+            "numerator": "85147769673026",
+            "denominator": "5015030025005"
+          },
+          "conditionalFeatureEv": null
+        },
+        {
+          "classId": "FEATURE_TRIGGER",
+          "conditionalEv": {
+            "numerator": "4944382489803",
+            "denominator": "6748319864"
+          },
+          "conditionalPaidEv": {
+            "numerator": "20008",
+            "denominator": "1001"
+          },
+          "conditionalFeatureEv": {
+            "numerator": "235429922659",
+            "denominator": "330337336"
+          }
+        }
+      ],
+      "unreachableClasses": [
+        "BREAK_EVEN",
+        "BIG",
+        "MAX"
+      ],
+      "declaredReturnPercent": 1763.99773,
+      "triggerProbability": 0.0009940239202393297,
+      "expectedFeatureSpins": 15.227040639451062,
+      "featureDiverges": false,
+      "notes": [
+        "Declared bounded Lucky Lady generator model: a sparse pre-draw weighting over the accepted vendored strips and evaluator.",
+        "Not the accepted golden dense RTP50 profile - that profile cannot be enumerated inside the bounded index and is recorded as unsupported.",
+        "Every reachable paid and free resolution is proved inside a 50x RESOLVED_SPIN ceiling by the accepted support builder.",
+        "The feature chain is subcritical, so the FEATURE_TRIGGER expectation is finite and proved (never sampled).",
+        "No request, header, environment value or player attribute can select this model or its weights.",
+        "The accepted support builder proved 108 reachable boards; unreachable classes: BREAK_EVEN, BIG, MAX."
+      ],
+      "provenance": [
+        "Declared bounded Lucky Lady generator model: a sparse pre-draw weighting over the accepted vendored strips and evaluator.",
+        "Not the accepted golden dense RTP50 profile - that profile cannot be enumerated inside the bounded index and is recorded as unsupported.",
+        "Every reachable paid and free resolution is proved inside a 50x RESOLVED_SPIN ceiling by the accepted support builder.",
+        "The feature chain is subcritical, so the FEATURE_TRIGGER expectation is finite and proved (never sampled).",
+        "No request, header, environment value or player attribute can select this model or its weights."
+      ]
+    }
+  },
+  "statistical": {
+    "measuredRtpPercentExact": "70.02611",
+    "measuredRtpPercent": 70.0261096605744,
+    "standardErrorPercent": 0.1825977706230826,
+    "interval95Percent": [
+      69.66822460649585,
+      70.38399471465296
+    ],
+    "absoluteDifferencePercent": 0.026064787122024313,
+    "verdict": "PASS",
+    "tolerance": "3 x standard error + 0.5pp"
+  },
+  "bankroll": {
+    "testOnly": true,
+    "activated": false,
+    "gameId": "lucky-lady",
+    "policyId": "lucky-lady.gen.retention.rtp70.30c51cb0b7",
+    "policyHash": "8c33e552a431e384eca129a6c694e0ccc0d0175f594c3208bfdec17da0552c44",
+    "policyVersion": 1,
+    "mathProfileId": "lucky-lady.model.bounded-generator.v1",
+    "mathProfileHash": "4d66174ec81e2f9ac4701de1f54b98ac96e065d968f422e76036f3c001915bc9",
+    "runId": "ced1594be1070c08a69a229bef9479d8df77df9a735404351d0a7d3c10a2d13f",
+    "generatedAt": "2026-01-01T00:00:00.000Z",
+    "scope": {
+      "maxWinScope": "RESOLVED_SPIN",
+      "maxWinMultiplier": 50,
+      "maxBandMin": 20,
+      "granularity": 1000000
+    },
+    "weights": {
+      "LOSS": 10000,
+      "PARTIAL_LOW": 705683,
+      "PARTIAL_HIGH": 10000,
+      "BREAK_EVEN": 0,
+      "SMALL": 274317,
+      "MEDIUM": 0,
+      "BIG": 0,
+      "MAX": 0,
+      "FEATURE_TRIGGER": 0
+    },
+    "expected": {
+      "basis": "exact expected return of the policy: class probabilities x each class's conditional expectation, computed from the policy's real reachable support",
+      "evExact": "0.7000004487",
+      "rtpPercentExact": "70.000045",
+      "rtpPercent": 70.00004487345238
+    },
+    "measured": {
+      "paidWagerUnitsExact": "2665680",
+      "returnedUnitsExact": "1866672",
+      "closingUnitsExact": "992",
+      "openingUnitsExact": "800000",
+      "ledgerIdentityHolds": true,
+      "rtpPercentExact": "70.02611",
+      "rtpPercent": 70.0261096605744,
+      "rtpStandardErrorPercent": 0.1825977706230826,
+      "rtp95IntervalPercent": [
+        69.66822460649585,
+        70.38399471465296
+      ],
+      "houseEdgePercentExact": "29.97389",
+      "houseEdgePercent": 29.973890339425587
+    },
+    "classes": [
+      {
+        "class": "LOSS",
+        "configuredWeight": 10000,
+        "configuredPercent": 1,
+        "observedCount": 1327,
+        "observedPercent": 0.995618378800156,
+        "deviationPercent": -0.004381621199843998,
+        "binomialStandardErrorPercent": 0.02725389562403646,
+        "zDeviation": -0.16077045499431813,
+        "outsideThreeSigma": false,
+        "supportMembers": 40,
+        "supportBoardMass": "2008014012004",
+        "probabilityExact": "0.01",
+        "conditionalEvExact": "0"
+      },
+      {
+        "class": "PARTIAL_LOW",
+        "configuredWeight": 705683,
+        "configuredPercent": 70.5683,
+        "observedCount": 93990,
+        "observedPercent": 70.51859187899522,
+        "deviationPercent": -0.049708121004765626,
+        "binomialStandardErrorPercent": 0.1248312998373808,
+        "zDeviation": -0.39820238249157847,
+        "outsideThreeSigma": false,
+        "supportMembers": 12,
+        "supportBoardMass": "2005004001",
+        "probabilityExact": "0.705683",
+        "conditionalEvExact": "0.300049975"
+      },
+      {
+        "class": "PARTIAL_HIGH",
+        "configuredWeight": 10000,
+        "configuredPercent": 1,
+        "observedCount": 1345,
+        "observedPercent": 1.0091233756489901,
+        "deviationPercent": 0.009123375648990156,
+        "binomialStandardErrorPercent": 0.02725389562403646,
+        "zDeviation": 0.3347549199881661,
+        "outsideThreeSigma": false,
+        "supportMembers": 4,
+        "supportBoardMass": "1002001000000",
+        "probabilityExact": "0.01",
+        "conditionalEvExact": "0.8"
+      },
+      {
+        "class": "BREAK_EVEN",
+        "configuredWeight": 0,
+        "configuredPercent": 0,
+        "observedCount": 0,
+        "observedPercent": 0,
+        "deviationPercent": 0,
+        "binomialStandardErrorPercent": 0,
+        "zDeviation": null,
+        "outsideThreeSigma": false,
+        "supportMembers": 0,
+        "supportBoardMass": "0",
+        "probabilityExact": "0",
+        "conditionalEvExact": null
+      },
+      {
+        "class": "SMALL",
+        "configuredWeight": 274317,
+        "configuredPercent": 27.4317,
+        "observedCount": 36622,
+        "observedPercent": 27.476666366555623,
+        "deviationPercent": 0.04496636655562658,
+        "binomialStandardErrorPercent": 0.12221114892818194,
+        "zDeviation": 0.3679399706981833,
+        "outsideThreeSigma": false,
+        "supportMembers": 16,
+        "supportBoardMass": "2006006002",
+        "probabilityExact": "0.274317",
+        "conditionalEvExact": "1.7507492507"
+      },
+      {
+        "class": "MEDIUM",
+        "configuredWeight": 0,
+        "configuredPercent": 0,
+        "observedCount": 0,
+        "observedPercent": 0,
+        "deviationPercent": 0,
+        "binomialStandardErrorPercent": 0,
+        "zDeviation": null,
+        "outsideThreeSigma": false,
+        "supportMembers": 32,
+        "supportBoardMass": "1004009011006001",
+        "probabilityExact": "0",
+        "conditionalEvExact": "16.9785164293"
+      },
+      {
+        "class": "BIG",
+        "configuredWeight": 0,
+        "configuredPercent": 0,
+        "observedCount": 0,
+        "observedPercent": 0,
+        "deviationPercent": 0,
+        "binomialStandardErrorPercent": 0,
+        "zDeviation": null,
+        "outsideThreeSigma": false,
+        "supportMembers": 0,
+        "supportBoardMass": "0",
+        "probabilityExact": "0",
+        "conditionalEvExact": null
+      },
+      {
+        "class": "MAX",
+        "configuredWeight": 0,
+        "configuredPercent": 0,
+        "observedCount": 0,
+        "observedPercent": 0,
+        "deviationPercent": 0,
+        "binomialStandardErrorPercent": 0,
+        "zDeviation": null,
+        "outsideThreeSigma": false,
+        "supportMembers": 0,
+        "supportBoardMass": "0",
+        "probabilityExact": "0",
+        "conditionalEvExact": null
+      },
+      {
+        "class": "FEATURE_TRIGGER",
+        "configuredWeight": 0,
+        "configuredPercent": 0,
+        "observedCount": 0,
+        "observedPercent": 0,
+        "deviationPercent": 0,
+        "binomialStandardErrorPercent": 0,
+        "zDeviation": null,
+        "outsideThreeSigma": false,
+        "supportMembers": 4,
+        "supportBoardMass": "1002001000000",
+        "probabilityExact": "0",
+        "conditionalEvExact": "732.6834811402"
+      }
+    ],
+    "classesOutsideThreeSigma": 0,
+    "paidEvents": {
+      "paidRounds": 133284,
+      "paidStakeUnits": 20,
+      "fullLoss": {
+        "count": 1327,
+        "denominator": 133284,
+        "rate": 0.00995618378800156,
+        "wilson95": [
+          0.00943712103122622,
+          0.010503493429409594
+        ]
+      },
+      "hit": {
+        "count": 131957,
+        "denominator": 133284,
+        "rate": 0.9900438162119984,
+        "wilson95": [
+          0.9894965065705904,
+          0.9905628789687738
+        ]
+      },
+      "profitable": {
+        "count": 36622,
+        "denominator": 133284,
+        "rate": 0.27476666366555624,
+        "wilson95": [
+          0.2723766667458928,
+          0.27716964338360717
+        ]
+      },
+      "partial": {
+        "count": 95335,
+        "denominator": 133284,
+        "rate": 0.7152771525464422,
+        "wilson95": [
+          0.7128482316684488,
+          0.7176936645159036
+        ]
+      },
+      "breakEven": {
+        "count": 0,
+        "denominator": 133284,
+        "rate": 0,
+        "wilson95": [
+          0,
+          0.00002882077448812872
+        ]
+      },
+      "nonProfitable": {
+        "count": 96662,
+        "denominator": 133284,
+        "rate": 0.7252333363344438,
+        "wilson95": [
+          0.7228303566163928,
+          0.7276233332541072
+        ]
+      },
+      "featureTriggered": {
+        "count": 0,
+        "denominator": 133284,
+        "rate": 0,
+        "wilson95": [
+          0,
+          0.00002882077448812872
+        ]
+      },
+      "retriggered": {
+        "count": 0,
+        "denominator": 133284,
+        "rate": 0,
+        "wilson95": [
+          0,
+          0.00002882077448812872
+        ]
+      },
+      "triggerPaidPayoutUnits": {
+        "sampleSize": 0,
+        "mean": null,
+        "meanExact": null,
+        "median": null,
+        "medianExact": null,
+        "p10": null,
+        "p10Exact": null,
+        "p25": null,
+        "p25Exact": null,
+        "p75": null,
+        "p75Exact": null,
+        "p90": null,
+        "p90Exact": null,
+        "p95": null,
+        "p95Exact": null
+      },
+      "nativeClassMismatches": 0
+    },
+    "spins": {
+      "paidSpinsTotal": 133284,
+      "freeSpinsTotal": 0,
+      "resolvedSpinsTotal": 133284,
+      "perSessionPaidSpins": {
+        "mean": 1666.05,
+        "median": 1667.5,
+        "p10": 1566.6,
+        "p25": 1608.75,
+        "p75": 1711.25,
+        "p90": 1783.1,
+        "p95": 1803.1
+      },
+      "perSessionPaidSpinsExact": {
+        "sampleSize": 80,
+        "mean": 1666.05,
+        "meanExact": "1666.05",
+        "median": 1667.5,
+        "medianExact": "1667.5",
+        "p10": 1566.6,
+        "p10Exact": "1566.6",
+        "p25": 1608.75,
+        "p25Exact": "1608.75",
+        "p75": 1711.25,
+        "p75Exact": "1711.25",
+        "p90": 1783.1,
+        "p90Exact": "1783.1",
+        "p95": 1803.1,
+        "p95Exact": "1803.1"
+      }
+    },
+    "survival": {
+      "100": {
+        "checkpoint": 100,
+        "observed": 80,
+        "alive": 80,
+        "rate": 1,
+        "wilson95": [
+          0.9541818704644728,
+          0.9999999999999999
+        ]
+      },
+      "250": {
+        "checkpoint": 250,
+        "observed": 80,
+        "alive": 80,
+        "rate": 1,
+        "wilson95": [
+          0.9541818704644728,
+          0.9999999999999999
+        ]
+      },
+      "500": {
+        "checkpoint": 500,
+        "observed": 80,
+        "alive": 80,
+        "rate": 1,
+        "wilson95": [
+          0.9541818704644728,
+          0.9999999999999999
+        ]
+      },
+      "1000": {
+        "checkpoint": 1000,
+        "observed": 80,
+        "alive": 80,
+        "rate": 1,
+        "wilson95": [
+          0.9541818704644728,
+          0.9999999999999999
+        ]
+      },
+      "2500": {
+        "checkpoint": 2500,
+        "observed": 80,
+        "alive": 0,
+        "rate": 0,
+        "wilson95": [
+          0,
+          0.0458181295355271
+        ]
+      },
+      "5000": {
+        "checkpoint": 5000,
+        "observed": 80,
+        "alive": 0,
+        "rate": 0,
+        "wilson95": [
+          0,
+          0.0458181295355271
+        ]
+      },
+      "10000": {
+        "checkpoint": 10000,
+        "observed": 0,
+        "alive": 0,
+        "rate": null,
+        "wilson95": null
+      }
+    },
+    "turnover": {
+      "paidOnly": true,
+      "perSessionUnits": {
+        "sampleSize": 80,
+        "mean": 33321,
+        "meanExact": "33321",
+        "median": 33350,
+        "medianExact": "33350",
+        "p10": 31332,
+        "p10Exact": "31332",
+        "p25": 32175,
+        "p25Exact": "32175",
+        "p75": 34225,
+        "p75Exact": "34225",
+        "p90": 35662,
+        "p90Exact": "35662",
+        "p95": 36062,
+        "p95Exact": "36062"
+      },
+      "perSessionPts": {
+        "sampleSize": 80,
+        "mean": 333.21,
+        "meanExact": "333.21",
+        "median": 333.5,
+        "medianExact": "333.5",
+        "p10": 313.32,
+        "p10Exact": "313.32",
+        "p25": 321.75,
+        "p25Exact": "321.75",
+        "p75": 342.25,
+        "p75Exact": "342.25",
+        "p90": 356.62,
+        "p90Exact": "356.62",
+        "p95": 360.62,
+        "p95Exact": "360.62"
+      },
+      "totalUnitsExact": "2665680",
+      "totalPtsExact": "26656.8"
+    },
+    "house": {
+      "meanWagerUnitsPerSession": 33321,
+      "meanWagerPtsPerSession": 333.21,
+      "meanPayoutUnitsPerSession": 23333.4,
+      "meanPayoutPtsPerSession": 233.334,
+      "meanNetUnitsPerSession": 9987.6,
+      "meanNetPtsPerSession": 99.876,
+      "netPerSessionExact": {
+        "sampleSize": 80,
+        "mean": 9987.6,
+        "meanExact": "9987.6",
+        "median": 9987,
+        "medianExact": "9987",
+        "p10": 9982,
+        "p10Exact": "9982",
+        "p25": 9984,
+        "p25Exact": "9984",
+        "p75": 9990,
+        "p75Exact": "9990",
+        "p90": 9994,
+        "p90Exact": "9994",
+        "p95": 9994,
+        "p95Exact": "9994"
+      }
+    },
+    "balance": {
+      "100": {
+        "checkpoint": 100,
+        "label": "Balance @100 | survivors only",
+        "totalSessions": 80,
+        "reachedCheckpoint": 80,
+        "survivalRate": 1,
+        "conditionalSampleSize": 80,
+        "excludedRuinedBeforeCheckpoint": 0,
+        "exactCheckpointRuin": 0,
+        "aliveAtCheckpoint": 80,
+        "aliveRate": 1,
+        "survivalRateDenominator": 80,
+        "beyondHorizon": false,
+        "meanExact": "9399.4",
+        "medianExact": "9395",
+        "p10Exact": "9235.8",
+        "p25Exact": "9316.5",
+        "p75Exact": "9484.5",
+        "p90Exact": "9542.6",
+        "p95Exact": "9584.8",
+        "mean": 9399.4,
+        "median": 9395,
+        "p10": 9235.8,
+        "p25": 9316.5,
+        "p75": 9484.5,
+        "p90": 9542.6,
+        "p95": 9584.8
+      },
+      "250": {
+        "checkpoint": 250,
+        "label": "Balance @250 | survivors only",
+        "totalSessions": 80,
+        "reachedCheckpoint": 80,
+        "survivalRate": 1,
+        "conditionalSampleSize": 80,
+        "excludedRuinedBeforeCheckpoint": 0,
+        "exactCheckpointRuin": 0,
+        "aliveAtCheckpoint": 80,
+        "aliveRate": 1,
+        "survivalRateDenominator": 80,
+        "beyondHorizon": false,
+        "meanExact": "8486.675",
+        "medianExact": "8484",
+        "p10Exact": "8237",
+        "p25Exact": "8335",
+        "p75Exact": "8607.5",
+        "p90Exact": "8744.8",
+        "p95Exact": "8788.1",
+        "mean": 8486.675,
+        "median": 8484,
+        "p10": 8237,
+        "p25": 8335,
+        "p75": 8607.5,
+        "p90": 8744.8,
+        "p95": 8788.1
+      },
+      "500": {
+        "checkpoint": 500,
+        "label": "Balance @500 | survivors only",
+        "totalSessions": 80,
+        "reachedCheckpoint": 80,
+        "survivalRate": 1,
+        "conditionalSampleSize": 80,
+        "excludedRuinedBeforeCheckpoint": 0,
+        "exactCheckpointRuin": 0,
+        "aliveAtCheckpoint": 80,
+        "aliveRate": 1,
+        "survivalRateDenominator": 80,
+        "beyondHorizon": false,
+        "meanExact": "6992.65",
+        "medianExact": "6928",
+        "p10Exact": "6585.2",
+        "p25Exact": "6779.5",
+        "p75Exact": "7153",
+        "p90Exact": "7415.2",
+        "p95Exact": "7658.8",
+        "mean": 6992.65,
+        "median": 6928,
+        "p10": 6585.2,
+        "p25": 6779.5,
+        "p75": 7153,
+        "p90": 7415.2,
+        "p95": 7658.8
+      },
+      "1000": {
+        "checkpoint": 1000,
+        "label": "Balance @1000 | survivors only",
+        "totalSessions": 80,
+        "reachedCheckpoint": 80,
+        "survivalRate": 1,
+        "conditionalSampleSize": 80,
+        "excludedRuinedBeforeCheckpoint": 0,
+        "exactCheckpointRuin": 0,
+        "aliveAtCheckpoint": 80,
+        "aliveRate": 1,
+        "survivalRateDenominator": 80,
+        "beyondHorizon": false,
+        "meanExact": "4015.25",
+        "medianExact": "3993",
+        "p10Exact": "3568.8",
+        "p25Exact": "3715",
+        "p75Exact": "4265.5",
+        "p90Exact": "4507.4",
+        "p95Exact": "4805.2",
+        "mean": 4015.25,
+        "median": 3993,
+        "p10": 3568.8,
+        "p25": 3715,
+        "p75": 4265.5,
+        "p90": 4507.4,
+        "p95": 4805.2
+      },
+      "2500": {
+        "checkpoint": 2500,
+        "label": "Balance @2500 | survivors only",
+        "totalSessions": 80,
+        "reachedCheckpoint": 0,
+        "survivalRate": 0,
+        "conditionalSampleSize": 0,
+        "excludedRuinedBeforeCheckpoint": 80,
+        "exactCheckpointRuin": 0,
+        "aliveAtCheckpoint": 0,
+        "aliveRate": 0,
+        "survivalRateDenominator": 80,
+        "beyondHorizon": false,
+        "meanExact": null,
+        "medianExact": null,
+        "p10Exact": null,
+        "p25Exact": null,
+        "p75Exact": null,
+        "p90Exact": null,
+        "p95Exact": null,
+        "mean": null,
+        "median": null,
+        "p10": null,
+        "p25": null,
+        "p75": null,
+        "p90": null,
+        "p95": null
+      },
+      "5000": {
+        "checkpoint": 5000,
+        "label": "Balance @5000 | survivors only",
+        "totalSessions": 80,
+        "reachedCheckpoint": 0,
+        "survivalRate": 0,
+        "conditionalSampleSize": 0,
+        "excludedRuinedBeforeCheckpoint": 80,
+        "exactCheckpointRuin": 0,
+        "aliveAtCheckpoint": 0,
+        "aliveRate": 0,
+        "survivalRateDenominator": 80,
+        "beyondHorizon": false,
+        "meanExact": null,
+        "medianExact": null,
+        "p10Exact": null,
+        "p25Exact": null,
+        "p75Exact": null,
+        "p90Exact": null,
+        "p95Exact": null,
+        "mean": null,
+        "median": null,
+        "p10": null,
+        "p25": null,
+        "p75": null,
+        "p90": null,
+        "p95": null
+      }
+    },
+    "unconditionalBalance": {
+      "100": {
+        "checkpoint": 100,
+        "label": "Balance @100 | all sessions, ruin=0",
+        "totalSessions": 80,
+        "observed": 80,
+        "zeroRepresented": 0,
+        "beyondHorizon": false,
+        "meanExact": "9399.4",
+        "medianExact": "9395",
+        "p10Exact": "9235.8",
+        "p25Exact": "9316.5",
+        "p75Exact": "9484.5",
+        "p90Exact": "9542.6",
+        "p95Exact": "9584.8",
+        "mean": 9399.4,
+        "median": 9395,
+        "p10": 9235.8,
+        "p25": 9316.5,
+        "p75": 9484.5,
+        "p90": 9542.6,
+        "p95": 9584.8
+      },
+      "250": {
+        "checkpoint": 250,
+        "label": "Balance @250 | all sessions, ruin=0",
+        "totalSessions": 80,
+        "observed": 80,
+        "zeroRepresented": 0,
+        "beyondHorizon": false,
+        "meanExact": "8486.675",
+        "medianExact": "8484",
+        "p10Exact": "8237",
+        "p25Exact": "8335",
+        "p75Exact": "8607.5",
+        "p90Exact": "8744.8",
+        "p95Exact": "8788.1",
+        "mean": 8486.675,
+        "median": 8484,
+        "p10": 8237,
+        "p25": 8335,
+        "p75": 8607.5,
+        "p90": 8744.8,
+        "p95": 8788.1
+      },
+      "500": {
+        "checkpoint": 500,
+        "label": "Balance @500 | all sessions, ruin=0",
+        "totalSessions": 80,
+        "observed": 80,
+        "zeroRepresented": 0,
+        "beyondHorizon": false,
+        "meanExact": "6992.65",
+        "medianExact": "6928",
+        "p10Exact": "6585.2",
+        "p25Exact": "6779.5",
+        "p75Exact": "7153",
+        "p90Exact": "7415.2",
+        "p95Exact": "7658.8",
+        "mean": 6992.65,
+        "median": 6928,
+        "p10": 6585.2,
+        "p25": 6779.5,
+        "p75": 7153,
+        "p90": 7415.2,
+        "p95": 7658.8
+      },
+      "1000": {
+        "checkpoint": 1000,
+        "label": "Balance @1000 | all sessions, ruin=0",
+        "totalSessions": 80,
+        "observed": 80,
+        "zeroRepresented": 0,
+        "beyondHorizon": false,
+        "meanExact": "4015.25",
+        "medianExact": "3993",
+        "p10Exact": "3568.8",
+        "p25Exact": "3715",
+        "p75Exact": "4265.5",
+        "p90Exact": "4507.4",
+        "p95Exact": "4805.2",
+        "mean": 4015.25,
+        "median": 3993,
+        "p10": 3568.8,
+        "p25": 3715,
+        "p75": 4265.5,
+        "p90": 4507.4,
+        "p95": 4805.2
+      },
+      "2500": {
+        "checkpoint": 2500,
+        "label": "Balance @2500 | all sessions, ruin=0",
+        "totalSessions": 80,
+        "observed": 80,
+        "zeroRepresented": 80,
+        "beyondHorizon": false,
+        "meanExact": "0",
+        "medianExact": "0",
+        "p10Exact": "0",
+        "p25Exact": "0",
+        "p75Exact": "0",
+        "p90Exact": "0",
+        "p95Exact": "0",
+        "mean": 0,
+        "median": 0,
+        "p10": 0,
+        "p25": 0,
+        "p75": 0,
+        "p90": 0,
+        "p95": 0
+      },
+      "5000": {
+        "checkpoint": 5000,
+        "label": "Balance @5000 | all sessions, ruin=0",
+        "totalSessions": 80,
+        "observed": 80,
+        "zeroRepresented": 80,
+        "beyondHorizon": false,
+        "meanExact": "0",
+        "medianExact": "0",
+        "p10Exact": "0",
+        "p25Exact": "0",
+        "p75Exact": "0",
+        "p90Exact": "0",
+        "p95Exact": "0",
+        "mean": 0,
+        "median": 0,
+        "p10": 0,
+        "p25": 0,
+        "p75": 0,
+        "p90": 0,
+        "p95": 0
+      }
+    },
+    "reach": {
+      "12500": 0,
+      "15000": 0,
+      "20000": 0
+    },
+    "fallBelow": {
+      "2000": 1,
+      "4000": 1,
+      "6000": 1,
+      "8000": 1
+    },
+    "ruin": {
+      "100": {
+        "checkpoint": 100,
+        "observed": 80,
+        "ruined": 0,
+        "rate": 0,
+        "beyondHorizon": false
+      },
+      "250": {
+        "checkpoint": 250,
+        "observed": 80,
+        "ruined": 0,
+        "rate": 0,
+        "beyondHorizon": false
+      },
+      "500": {
+        "checkpoint": 500,
+        "observed": 80,
+        "ruined": 0,
+        "rate": 0,
+        "beyondHorizon": false
+      },
+      "1000": {
+        "checkpoint": 1000,
+        "observed": 80,
+        "ruined": 0,
+        "rate": 0,
+        "beyondHorizon": false
+      },
+      "2500": {
+        "checkpoint": 2500,
+        "observed": 80,
+        "ruined": 80,
+        "rate": 1,
+        "beyondHorizon": false
+      },
+      "5000": {
+        "checkpoint": 5000,
+        "observed": 80,
+        "ruined": 80,
+        "rate": 1,
+        "beyondHorizon": false
+      }
+    },
+    "drySpells": {
+      "fullLoss": {
+        "definition": "consecutive paid rounds with a zero initial paid payout",
+        "runs": 1313,
+        "meanRunLength": 1.0106626047220106,
+        "meanRunLengthDenominator": 1313,
+        "longestPerSession": {
+          "mean": 1.175,
+          "median": 1,
+          "p10": 1,
+          "p25": 1,
+          "p75": 1,
+          "p90": 2,
+          "p95": 2
+        },
+        "longestPerSessionP99": 2,
+        "pooledRuns": {
+          "mean": 1.0106626047220106,
+          "median": 1,
+          "p10": 1,
+          "p25": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1
+        },
+        "pooledP99": 1.8799999999998818,
+        "terminalStreakIncluded": true
+      },
+      "nonProfitable": {
+        "definition": "consecutive paid rounds whose initial paid payout is at or below the full paid stake",
+        "runs": 26681,
+        "meanRunLength": 3.6228777032345114,
+        "meanRunLengthDenominator": 26681,
+        "longestPerSession": {
+          "mean": 19.875,
+          "median": 19,
+          "p10": 16,
+          "p25": 18,
+          "p75": 22,
+          "p90": 24,
+          "p95": 26
+        },
+        "longestPerSessionP99": 28.62999999999998,
+        "pooledRuns": {
+          "mean": 3.6228777032345114,
+          "median": 3,
+          "p10": 1,
+          "p25": 1,
+          "p75": 5,
+          "p90": 8,
+          "p95": 10
+        },
+        "pooledP99": 15,
+        "terminalStreakIncluded": true
+      }
+    },
+    "drawdown": {
+      "mean": 9997.05,
+      "median": 9994,
+      "p10": 9984,
+      "p25": 9987.5,
+      "p75": 10002,
+      "p90": 10014.2,
+      "p95": 10028,
+      "exact": {
+        "sampleSize": 80,
+        "mean": 9997.05,
+        "meanExact": "9997.05",
+        "median": 9994,
+        "medianExact": "9994",
+        "p10": 9984,
+        "p10Exact": "9984",
+        "p25": 9987.5,
+        "p25Exact": "9987.5",
+        "p75": 10002,
+        "p75Exact": "10002",
+        "p90": 10014.2,
+        "p90Exact": "10014.2",
+        "p95": 10028,
+        "p95Exact": "10028"
+      },
+      "units": "simulation centi-points"
+    },
+    "maxObserved": {
+      "paidSpinUnits": 50,
+      "paidSpinUnitsExact": "50",
+      "freeSpinUnits": 0,
+      "freeSpinUnitsExact": "0",
+      "featureAggregateUnits": 0,
+      "featureAggregateUnitsExact": "0",
+      "capUnits": 1000,
+      "capUnitsExact": "1000",
+      "paidSpinWithinCap": true,
+      "freeSpinWithinCap": true,
+      "featureAggregateExceedsCap": false
+    },
+    "support": {
+      "reachableBoards": 108,
+      "totalBoardMass": "1008025038028008",
+      "maxWin": {
+        "paidSpinMax": 20,
+        "freeSpinMax": 50,
+        "resolvedSpinMax": 50
+      }
+    },
+    "sample": {
+      "sessions": 80,
+      "config": {
+        "startUnits": 10000,
+        "stakeUnits": 20,
+        "horizonPaidSpins": 5000,
+        "aliveCheckpoints": [
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "balanceCheckpoints": [
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000
+        ],
+        "reachTargets": [
+          12500,
+          15000,
+          20000
+        ],
+        "fallTargets": [
+          8000,
+          6000,
+          4000,
+          2000
+        ],
+        "ruinCheckpoints": [
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000
+        ]
+      },
+      "horizonPaidSpins": 5000,
+      "censoredCount": 0,
+      "ruinedCount": 80,
+      "actualPaidRounds": 133284,
+      "actualFreeSpins": 0,
+      "actualResolvedSpins": 133284,
+      "seedPrefix": "generated:rtp70-retention:v1",
+      "seedFirst": "generated:rtp70-retention:v1:0",
+      "seedLast": "generated:rtp70-retention:v1:79",
+      "denomination": "simulation-only centi-points (1 unit = 0.01 PTS); the live game ladder stays whole points"
+    },
+    "limitations": [
+      "Offline behaviour fixture: testOnly=true, activated=false. No profile was generated, validated or activated.",
+      "The optional red/black gamble is excluded from these sessions; the reported maxima are per resolved spin and per feature aggregate only.",
+      "Selection uses a deterministic simulation stream (class and member draws) and a separate simulation stream for the native engine; production keeps the OS CSPRNG.",
+      "Class frequencies are drawn from the configured weights, and the fixed-n binomial standard errors are closed-form; because the number of paid rounds is random (bankroll-dependent stopping), those intervals and the normal-approximation RTP interval are approximate rather than exact multinomial inference.",
+      "Free spins are paid by the originating round under the same locked profile and cap; free spins never debit a wager.",
+      "The per-resolved-spin cap is compared against `maxWinMultiplier x the full locked paid stake` (never a zero free stake); the feature aggregate is reported separately and may exceed the per-spin cap by design.",
+      "`Balance @N | survivors only` is the balance after N completed paid rounds, over exactly the sessions that reached N (resolved at least N paid spins). A session that resolved exactly N and then could not fund the next stake is included; a session ruined before N is excluded, and the conditional sample size is reported with it.",
+      "`Balance @N | all sessions, ruin=0` keeps every session, representing each session ruined before N as 0. It is reported separately from the survivor-only statistic and the two are never mixed. A checkpoint beyond the horizon is unobserved in both.",
+      "A checkpoint beyond a session horizon is unobserved, and a session that reached the horizon is censored, not ruined: its bust time inside the horizon is unknown and no finite bust quantile is claimed.",
+      "The exact per-resolution cap is converted from the policy multiple with exact rational arithmetic; a non-integral cap is refused rather than rounded up."
+    ]
+  },
+  "warnings": [
+    "Offline generator evidence: activation is never part of this pipeline; the candidate stays a reviewable artifact.",
+    "The bankroll sample is bounded and predeclared; the seed prefix and sample size are recorded, and no seed is searched.",
+    "Session proportions carry Wilson 95% intervals limited by the session count; the RTP interval is a normal approximation over observed paid rounds while the number of rounds is bankroll-dependent (optional stopping), so it is approximate."
+  ]
+}

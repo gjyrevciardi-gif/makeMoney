@@ -20,6 +20,7 @@ const VALID_PRODUCTION = {
   COOKIE_SECURE: 'true',
   TRUST_PROXY: 'true',
   REGISTRATION_ENABLED: 'false',
+  PASSWORD_VAULT_KEY: 'BwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAhIiMkJSY=',
   PORT: '3001',
 } as const;
 
@@ -92,9 +93,16 @@ describe('production environment validation', () => {
     'COOKIE_SECURE',
     'TRUST_PROXY',
     'REGISTRATION_ENABLED',
+    'PASSWORD_VAULT_KEY',
   ])('fails fast when %s is missing', name => {
     withEnvironment(production({ [name]: undefined }), () => {
       expect(() => validateProductionEnvironment()).toThrow(/Invalid production environment/);
+    });
+  });
+
+  it('rejects a PASSWORD_VAULT_KEY that is not 32 bytes', () => {
+    withEnvironment(production({ PASSWORD_VAULT_KEY: Buffer.from('too-short').toString('base64') }), () => {
+      expect(() => validateProductionEnvironment()).toThrow(/PASSWORD_VAULT_KEY/);
     });
   });
 

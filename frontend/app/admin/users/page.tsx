@@ -10,6 +10,10 @@ import {
   formatPoints,
   newIdempotencyKey,
 } from '../../../lib/admin';
+import { AdminAccessGate } from '../../../components/admin/admin-access-gate';
+import { hasCapability } from '../../../lib/capabilities';
+import { displayName, roleLabel } from '../../../lib/format';
+import { useSession, useWallet } from '../../../lib/queries';
 
 type UserDetail = {
   user: AdminUser & { wallet: { balance: string } | null };
@@ -38,6 +42,21 @@ export default function AdminUsersPage() {
   const [notice, setNotice] = useState('');
   const [amount, setAmount] = useState('');
   const [reason, setReason] = useState('');
+  const session = useSession();
+  const wallet = useWallet();
+  const canCreateAdmins = hasCapability(session.data?.role, 'ADMIN_MANAGE');
+  const canCreateManagers = hasCapability(session.data?.role, 'MANAGER_MANAGE');
+  // An administrator creates points; a manager can only move points they were given.
+  const canMint = hasCapability(session.data?.role, 'PLAYER_POINTS_MANAGE');
+  const canTransfer = hasCapability(session.data?.role, 'PLAYER_POINTS_TRANSFER');
+  const [newUsername, setNewUsername] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [newRole, setNewRole] = useState<'USER' | 'MANAGER' | 'ADMIN'>('USER');
+  const [created, setCreated] = useState<{ username: string; role: string; generatedPassword?: string } | null>(null);
+  const [renameTo, setRenameTo] = useState('');
+  const [passwordTo, setPasswordTo] = useState('');
+  const [revealed, setRevealed] = useState<string | null>(null);
+  const [ownerTo, setOwnerTo] = useState('');
 
   const load = useCallback(async (term: string) => {
     const query = new URLSearchParams({ limit: '50' });
@@ -58,19 +77,86 @@ export default function AdminUsersPage() {
     setNotice('');
     const detail = await adminGet<UserDetail>(`/admin/users/${id}/detail`);
     setSelected(detail);
+    // A revealed password never follows you to another user.
+    setRevealed(null);
+    setPasswordTo('');
+    setRenameTo('');
+    setOwnerTo('');
   };
 
-  const adjust = async (direction: 'grant' | 'remove') => {
+  const run = async (work: () => Promise<void>) => {
+    setBusy(true);
+    setError('');
+    setNotice('');
+    try {
+      await work();
+    } catch (failure) {
+      setError(describeAdminError(failure as { code: string; message: string }));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const createUser = () => run(async () => {
+    const result = await adminSend<{ id: string; username: string; role: string; generatedPassword?: string }>(
+      '/admin/users', 'POST',
+      {
+        username: newUsername.trim(),
+        ...(newPassword ? { password: newPassword } : {}),
+        ...(canCreateManagers ? { role: newRole } : {}),
+      },
+    );
+    setCreated({ username: result.username, role: result.role, generatedPassword: result.generatedPassword });
+    setNewUsername('');
+    setNewPassword('');
+    await load(search);
+  });
+
+  const setUserPassword = () => run(async () => {
+    if (!selected) return;
+    await adminSend(`/admin/users/${selected.user.id}/password`, 'POST', { password: passwordTo });
+    setNotice('Password set. Their active sessions were signed out.');
+    setPasswordTo('');
+    setRevealed(null);
+  });
+
+  const revealPassword = () => run(async () => {
+    if (!selected) return;
+    const result = await adminSend<{ password: string }>(`/admin/users/${selected.user.id}/password/reveal`, 'POST');
+    setRevealed(result.password);
+  });
+
+  const assignOwner = () => run(async () => {
+    if (!selected || !ownerTo) return;
+    await adminSend(`/admin/users/${selected.user.id}/owner`, 'POST', { ownerId: ownerTo });
+    setNotice('Player assigned.');
+    await open(selected.user.id);
+    await load(search);
+  });
+
+  const renameUser = () => run(async () => {
+    if (!selected) return;
+    await adminSend(`/admin/users/${selected.user.id}/username`, 'POST', { username: renameTo.trim() });
+    setNotice('Username changed.');
+    setRenameTo('');
+    await open(selected.user.id);
+    await load(search);
+  });
+
+  const adjust = async (direction: 'grant' | 'remove' | 'give' | 'take') => {
     if (!selected) return;
     const value = Number(amount);
     if (!Number.isInteger(value) || value <= 0 || !reason.trim()) {
       setError('Enter a whole number of points and a reason.');
       return;
     }
+    const verb = { grant: 'Grant', remove: 'Remove', give: 'Give', take: 'Take back' }[direction];
+    const preposition = direction === 'grant' || direction === 'give' ? 'to' : 'from';
     const confirmed = window.confirm(
-      `${direction === 'grant' ? 'Grant' : 'Remove'} ${formatPoints(value)} points `
-      + `${direction === 'grant' ? 'to' : 'from'} ${selected.user.email}?\n\n`
-      + 'This writes an immutable ledger entry and is recorded in the audit trail.',
+      `${verb} ${formatPoints(value)} points ${preposition} ${displayName(selected.user)}?\n\n`
+      + (direction === 'give' || direction === 'take'
+        ? 'The points move between your balance and theirs. Nothing is created or destroyed. It is recorded in the audit trail.'
+        : 'This writes an immutable ledger entry and is recorded in the audit trail.'),
     );
     if (!confirmed) return;
 
@@ -78,15 +164,15 @@ export default function AdminUsersPage() {
     setError('');
     setNotice('');
     try {
-      const path = direction === 'grant'
-        ? `/admin/users/${selected.user.id}/coins`
-        : `/admin/users/${selected.user.id}/coins/remove`;
+      const suffix = { grant: '', remove: '/remove', give: '/give', take: '/take' }[direction];
+      const path = `/admin/users/${selected.user.id}/coins${suffix}`;
       await adminSend(path, 'POST', {
         amount: value,
         reason: reason.trim(),
         idempotencyKey: newIdempotencyKey(),
       });
-      setNotice(`${direction === 'grant' ? 'Granted' : 'Removed'} ${formatPoints(value)} points.`);
+      setNotice(`${{ grant: 'Granted', remove: 'Removed', give: 'Gave', take: 'Took back' }[direction]} ${formatPoints(value)} points.`);
+      void wallet.refetch();
       setAmount('');
       setReason('');
       await open(selected.user.id);
@@ -98,17 +184,7 @@ export default function AdminUsersPage() {
     }
   };
 
-  if (state === 'denied') {
-    return (
-      <main className="ops-page ops-centered">
-        <div className="ops-denied">
-          <p className="ops-kicker">RESTRICTED</p>
-          <h1>Administrators only</h1>
-          <Link className="ops-link" href="/">Back to the site</Link>
-        </div>
-      </main>
-    );
-  }
+  if (state === 'denied') return <AdminAccessGate area="User administration" />;
 
   return (
     <main className="ops-page">
@@ -122,6 +198,7 @@ export default function AdminUsersPage() {
         </div>
         <nav>
           <Link href="/admin/casino/config">Game configuration</Link>
+          <Link href="/admin/security">Security</Link>
           <Link href="/admin/audit">Audit</Link>
         </nav>
       </header>
@@ -130,9 +207,48 @@ export default function AdminUsersPage() {
         <section className="ops-hero">
           <div>
             <p className="ops-kicker">PLAYER ADMINISTRATION</p>
-            <h1>Users</h1>
-            <p>Balances change only through audited ledger events, never by direct assignment.</p>
+            <h1>People and PTS</h1>
+            <p>
+              Balances change only through audited ledger events, never by direct assignment.
+              {canTransfer && wallet.data && <> Your balance: <strong>{formatPoints(wallet.data.balance)} PTS</strong>. You can give only points an administrator gave you.</>}
+            </p>
           </div>
+        </section>
+
+        <section className="ops-list-item" aria-label="Create user">
+          <h3>Create user</h3>
+          <p>Accounts are created here only. Leave the password empty to generate one.</p>
+          <label className="casino-field">
+            <span>Username (3-32: letters, digits, . _ -)</span>
+            <input value={newUsername} autoComplete="off" onChange={(event) => setNewUsername(event.target.value)} />
+          </label>
+          <label className="casino-field">
+            <span>Password (optional, 8 or more characters)</span>
+            <input value={newPassword} autoComplete="off" onChange={(event) => setNewPassword(event.target.value)} />
+          </label>
+          {canCreateManagers && (
+            <label className="casino-field">
+              <span>Role</span>
+              <select value={newRole} onChange={(event) => setNewRole(event.target.value as 'USER' | 'MANAGER' | 'ADMIN')}>
+                <option value="USER">Player</option>
+                <option value="MANAGER">Manager (gives points from their own balance)</option>
+                {canCreateAdmins && <option value="ADMIN">Administrator</option>}
+              </select>
+            </label>
+          )}
+          <div className="admin-game-actions">
+            <button className="ops-action" disabled={busy || newUsername.trim().length < 3} onClick={() => void createUser()}>
+              Create user
+            </button>
+          </div>
+          {created && (
+            <p className="ops-alert ops-alert-action" role="status">
+              Created <strong>{created.username}</strong> ({created.role}).
+              {created.generatedPassword && (
+                <> Generated password: <code>{created.generatedPassword}</code>. You can show it again later from the user panel.</>
+              )}
+            </p>
+          )}
         </section>
 
         {error && <p className="ops-alert">{error}</p>}
@@ -142,7 +258,7 @@ export default function AdminUsersPage() {
           <input
             className="admin-search"
             value={search}
-            placeholder="Search by email"
+            placeholder="Search by username or email"
             onChange={(event) => setSearch(event.target.value)}
             onKeyDown={(event) => { if (event.key === 'Enter') void load(search); }}
           />
@@ -153,7 +269,7 @@ export default function AdminUsersPage() {
           <div className="ops-table-wrap">
             <table className="ops-table">
               <thead>
-                <tr><th>Email</th><th>Role</th><th>Balance</th><th>Joined</th></tr>
+                <tr><th>User</th><th>Role</th><th>Balance</th><th>Joined</th></tr>
               </thead>
               <tbody>
                 {users.length === 0 && (
@@ -167,10 +283,10 @@ export default function AdminUsersPage() {
                         className="admin-user-select"
                         onClick={() => void open(user.id)}
                       >
-                        {user.email}
+                        {displayName(user)}
                       </button>
                     </td>
-                    <td><span className="ops-status neutral">{user.role}</span></td>
+                    <td><span className="ops-status neutral">{roleLabel(user.role)}</span></td>
                     <td>{formatPoints(user.wallet?.balance ?? 0)}</td>
                     <td><small>{new Date(user.createdAt).toLocaleDateString()}</small></td>
                   </tr>
@@ -187,12 +303,70 @@ export default function AdminUsersPage() {
               <>
                 <div className="ops-list-item">
                   <div className="ops-list-top">
-                    <strong>{selected.user.email}</strong>
-                    <span className="ops-status neutral">{selected.user.role}</span>
+                    <strong>{displayName(selected.user)}</strong>
+                    <span className="ops-status neutral">{roleLabel(selected.user.role)}</span>
                   </div>
                   <p>Balance <strong>{formatPoints(selected.user.wallet?.balance ?? 0)}</strong> points</p>
 
-                  <h3>Adjust balance</h3>
+                  {canCreateAdmins && (selected.user.role === 'USER' || selected.user.role === 'MANAGER') && (
+                    <>
+                      <h3>Owner</h3>
+                      <p>
+                        Belongs to{' '}
+                        <strong>
+                          {displayName(users.find((u) => u.id === selected.user.createdById)) === '—'
+                            ? 'nobody yet (only you can see this player)'
+                            : displayName(users.find((u) => u.id === selected.user.createdById))}
+                        </strong>
+                      </p>
+                      <label className="casino-field">
+                        <span>{selected.user.role === 'MANAGER' ? 'Give this manager to administrator' : 'Give this player to a manager or administrator'}</span>
+                        <select value={ownerTo} onChange={(event) => setOwnerTo(event.target.value)}>
+                          <option value="">Choose…</option>
+                          {users.filter((u) => u.id !== selected.user.id && (u.role === 'ADMIN' || u.role === 'SUPER_ADMIN' || (selected.user.role === 'USER' && u.role === 'MANAGER'))).map((u) => (
+                            <option key={u.id} value={u.id}>{displayName(u)} ({roleLabel(u.role)})</option>
+                          ))}
+                        </select>
+                      </label>
+                      <div className="admin-game-actions">
+                        <button className="casino-secondary" disabled={busy || !ownerTo} onClick={() => void assignOwner()}>
+                          Assign player
+                        </button>
+                      </div>
+                    </>
+                  )}
+
+                  <h3>Account</h3>
+                  <label className="casino-field">
+                    <span>Username</span>
+                    <input value={renameTo} placeholder={selected.user.username ?? 'none yet'} autoComplete="off"
+                      onChange={(event) => setRenameTo(event.target.value)} />
+                  </label>
+                  <div className="admin-game-actions">
+                    <button className="casino-secondary" disabled={busy || renameTo.trim().length < 3} onClick={() => void renameUser()}>
+                      Change username
+                    </button>
+                  </div>
+                  <label className="casino-field">
+                    <span>New password (8 or more characters)</span>
+                    <input value={passwordTo} autoComplete="off" onChange={(event) => setPasswordTo(event.target.value)} />
+                  </label>
+                  <div className="admin-game-actions">
+                    <button className="ops-action" disabled={busy || passwordTo.length < 8} onClick={() => void setUserPassword()}>
+                      Set password
+                    </button>
+                    <button className="casino-secondary" disabled={busy} onClick={() => void revealPassword()}>
+                      Show password
+                    </button>
+                  </div>
+                  {revealed !== null && (
+                    <p className="ops-alert ops-alert-action" role="status">
+                      Password: <code>{revealed}</code>{' '}
+                      <button type="button" className="ops-link" onClick={() => setRevealed(null)}>Hide</button>
+                    </p>
+                  )}
+
+                  {(canMint || (canTransfer && selected.user.role === 'USER')) && <h3>{canMint ? 'Adjust balance' : 'Give or take back points'}</h3>}
                   <label className="casino-field">
                     <span>Amount (points)</span>
                     <input
@@ -205,14 +379,26 @@ export default function AdminUsersPage() {
                     <span>Reason</span>
                     <input value={reason} onChange={(event) => setReason(event.target.value)} />
                   </label>
-                  <div className="admin-game-actions">
-                    <button className="ops-action" disabled={busy} onClick={() => void adjust('grant')}>
-                      Grant points
-                    </button>
-                    <button className="casino-secondary" disabled={busy} onClick={() => void adjust('remove')}>
-                      Remove points
-                    </button>
-                  </div>
+                  {canMint && (
+                    <div className="admin-game-actions">
+                      <button className="ops-action" disabled={busy} onClick={() => void adjust('grant')}>
+                        Grant points
+                      </button>
+                      <button className="casino-secondary" disabled={busy} onClick={() => void adjust('remove')}>
+                        Remove points
+                      </button>
+                    </div>
+                  )}
+                  {!canMint && canTransfer && selected.user.role === 'USER' && (
+                    <div className="admin-game-actions">
+                      <button className="ops-action" disabled={busy} onClick={() => void adjust('give')}>
+                        Give from my balance
+                      </button>
+                      <button className="casino-secondary" disabled={busy} onClick={() => void adjust('take')}>
+                        Take back to my balance
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 <div className="ops-list-item">

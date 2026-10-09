@@ -2,12 +2,16 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   Analytics,
   ConfigList,
   adminGet,
   formatPoints,
 } from '../../lib/admin';
+import { useSession } from '../../lib/queries';
+import { hasCapability } from '../../lib/capabilities';
+import { AdminAccessGate } from '../../components/admin/admin-access-gate';
 
 type ProviderStatus = {
   provider: { configured: boolean; lastErrorCode: string | null; consecutiveFailures: number };
@@ -30,16 +34,29 @@ export default function AdminOverview() {
   const [providers, setProviders] = useState<ProviderStatus | null>(null);
   const [stale, setStale] = useState<StaleBets | null>(null);
   const [users, setUsers] = useState<number | null>(null);
+  const [unreadSecurity, setUnreadSecurity] = useState<number | null>(null);
+  const [mfa, setMfa] = useState<{ enabled: boolean } | null>(null);
   const [state, setState] = useState<'loading' | 'ready' | 'denied'>('loading');
+  const session = useSession();
+  const router = useRouter();
+  const platformManager = hasCapability(session.data?.role, 'PLATFORM_MANAGE');
 
   const load = useCallback(async () => {
-    const [configs, stats, status, staleBets, userList] = await Promise.all([
+    adminGet<{ enabled: boolean }>('/auth/2fa/status').then(setMfa);
+    const [configs, stats, userList, security] = await Promise.all([
       adminGet<ConfigList>('/admin/casino/config'),
       adminGet<Analytics>('/admin/casino/analytics?period=ALL'),
-      adminGet<ProviderStatus>('/admin/sports/providers/status'),
-      adminGet<StaleBets>('/admin/sports/bets/stale?limit=100'),
       adminGet<{ id: string }[]>('/admin/users?limit=100'),
+      adminGet<{ unread: number }>('/admin/security/events?limit=1&unread=true'),
     ]);
+    // Platform/provider state is PLATFORM_MANAGE: only request it when allowed,
+    // so an ADMIN overview never bundles a 403.
+    const [status, staleBets] = platformManager
+      ? await Promise.all([
+          adminGet<ProviderStatus>('/admin/sports/providers/status'),
+          adminGet<StaleBets>('/admin/sports/bets/stale?limit=100'),
+        ])
+      : [null, null];
     if (!configs || !stats) {
       setState('denied');
       return;
@@ -49,23 +66,17 @@ export default function AdminOverview() {
     setProviders(status);
     setStale(staleBets);
     setUsers(userList?.length ?? null);
+    setUnreadSecurity(security?.unread ?? null);
     setState('ready');
-  }, []);
+  }, [platformManager]);
 
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => {
+    // A manager has no game overview: their work is the people page.
+    if (session.data?.role === 'MANAGER') { router.replace('/admin/users'); return; }
+    void load();
+  }, [load, router, session.data?.role]);
 
-  if (state === 'denied') {
-    return (
-      <main className="ops-page ops-centered">
-        <div className="ops-denied">
-          <p className="ops-kicker">RESTRICTED</p>
-          <h1>Administrators only</h1>
-          <p>This control centre requires an administrator account.</p>
-          <Link className="ops-link" href="/">Back to the site</Link>
-        </div>
-      </main>
-    );
-  }
+  if (state === 'denied') return <AdminAccessGate area="The control centre" />;
 
   const totals = analytics?.totals;
   const disabled = config?.games.filter((game) => !game.enabled).length ?? 0;
@@ -81,8 +92,10 @@ export default function AdminOverview() {
         </div>
         <nav>
           <Link href="/admin/casino/config">Game configuration</Link>
+          <Link href="/admin/casino/math">Game math control</Link>
           <Link href="/admin/users">Users</Link>
-          <Link href="/admin/sports">Sports operations</Link>
+          <Link href="/admin/security">Security</Link>
+          {platformManager && <Link href="/admin/sports">Sports operations</Link>}
           <Link href="/admin/audit">Audit</Link>
         </nav>
       </header>
@@ -108,6 +121,35 @@ export default function AdminOverview() {
 
         {state === 'ready' && (
           <>
+            {mfa?.enabled === false && (
+              <p className="ops-alert ops-alert-action">
+                Protect this account with Google Authenticator.{' '}
+                <Link className="ops-link" href="/admin/two-factor">Turn it on</Link>
+              </p>
+            )}
+
+            <section className="ops-section">
+              <div className="ops-section-heading">
+                <h2>What do you want to do?</h2>
+                <span>
+                  You are signed in as {session.data?.role === 'SUPER_ADMIN' ? 'a super administrator (you see everything)' : 'an administrator (you see only your own players)'}.
+                </span>
+              </div>
+              <div className="ops-card-grid">
+                <GuideLink href="/admin/users" title="Players and PTS" text="Create a player, add or remove PTS, set a password." />
+                <GuideLink
+                  href="/admin/security"
+                  title="Security notifications"
+                  text="See every PTS movement and big win. Check these often."
+                  badge={unreadSecurity ? `${unreadSecurity} new` : undefined}
+                />
+                <GuideLink href="/admin/password" title="Change password" text="Set a new password for your own login." />
+                <GuideLink href="/admin/two-factor" title="Google Authenticator" text="Protect your login with a code from your phone." badge={mfa?.enabled ? 'On' : 'Off'} />
+                <GuideLink href="/admin/casino/math" title="Game return (RTP)" text="Choose how much each game pays back." />
+                <GuideLink href="/admin/audit" title="Audit log" text="The full record of who did what." />
+              </div>
+            </section>
+
             <section className="ops-section">
               <div className="ops-section-heading"><h2>Platform</h2></div>
               <div className="ops-card-grid">
@@ -139,7 +181,7 @@ export default function AdminOverview() {
                 <span>Rounds <strong>{formatPoints(totals?.totalRounds)}</strong></span>
                 <span>Wins <strong>{formatPoints(totals?.wins)}</strong></span>
                 <span>Losses <strong>{formatPoints(totals?.losses)}</strong></span>
-                <span>Stale sports bets <strong>{stale?.bets.length ?? 0}</strong></span>
+                {platformManager && <span>Stale sports bets <strong>{stale?.bets.length ?? 0}</strong></span>}
               </div>
             </section>
 
@@ -163,18 +205,22 @@ export default function AdminOverview() {
                 />
                 <Card label="Games disabled" value={String(disabled)} tone={disabled ? 'warn' : undefined} />
                 <Card label="Games in maintenance" value={String(inMaintenance)} tone={inMaintenance ? 'warn' : undefined} />
-                <Card
-                  label="Sports provider"
-                  value={providers?.provider.configured ? 'Configured' : 'Not configured'}
-                  tone={providers?.provider.lastErrorCode ? 'bad' : undefined}
-                  text
-                />
-                <Card
-                  label="Cache"
-                  value={providers?.cache.healthy ? 'Healthy' : 'Unavailable'}
-                  tone={providers?.cache.healthy ? undefined : 'bad'}
-                  text
-                />
+                {platformManager && (
+                  <>
+                    <Card
+                      label="Sports provider"
+                      value={providers?.provider.configured ? 'Configured' : 'Not configured'}
+                      tone={providers?.provider.lastErrorCode ? 'bad' : undefined}
+                      text
+                    />
+                    <Card
+                      label="Cache"
+                      value={providers?.cache.healthy ? 'Healthy' : 'Unavailable'}
+                      tone={providers?.cache.healthy ? undefined : 'bad'}
+                      text
+                    />
+                  </>
+                )}
               </div>
             </section>
 
@@ -217,6 +263,16 @@ export default function AdminOverview() {
         )}
       </div>
     </main>
+  );
+}
+
+function GuideLink({ href, title, text, badge }: { href: string; title: string; text: string; badge?: string }) {
+  return (
+    <Link className="ops-card" href={href}>
+      <span>{badge ?? 'Open'}</span>
+      <strong className="ops-card-text">{title}</strong>
+      <small>{text}</small>
+    </Link>
   );
 }
 

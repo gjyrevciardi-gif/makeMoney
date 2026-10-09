@@ -1,0 +1,124 @@
+{
+  "testOnly": true,
+  "activation": false,
+  "generatedAt": "2026-01-01T00:00:00.000Z",
+  "modelId": "lucky-lady.model.bounded-generator.v1",
+  "modelHash": "4d66174ec81e2f9ac4701de1f54b98ac96e065d968f422e76036f3c001915bc9",
+  "engineSha256": "0f02bb1e78eafdd99a51015c4bf83848050ca6b6e898123759d1442787d12843",
+  "rulesSha256": "4c03dd436f18307d9f98dc2148ff422251faa2d5c1c928062257187883acfc57",
+  "maxWinScope": "RESOLVED_SPIN",
+  "maxWinMultiplier": 50,
+  "maxBandMin": 20,
+  "reachableBoards": 108,
+  "reachableClasses": [
+    {
+      "classId": "LOSS",
+      "conditionalEv": {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      "conditionalPaidEv": {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      "conditionalFeatureEv": null
+    },
+    {
+      "classId": "PARTIAL_LOW",
+      "conditionalEv": {
+        "numerator": "3002",
+        "denominator": "10005"
+      },
+      "conditionalPaidEv": {
+        "numerator": "3002",
+        "denominator": "10005"
+      },
+      "conditionalFeatureEv": null
+    },
+    {
+      "classId": "PARTIAL_HIGH",
+      "conditionalEv": {
+        "numerator": "4",
+        "denominator": "5"
+      },
+      "conditionalPaidEv": {
+        "numerator": "4",
+        "denominator": "5"
+      },
+      "conditionalFeatureEv": null
+    },
+    {
+      "classId": "SMALL",
+      "conditionalEv": {
+        "numerator": "3505",
+        "denominator": "2002"
+      },
+      "conditionalPaidEv": {
+        "numerator": "3505",
+        "denominator": "2002"
+      },
+      "conditionalFeatureEv": null
+    },
+    {
+      "classId": "MEDIUM",
+      "conditionalEv": {
+        "numerator": "85147769673026",
+        "denominator": "5015030025005"
+      },
+      "conditionalPaidEv": {
+        "numerator": "85147769673026",
+        "denominator": "5015030025005"
+      },
+      "conditionalFeatureEv": null
+    },
+    {
+      "classId": "FEATURE_TRIGGER",
+      "conditionalEv": {
+        "numerator": "4944382489803",
+        "denominator": "6748319864"
+      },
+      "conditionalPaidEv": {
+        "numerator": "20008",
+        "denominator": "1001"
+      },
+      "conditionalFeatureEv": {
+        "numerator": "235429922659",
+        "denominator": "330337336"
+      }
+    }
+  ],
+  "unreachableClasses": [
+    "BREAK_EVEN",
+    "BIG",
+    "MAX"
+  ],
+  "analysis": {
+    "declaredReturnPercent": 1763.99773,
+    "triggerProbability": 0.0009940239202393297,
+    "expectedFeatureSpins": 15.227040639451062,
+    "featureDiverges": false,
+    "maxFreeSpinMultiplier": 50,
+    "maxBoardMultiplier": 20
+  },
+  "provenance": [
+    "Declared bounded Lucky Lady generator model: a sparse pre-draw weighting over the accepted vendored strips and evaluator.",
+    "Not the accepted golden dense RTP50 profile - that profile cannot be enumerated inside the bounded index and is recorded as unsupported.",
+    "Every reachable paid and free resolution is proved inside a 50x RESOLVED_SPIN ceiling by the accepted support builder.",
+    "The feature chain is subcritical, so the FEATURE_TRIGGER expectation is finite and proved (never sampled).",
+    "No request, header, environment value or player attribute can select this model or its weights."
+  ],
+  "frozenRtp50Reference": {
+    "profileId": "lucky-lady.rtp50.v1",
+    "profileHash": "eb0a22171a3479cea3b0238269edd4b0dc5d9486c57e4b057fa6ee0f1a70be5f",
+    "boundedIndexRefused": true,
+    "constraints": [
+      {
+        "constraint": "DISTRIBUTION_SUPPORT_TOO_LARGE",
+        "requested": "LUCKY_LADY_BOARD_SPACE_TOO_LARGE: 28153056843 > 4096",
+        "achievable": "an enumerable reachable support (<= 4096 boards)",
+        "detail": "The reachable outcome set could not be enumerated exactly, so no distribution is claimed for it."
+      }
+    ],
+    "note": "the accepted dense RTP50 profile cannot be represented by the bounded 4096-board index; no payout-policy sessions are claimed for it here. The historical 20M-round run measured 49.8624% under a different methodology and is not a substitute for current sessions."
+  }
+}

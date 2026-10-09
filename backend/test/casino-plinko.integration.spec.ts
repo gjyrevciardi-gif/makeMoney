@@ -56,6 +56,7 @@ describe('server-authoritative plinko (PostgreSQL)', () => {
     });
     userId = user.id;
     adminId = admin.id;
+    await prisma.user.updateMany({ where: { role: 'USER' }, data: { createdById: admin.id } });
   });
 
   const fund = (amount = 100_000n) =>

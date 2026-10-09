@@ -1,0 +1,69 @@
+
+> test
+> node -e "const raw=process.env.DATABASE_URL||''; if(!raw) throw new Error('DATABASE_URL is required for backend tests'); const name=new URL(raw).pathname.replace(/^\/+/, '').split('/')[0]||''; const safe=name.toLowerCase().includes('_test'); if(!safe || name.toLowerCase()==='fools_gold' || name.toLowerCase()==='postgres') throw new Error('Unsafe test database: ' + name);" && node --experimental-vm-modules ../node_modules/jest/bin/jest.js --runInBand test/p1-auth-ratelimit-audit.integration.spec.ts --verbose
+
+{"event":"HTTP_REQUEST","requestId":"649a7b1c-0efb-40ed-a01b-16def99ff85e","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":49}
+{"event":"HTTP_REQUEST","requestId":"f1adb632-7e52-44a3-9ed6-bc568c1829db","method":"POST","route":"/auth/login","statusCode":201,"durationMs":114}
+{"event":"HTTP_REQUEST","requestId":"bedcad00-207e-4350-8789-0c9b2a9706c8","method":"POST","route":"/auth/login","statusCode":201,"durationMs":111}
+{"event":"HTTP_REQUEST","requestId":"2e05feab-6559-44ca-b21e-4b6249ea1a89","method":"GET","route":"/casino/games","statusCode":200,"durationMs":16}
+{"event":"HTTP_REQUEST","requestId":"b7792453-d890-42a4-941e-843b8fd20342","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":26}
+{"event":"HTTP_REQUEST","requestId":"385d2564-4ddd-4735-a3d3-8a1cbc985682","method":"POST","route":"/auth/refresh","statusCode":201,"durationMs":22}
+{"event":"HTTP_REQUEST","requestId":"da1f7e70-4bc5-4235-921c-c4eb9b48f244","method":"POST","route":"/auth/login","statusCode":201,"durationMs":111}
+{"event":"HTTP_REQUEST","requestId":"78969d86-3439-4222-b9d2-3c54461a3e90","method":"POST","route":"/auth/refresh","statusCode":201,"durationMs":14}
+{"event":"HTTP_REQUEST","requestId":"6ca70447-362b-4650-ab5c-1f19d2da7cda","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":24}
+{"event":"HTTP_REQUEST","requestId":"04bc34c9-4b7f-487c-99f4-29a150e069c8","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":22}
+{"event":"HTTP_REQUEST","requestId":"063c004b-63fc-4742-8d47-74307487de93","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":20}
+{"event":"HTTP_REQUEST","requestId":"252bda8f-758e-4e5c-ab54-63a04de613c7","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":16}
+{"event":"HTTP_REQUEST","requestId":"66f2d582-0e09-4e3d-8cdb-6d35d2faf298","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":16}
+{"event":"HTTP_REQUEST","requestId":"ad1c2e27-890f-4741-9da0-29f4d41333d2","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":15}
+{"event":"HTTP_REQUEST","requestId":"d8b87b01-b7b6-43fc-a5d2-45f5b34296ae","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":13}
+{"event":"HTTP_REQUEST","requestId":"a59a82d5-9143-433e-ab6f-7dfc19ac19e8","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":17}
+{"event":"HTTP_REQUEST","requestId":"07fdffa5-ccd5-4442-a583-5ab676c9572f","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":16}
+{"event":"HTTP_REQUEST","requestId":"6176e3d8-7479-402c-942b-5c9eda2d8543","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":13}
+{"event":"HTTP_REQUEST","requestId":"b21adbdb-fda5-430c-8bd7-7062322b9dfc","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":16}
+{"event":"HTTP_REQUEST","requestId":"9fddd9c3-ffcc-431f-bed9-d302bf650265","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":13}
+{"event":"HTTP_REQUEST","requestId":"8b799568-795d-4d89-9e96-010447c60fdb","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":17}
+{"event":"HTTP_REQUEST","requestId":"a17a0120-cfb0-4c09-b7bf-5d4989a9bfa2","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":15}
+{"event":"HTTP_REQUEST","requestId":"f8580ecc-7e25-4a2d-b586-900082bec69c","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":16}
+{"event":"HTTP_REQUEST","requestId":"c6cc22c5-91e7-4bd7-8b22-677e099a8e39","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":15}
+{"event":"HTTP_REQUEST","requestId":"1f2f526e-6672-4bdd-8ebd-c25cfad7a285","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":14}
+{"event":"HTTP_REQUEST","requestId":"c237e23c-940f-48de-bf62-18e0f5556bbb","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":15}
+{"event":"HTTP_REQUEST","requestId":"8ae2b73d-998b-41f9-bbf8-b397e8cd7847","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":14}
+{"event":"HTTP_REQUEST","requestId":"bf87dd65-b778-4127-ac1c-35145442c3f7","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":16}
+{"event":"HTTP_REQUEST","requestId":"fd1c3ba5-39ac-41cd-bdf0-c6acf06dd70e","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"7b89cb90-5d15-468e-8828-dd589efa19cc","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"649b78f8-8b78-4174-b13c-36eab6f3af74","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":24}
+{"event":"HTTP_REQUEST","requestId":"6b70fce7-152c-448d-9617-f614392f0b4b","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":31}
+{"event":"HTTP_REQUEST","requestId":"fd78ba71-424d-4803-a051-ecb0b71e5034","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":29}
+{"event":"HTTP_REQUEST","requestId":"1cdffe35-4b6a-4a0c-827e-ec88ae1141b6","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":29}
+FAIL test/p1-auth-ratelimit-audit.integration.spec.ts (19.016 s)
+  ● P1: disabled-account auth, user-admin rate limit, audit semantics (PostgreSQL + Redis) › gives a disabled account no new session, without disclosing status to a wrong password
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected substring: "ACCOUNT_DISABLED"
+    Received string:    "{\"code\":\"FORBIDDEN\",\"message\":\"You do not have permission to perform this action.\"}"
+
+      at Object.<anonymous> (test/C:/Users/Admin/orca/workspaces/toto/toto-game-adapter-template/backend/test/p1-auth-ratelimit-audit.integration.spec.ts:84:42)
+
+  ● P1: disabled-account auth, user-admin rate limit, audit semantics (PostgreSQL + Redis) › refuses refresh for a disabled account even when no token was revoked, and revokes its family
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected substring: "ACCOUNT_DISABLED"
+    Received string:    "{\"code\":\"FORBIDDEN\",\"message\":\"You do not have permission to perform this action.\"}"
+
+      at Object.<anonymous> (test/C:/Users/Admin/orca/workspaces/toto/toto-game-adapter-template/backend/test/p1-auth-ratelimit-audit.integration.spec.ts:126:42)
+
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 3 passed, 5 total
+Snapshots:   0 total
+Time:        19.378 s
+Ran all test suites matching test/p1-auth-ratelimit-audit.integration.spec.ts.
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path C:\Users\Admin\orca\workspaces\toto\toto-game-adapter-template\backend
+npm error workspace backend
+npm error location C:\Users\Admin\orca\workspaces\toto\toto-game-adapter-template\backend
+npm error command failed
+npm error command C:\WINDOWS\SYSTEM32\cmd.exe /d /s /c node -e "const raw=process.env.DATABASE_URL||''; if(!raw) throw new Error('DATABASE_URL is required for backend tests'); const name=new URL(raw).pathname.replace(/^\/+/, '').split('/')[0]||''; const safe=name.toLowerCase().includes('_test'); if(!safe || name.toLowerCase()==='fools_gold' || name.toLowerCase()==='postgres') throw new Error('Unsafe test database: ' + name);" && node --experimental-vm-modules ../node_modules/jest/bin/jest.js --runInBand test/p1-auth-ratelimit-audit.integration.spec.ts --verbose

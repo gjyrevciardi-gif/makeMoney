@@ -1,0 +1,66 @@
+{
+ "method": "reel-set stop weighting scan",
+ "rounds_per_trial": 100000,
+ "trials": [
+  {
+   "offsetSymbols": 1,
+   "rounds": 100000,
+   "infeasible": "feature chain exceeded 20000 spins - run fails, not truncated"
+  },
+  {
+   "offsetSymbols": 2,
+   "rounds": 100000,
+   "infeasible": "feature chain exceeded 20000 spins - run fails, not truncated"
+  },
+  {
+   "offsetSymbols": 3,
+   "rounds": 100000,
+   "infeasible": "feature chain exceeded 20000 spins - run fails, not truncated"
+  },
+  {
+   "offsetSymbols": 4,
+   "rounds": 100000,
+   "infeasible": "feature chain exceeded 20000 spins - run fails, not truncated"
+  },
+  {
+   "offsetSymbols": 5,
+   "rounds": 100000,
+   "infeasible": "feature chain exceeded 20000 spins - run fails, not truncated"
+  },
+  {
+   "offsetSymbols": 6,
+   "rounds": 100000,
+   "infeasible": "feature chain exceeded 20000 spins - run fails, not truncated"
+  },
+  {
+   "offsetSymbols": 7,
+   "rounds": 100000,
+   "infeasible": "feature chain exceeded 20000 spins - run fails, not truncated"
+  },
+  {
+   "offsetSymbols": 8,
+   "rounds": 100000,
+   "infeasible": "feature chain exceeded 20000 spins - run fails, not truncated"
+  },
+  {
+   "offsetSymbols": 9,
+   "rounds": 100000,
+   "infeasible": "feature chain exceeded 20000 spins - run fails, not truncated"
+  },
+  {
+   "offsetSymbols": 10,
+   "rounds": 100000,
+   "infeasible": "feature chain exceeded 20000 spins - run fails, not truncated"
+  },
+  {
+   "offsetSymbols": 11,
+   "rounds": 100000,
+   "infeasible": "feature chain exceeded 20000 spins - run fails, not truncated"
+  },
+  {
+   "offsetSymbols": 12,
+   "rounds": 100000,
+   "infeasible": "feature chain exceeded 20000 spins - run fails, not truncated"
+  }
+ ]
+}

@@ -48,7 +48,14 @@ export const CADENCE = {
   catalogueMs: 15 * 60_000,
 };
 
-export type Session = { id: string; email: string; role: 'USER' | 'ADMIN'; createdAt: string };
+export type Session = {
+  id: string;
+  /** The login name. Accounts created before usernames existed may have only an email. */
+  username: string | null;
+  email: string | null;
+  role: 'USER' | 'MANAGER' | 'ADMIN' | 'SUPER_ADMIN';
+  createdAt: string;
+};
 export type Wallet = { id: string; balance: string; createdAt: string };
 
 /**

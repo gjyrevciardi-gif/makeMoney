@@ -1,6 +1,19 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { RedisService } from './redis.service';
-export const RATE_LIMITS = { loginFailures: { limit: 5, window: 60 }, register: { limit: 3, window: 3600 }, refresh: { limit: 20, window: 60 }, bet: { limit: 30, window: 60 }, admin: { limit: 20, window: 60 }, adminReconcile: { limit: 30, window: 60 }, casino: { limit: 120, window: 60 } } as const;
+export const RATE_LIMITS = {
+  loginFailures: { limit: 5, window: 60 },
+  register: { limit: 3, window: 3600 },
+  refresh: { limit: 20, window: 60 },
+  bet: { limit: 30, window: 60 },
+  admin: { limit: 20, window: 60 },
+  adminReconcile: { limit: 30, window: 60 },
+  casino: { limit: 120, window: 60 },
+  // Integrated-game launch issuance and capability exchange are cheap for the
+  // platform but expensive for an attacker guessing opaque tokens.
+  gameLaunch: { limit: 20, window: 60 },
+  gameExchange: { limit: 30, window: 60 },
+  gameRead: { limit: 240, window: 60 },
+} as const;
 @Injectable()
 export class RateLimitService {
   constructor(private readonly redis: RedisService) {}

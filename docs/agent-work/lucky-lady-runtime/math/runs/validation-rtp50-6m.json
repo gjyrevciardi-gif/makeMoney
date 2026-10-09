@@ -1,0 +1,154 @@
+{
+ "profileId": "lucky-lady.rtp50.v1",
+ "profileHash": "6a5f38a841af809b3b11b4add9a0717898cfa6f26f5e4657ef180bdee8a37878",
+ "profileHashScope": "recursive canonical JSON of the frozen profile content (notes/hash fields excluded)",
+ "validationSeeds": [
+  "validation-a",
+  "validation-b",
+  "validation-c",
+  "validation-d",
+  "validation-e",
+  "validation-f"
+ ],
+ "roundsPerSeed": 1000000,
+ "totalRounds": 6000000,
+ "bet": 1,
+ "lines": 10,
+ "totalWager": 60000000,
+ "totalReturn": 29809206,
+ "observedRtpPercent": 49.68201,
+ "observedStderrPercent": 0.15785242519991718,
+ "observedCi95Percent": [
+  49.37262493173586,
+  49.99139506826414
+ ],
+ "observedWithinTolerance": true,
+ "ciWithinTolerance": false,
+ "acceptanceGate": "observed RTP 49.5..50.5 AND 95% CI contained in 49.5..50.5",
+ "gatePass": false,
+ "retriggerPerFreeSpin": 0.042514424536896446,
+ "freeSpinBranchingFactor": 0.6377163680534467,
+ "branchingSubcritical": true,
+ "perSeed": [
+  {
+   "seed": "validation-a",
+   "rounds": 1000000,
+   "wager": 10000000,
+   "return": 4936739,
+   "sumSquares": 14705805.989995122,
+   "rtpPercent": 49.36739,
+   "ci": [
+    48.622034171219305,
+    50.11274582878069
+   ],
+   "base": 45.17489,
+   "scatter": 2.9516,
+   "feature": 1.2409,
+   "hitRate": 20.947499999999998,
+   "triggerRate": 0.0567,
+   "retriggerRate": 0.00009999999999999999,
+   "freeSpinsPerRound": 0.00852,
+   "maxRoundReturnX": 455
+  },
+  {
+   "seed": "validation-b",
+   "rounds": 1000000,
+   "wager": 10000000,
+   "return": 5026569,
+   "sumSquares": 16661107.689993078,
+   "rtpPercent": 50.26569,
+   "ci": [
+    49.47176077831941,
+    51.059619221680585
+   ],
+   "base": 46.28656,
+   "scatter": 2.9822,
+   "feature": 0.9969300000000001,
+   "hitRate": 20.956,
+   "triggerRate": 0.0525,
+   "retriggerRate": 0.00019999999999999998,
+   "freeSpinsPerRound": 0.007905,
+   "maxRoundReturnX": 912
+  },
+  {
+   "seed": "validation-c",
+   "rounds": 1000000,
+   "wager": 10000000,
+   "return": 4935488,
+   "sumSquares": 15001629.959996024,
+   "rtpPercent": 49.35488,
+   "ci": [
+    48.60193643521693,
+    50.107823564783075
+   ],
+   "base": 45.29824,
+   "scatter": 2.9393,
+   "feature": 1.11734,
+   "hitRate": 21.0357,
+   "triggerRate": 0.052700000000000004,
+   "retriggerRate": 0.00039999999999999996,
+   "freeSpinsPerRound": 0.007965,
+   "maxRoundReturnX": 905.4
+  },
+  {
+   "seed": "validation-d",
+   "rounds": 1000000,
+   "wager": 10000000,
+   "return": 4991530,
+   "sumSquares": 15133108.819995496,
+   "rtpPercent": 49.9153,
+   "ci": [
+    49.15915120104806,
+    50.67144879895194
+   ],
+   "base": 45.87074,
+   "scatter": 2.9362,
+   "feature": 1.10836,
+   "hitRate": 21.002599999999997,
+   "triggerRate": 0.052700000000000004,
+   "retriggerRate": 0.0006000000000000001,
+   "freeSpinsPerRound": 0.007995,
+   "maxRoundReturnX": 906
+  },
+  {
+   "seed": "validation-e",
+   "rounds": 1000000,
+   "wager": 10000000,
+   "return": 4934505,
+   "sumSquares": 15190383.369992742,
+   "rtpPercent": 49.34505,
+   "ci": [
+    48.58730424888865,
+    50.10279575111135
+   ],
+   "base": 45.113189999999996,
+   "scatter": 3.0263,
+   "feature": 1.20556,
+   "hitRate": 20.9914,
+   "triggerRate": 0.0557,
+   "retriggerRate": 0.00039999999999999996,
+   "freeSpinsPerRound": 0.008415,
+   "maxRoundReturnX": 781.4
+  },
+  {
+   "seed": "validation-f",
+   "rounds": 1000000,
+   "wager": 10000000,
+   "return": 4984375,
+   "sumSquares": 14491542.749995206,
+   "rtpPercent": 49.84375,
+   "ci": [
+    49.10405889610522,
+    50.58344110389478
+   ],
+   "base": 45.659620000000004,
+   "scatter": 3.0391999999999997,
+   "feature": 1.14493,
+   "hitRate": 20.964199999999998,
+   "triggerRate": 0.05689999999999999,
+   "retriggerRate": 0.00039999999999999996,
+   "freeSpinsPerRound": 0.008595,
+   "maxRoundReturnX": 425.2
+  }
+ ]
+}

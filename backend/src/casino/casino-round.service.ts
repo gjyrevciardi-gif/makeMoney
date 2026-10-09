@@ -12,6 +12,7 @@ import {
 } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
 import { PrismaService } from '../prisma.service';
+import { recordWinIfLarge } from '../security/security-events';
 import { CasinoGameMath, MAX_SAFE_PAYOUT } from './casino.config';
 import { CasinoFairnessService, FairnessInput } from './casino-fairness.service';
 import { CasinoGameRegistry } from './casino-game.registry';
@@ -264,10 +265,11 @@ export class CasinoRoundService {
     await tx.casinoTransaction.create({
       data: { roundId, userId, type: 'WIN', amount: payout, idempotencyKey: key },
     });
-    await tx.wallet.update({
+    const credited = await tx.wallet.update({
       where: { id: walletId },
       data: { balance: { increment: payout } },
     });
+    await recordWinIfLarge(tx, { userId, amount: payout, balanceAfter: credited.balance, refType: 'CASINO_ROUND', refId: roundId });
   }
 
   /**

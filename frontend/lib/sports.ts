@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { getJson } from './api';
 import { CADENCE, qk } from './queries';
 
@@ -137,7 +137,12 @@ export const isStale = (staleAt: string | undefined) =>
 export function useSports() {
   return useQuery({
     queryKey: qk.sports,
-    queryFn: () => getJson<Sport[]>('/sports', { public: true }),
+    queryFn: async () => {
+      if (process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_DEV_FIXTURES === '1') {
+        return (await import('./dev-fixtures')).fixtureSports();
+      }
+      return getJson<Sport[]>('/sports', { public: true });
+    },
     staleTime: CADENCE.catalogueMs,
     retry: 1,
   });
@@ -154,11 +159,18 @@ export function useBoard(sportKey: string | undefined, options: { live?: boolean
   return useQuery({
     queryKey: qk.board(sportKey ?? ''),
     enabled: Boolean(sportKey),
-    queryFn: () => getJson<SportsBoard>(`/sports/${encodeURIComponent(sportKey!)}/board`, { public: true }),
+    queryFn: async () => {
+      if (process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_DEV_FIXTURES === '1') {
+        return (await import('./dev-fixtures')).fixtureBoard(sportKey!);
+      }
+      return getJson<SportsBoard>(`/sports/${encodeURIComponent(sportKey!)}/board`, { public: true });
+    },
     refetchInterval: options.live ? CADENCE.liveOddsMs : CADENCE.prematchOddsMs,
     refetchOnWindowFocus: true,
     staleTime: 10_000,
     retry: 1,
+    // Switching sport keeps the last listing visible (dimmed) instead of flashing blank.
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -166,10 +178,15 @@ export function useEventOdds(sportKey: string | undefined, eventId: string | und
   return useQuery({
     queryKey: qk.eventOdds(sportKey ?? '', eventId ?? ''),
     enabled: Boolean(sportKey && eventId),
-    queryFn: () => getJson<EventOdds>(
-      `/sports/events/${encodeURIComponent(eventId!)}/odds?sportKey=${encodeURIComponent(sportKey!)}`,
-      { public: true },
-    ),
+    queryFn: async () => {
+      if (process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_DEV_FIXTURES === '1') {
+        return (await import('./dev-fixtures')).fixtureEventOdds(sportKey!, eventId!);
+      }
+      return getJson<EventOdds>(
+        `/sports/events/${encodeURIComponent(eventId!)}/odds?sportKey=${encodeURIComponent(sportKey!)}`,
+        { public: true },
+      );
+    },
     refetchInterval: CADENCE.eventOddsMs,
     staleTime: 10_000,
     retry: 1,

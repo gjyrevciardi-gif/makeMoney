@@ -15,7 +15,12 @@ import type { CasinoGame, CasinoGamesResponse } from './casino';
 export function useCasinoGames() {
   return useQuery({
     queryKey: qk.casinoGames,
-    queryFn: () => getJson<CasinoGamesResponse>('/casino/games'),
+    queryFn: async () => {
+      if (process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_DEV_FIXTURES === '1') {
+        return (await import('./dev-fixtures')).fixtureCasino();
+      }
+      return getJson<CasinoGamesResponse>('/casino/games');
+    },
     staleTime: 60_000,
   });
 }
@@ -23,7 +28,12 @@ export function useCasinoGames() {
 export function useCasinoFavorites() {
   return useQuery({
     queryKey: qk.casinoFavorites,
-    queryFn: () => getJson<CasinoGamesResponse>('/casino/favorites'),
+    queryFn: async () => {
+      if (process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_DEV_FIXTURES === '1') {
+        return (await import('./dev-fixtures')).fixtureEmptyCasinoList();
+      }
+      return getJson<CasinoGamesResponse>('/casino/favorites');
+    },
     staleTime: 60_000,
   });
 }
@@ -31,7 +41,12 @@ export function useCasinoFavorites() {
 export function useCasinoRecent() {
   return useQuery({
     queryKey: qk.casinoRecent,
-    queryFn: () => getJson<CasinoGamesResponse>('/casino/recent?limit=10'),
+    queryFn: async () => {
+      if (process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_DEV_FIXTURES === '1') {
+        return (await import('./dev-fixtures')).fixtureEmptyCasinoList();
+      }
+      return getJson<CasinoGamesResponse>('/casino/recent?limit=10');
+    },
     staleTime: 30_000,
   });
 }
