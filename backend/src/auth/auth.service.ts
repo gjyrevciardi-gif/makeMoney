@@ -35,19 +35,53 @@ export class AuthService {
     }
   }
 
-  async login(email: string, password: string) {
-    const normalized = email.trim().toLowerCase();
-    const user = await this.prisma.user.findUnique({ where: { email: normalized }, include: { wallet: true } });
+  /** `identifier` is a username or an email address (both stored lowercase). */
+  /** Password check only. Callers that support a second factor decide what happens next. */
+  async verifyCredentials(identifier: string, password: string) {
+    const normalized = identifier.trim().toLowerCase();
+    const user = await this.prisma.user.findFirst({ where: { OR: [{ username: normalized }, { email: normalized }] }, include: { wallet: true } });
     if (!user || !(await argon2.verify(user.passwordHash, password))) {
-      await this.prisma.auditLog.create({ data: { targetType: 'LOGIN', action: 'LOGIN_FAILED', result: 'INVALID_CREDENTIALS', metadata: { email: normalized } } });
+      await this.prisma.auditLog.create({ data: { targetType: 'LOGIN', action: 'LOGIN_FAILED', result: 'INVALID_CREDENTIALS', metadata: { identifier: normalized } } });
       throw new UnauthorizedException('INVALID_CREDENTIALS');
     }
+    // Checked after the password so account state is never disclosed to someone
+    // who does not hold the credentials. A disabled account gets no new session.
+    if (user.disabled) {
+      await this.prisma.auditLog.create({ data: { actorId: user.id, targetType: 'LOGIN', action: 'LOGIN_FAILED', result: 'ACCOUNT_DISABLED' } });
+      throw new ForbiddenException('ACCOUNT_DISABLED');
+    }
+    return user;
+  }
+
+  /** Short-lived proof that the password step passed. It is not an access token and the guard refuses it. */
+  issueMfaChallenge(userId: string) { return this.jwt.signAsync({ sub: userId, typ: 'mfa' }, { expiresIn: '5m' }); }
+
+  async readMfaChallenge(token: string): Promise<string> {
+    try {
+      const payload = await this.jwt.verifyAsync<{ sub: string; typ?: string }>(token);
+      if (payload.typ === 'mfa') return payload.sub;
+    } catch { /* fall through */ }
+    throw new UnauthorizedException({ code: 'INVALID_MFA_CHALLENGE', message: 'The sign-in expired.' });
+  }
+
+  async login(identifier: string, password: string) {
+    return this.startSession(await this.verifyCredentials(identifier, password));
+  }
+
+  async startSessionFor(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId }, include: { wallet: true } });
+    if (!user) throw new UnauthorizedException({ code: 'INVALID_MFA_CHALLENGE', message: 'The sign-in expired.' });
+    if (user.disabled) throw new ForbiddenException('ACCOUNT_DISABLED');
+    return this.startSession(user);
+  }
+
+  private async startSession(user: Prisma.UserGetPayload<{ include: { wallet: true } }>) {
     const pair = await this.prisma.$transaction(async (tx) => {
       const issued = await this.createPair(tx, user.id, user.role);
       await tx.auditLog.create({ data: { actorId: user.id, targetType: 'USER', targetId: user.id, action: 'LOGIN_SUCCESS', result: 'SUCCESS' } });
       return issued;
     });
-    return { pair, user: { id: user.id, email: user.email, role: user.role, balance: (user.wallet?.balance ?? 0n).toString() } };
+    return { pair, user: { id: user.id, username: user.username, email: user.email, role: user.role, balance: (user.wallet?.balance ?? 0n).toString() } };
   }
 
   async rotateRefreshToken(rawToken: string): Promise<TokenPair> {
@@ -61,12 +95,20 @@ export class AuthService {
         return { kind: 'reuse' as const };
       }
       if (record.expiresAt <= new Date()) return { kind: 'invalid' as const };
+      if (record.user.disabled) {
+        // Status comes from the database, never the token: revoke the whole family
+        // so a re-enabled account must sign in again, and report it.
+        await tx.refreshToken.updateMany({ where: { familyId: record.familyId, revokedAt: null }, data: { revokedAt: new Date() } });
+        await tx.auditLog.create({ data: { actorId: record.userId, targetType: 'TOKEN_FAMILY', targetId: record.familyId, action: 'PERMISSION_DENIED', result: 'ACCOUNT_DISABLED' } });
+        return { kind: 'disabled' as const };
+      }
       await tx.refreshToken.update({ where: { id: record.id }, data: { revokedAt: new Date() } });
       const pair = await this.createPair(tx, record.userId, record.user.role, record.familyId);
       await tx.auditLog.create({ data: { actorId: record.userId, targetType: 'TOKEN_FAMILY', targetId: record.familyId, action: 'REFRESH_SUCCESS', result: 'SUCCESS' } });
       return { kind: 'success' as const, pair };
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
     if (outcome.kind === 'reuse') throw new ForbiddenException('REFRESH_TOKEN_REUSE_DETECTED');
+    if (outcome.kind === 'disabled') throw new ForbiddenException('ACCOUNT_DISABLED');
     if (outcome.kind !== 'success') throw new UnauthorizedException('INVALID_REFRESH_TOKEN');
     return outcome.pair;
   }

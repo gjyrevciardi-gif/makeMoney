@@ -1,0 +1,14 @@
+
+> test
+> node -e "const raw=process.env.DATABASE_URL||''; if(!raw) throw new Error('DATABASE_URL is required for backend tests'); const name=new URL(raw).pathname.replace(/^\/+/, '').split('/')[0]||''; const safe=name.toLowerCase().includes('_test'); if(!safe || name.toLowerCase()==='fools_gold' || name.toLowerCase()==='postgres') throw new Error('Unsafe test database: ' + name);" && node --experimental-vm-modules ../node_modules/jest/bin/jest.js --runInBand test/lucky-lady-payout-panel.integration.spec.ts test/payout-distribution-runtime.spec.ts test/lucky-lady-payout-messages.spec.ts --verbose
+
+(node:40180) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"event":"HTTP_REQUEST","requestId":"01216de1-bc32-4595-a272-045e722d6f0a","method":"POST","route":"/admin/casino/math/lucky-lady/payout/generate","statusCode":201,"durationMs":9}
+{"event":"HTTP_REQUEST","requestId":"c1808456-9cbb-4c5b-b50f-6a811aaad0cd","method":"POST","route":"/admin/casino/math/lucky-lady/payout/generate","statusCode":201,"durationMs":101279}
+{"event":"HTTP_REQUEST","requestId":"8d3f992a-de5e-454a-985c-5a2460a3e2f5","method":"GET","route":"/admin/casino/math/lucky-lady/payout/candidates/:candidateId","statusCode":200,"durationMs":19}
+Test Suites: 3 passed, 3 total
+Tests:       28 passed, 28 total
+Snapshots:   0 total
+Time:        669.207 s, estimated 671 s
+Ran all test suites matching test/lucky-lady-payout-panel.integration.spec.ts|test/payout-distribution-runtime.spec.ts|test/lucky-lady-payout-messages.spec.ts.

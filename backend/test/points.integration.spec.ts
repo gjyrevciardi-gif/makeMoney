@@ -23,6 +23,7 @@ describe('zero-start virtual point rules (PostgreSQL integration)', () => {
     userId = user.id;
     const admin = await prisma.user.create({ data: { email: adminEmail, passwordHash: 'operator-created', role: 'ADMIN', wallet: { create: {} } } });
     adminId = admin.id;
+    await prisma.user.updateMany({ where: { role: 'USER' }, data: { createdById: admin.id } });
   });
 
   it('creates a new account with an exact zero balance and no positive ledger entry', async () => {

@@ -1,0 +1,117 @@
+
+> test
+> node -e "const raw=process.env.DATABASE_URL||''; if(!raw) throw new Error('DATABASE_URL is required for backend tests'); const name=new URL(raw).pathname.replace(/^\/+/, '').split('/')[0]||''; const safe=name.toLowerCase().includes('_test'); if(!safe || name.toLowerCase()==='fools_gold' || name.toLowerCase()==='postgres') throw new Error('Unsafe test database: ' + name);" && node --experimental-vm-modules ../node_modules/jest/bin/jest.js --runInBand test/p1-snapshot-concurrency.integration.spec.ts --verbose
+
+(node:15116) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+  console.log
+    P1_CONCURRENCY_RESULTS [
+      {
+        "scenario": "baseline-pool17-n12",
+        "pool": 17,
+        "concurrentRounds": 12,
+        "flipping": false,
+        "completed": 12,
+        "failed": 0,
+        "poolOrTransactionStartErrors": 0,
+        "otherErrors": 0,
+        "errorSamples": [],
+        "durationMs": 536,
+        "roundsWritten": 12,
+        "usersWithMoreThanOneRound": 0,
+        "duplicateDebits": 0,
+        "duplicateActionRows": 0,
+        "coherentDefault": 0,
+        "coherentCustom": 12,
+        "mixedSnapshots": 0,
+        "balanceLedgerMismatches": 0,
+        "failedRoundsWithSideEffects": 0,
+        "replays": 12,
+        "replayResponseMismatches": 0,
+        "replayNewLedgerRows": 0,
+        "flips": 0
+      },
+      {
+        "scenario": "flipping-pool17-n40",
+        "pool": 17,
+        "concurrentRounds": 40,
+        "flipping": true,
+        "completed": 40,
+        "failed": 0,
+        "poolOrTransactionStartErrors": 0,
+        "otherErrors": 0,
+        "errorSamples": [],
+        "durationMs": 1295,
+        "roundsWritten": 40,
+        "usersWithMoreThanOneRound": 0,
+        "duplicateDebits": 0,
+        "duplicateActionRows": 0,
+        "coherentDefault": 0,
+        "coherentCustom": 40,
+        "mixedSnapshots": 0,
+        "balanceLedgerMismatches": 0,
+        "failedRoundsWithSideEffects": 0,
+        "replays": 40,
+        "replayResponseMismatches": 0,
+        "replayNewLedgerRows": 0,
+        "flips": 3
+      },
+      {
+        "scenario": "probe-pool5-n12",
+        "pool": 5,
+        "concurrentRounds": 12,
+        "flipping": true,
+        "completed": 12,
+        "failed": 0,
+        "poolOrTransactionStartErrors": 0,
+        "otherErrors": 0,
+        "errorSamples": [],
+        "durationMs": 566,
+        "roundsWritten": 12,
+        "usersWithMoreThanOneRound": 0,
+        "duplicateDebits": 0,
+        "duplicateActionRows": 0,
+        "coherentDefault": 12,
+        "coherentCustom": 0,
+        "mixedSnapshots": 0,
+        "balanceLedgerMismatches": 0,
+        "failedRoundsWithSideEffects": 0,
+        "replays": 12,
+        "replayResponseMismatches": 0,
+        "replayNewLedgerRows": 0,
+        "flips": 2
+      },
+      {
+        "scenario": "proof-pool1-n3",
+        "pool": 1,
+        "concurrentRounds": 3,
+        "flipping": false,
+        "completed": 3,
+        "failed": 0,
+        "poolOrTransactionStartErrors": 0,
+        "otherErrors": 0,
+        "errorSamples": [],
+        "durationMs": 270,
+        "roundsWritten": 3,
+        "usersWithMoreThanOneRound": 0,
+        "duplicateDebits": 0,
+        "duplicateActionRows": 0,
+        "coherentDefault": 0,
+        "coherentCustom": 3,
+        "mixedSnapshots": 0,
+        "balanceLedgerMismatches": 0,
+        "failedRoundsWithSideEffects": 0,
+        "replays": 3,
+        "replayResponseMismatches": 0,
+        "replayNewLedgerRows": 0,
+        "flips": 0
+      }
+    ]
+
+      at Object.<anonymous> (test/C:/Users/Admin/orca/workspaces/toto/toto-game-adapter-template/backend/test/p1-snapshot-concurrency.integration.spec.ts:114:13)
+
+Test Suites: 1 passed, 1 total
+Tests:       4 passed, 4 total
+Snapshots:   0 total
+Time:        109.725 s, estimated 119 s
+Ran all test suites matching test/p1-snapshot-concurrency.integration.spec.ts.

@@ -91,6 +91,7 @@ describe('casino registry, search, favorites and recent games (PostgreSQL + Redi
     userId = user.id;
     otherId = other.id;
     adminId = admin.id;
+    await prisma.user.updateMany({ where: { role: 'USER' }, data: { createdById: admin.id } });
     await points.adminGrant(adminId, userId, 50_000n, 'Lobby funding', randomUUID());
   });
 
@@ -143,7 +144,7 @@ describe('casino registry, search, favorites and recent games (PostgreSQL + Redi
       expect(originals.length).toBeGreaterThan(0);
       expect(originals.every((game) => game.category === 'ORIGINALS')).toBe(true);
       expect(registry.list({ category: 'SLOTS' }).map((game) => game.id))
-        .toEqual(['fools-gold-rush', 'titans-tempest']);
+        .toEqual(['fools-gold-rush', 'titans-tempest', 'lucky-lady']);
     });
 
     it('filters by featured flag', () => {

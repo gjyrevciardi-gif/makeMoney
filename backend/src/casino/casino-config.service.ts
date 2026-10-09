@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { CasinoConfigStatus, Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
+import { hasCapability } from '../auth/capabilities';
 import { CASINO_GAME_IDS, CasinoGameId, CasinoGameRegistry } from './casino-game.registry';
 import {
   GAME_CONFIG_SPECS,
@@ -16,6 +17,9 @@ import {
   candidateRtpBps,
 } from './casino-config.defaults';
 import { EffectiveGameConfig, GameConfigCandidate } from './casino-config.types';
+
+/** A transaction client (or the pool) that config reads may be issued through. */
+export type ConfigReader = Pick<Prisma.TransactionClient, 'platformSettings' | 'casinoGameConfig'>;
 
 type MutableFlags = { enabled?: boolean; maintenance?: boolean };
 
@@ -51,9 +55,9 @@ export class CasinoConfigService {
   private async assertAdmin(actorId: string, operation: string, targetId?: string) {
     const actor = await this.prisma.user.findUnique({
       where: { id: actorId },
-      select: { role: true },
+      select: { role: true, disabled: true },
     });
-    if (actor?.role === Role.ADMIN) return;
+    if (actor && !actor.disabled && hasCapability(actor.role, 'GAME_ADMIN')) return;
     await this.prisma.auditLog.create({
       data: {
         actorId,
@@ -142,9 +146,29 @@ export class CasinoConfigService {
     }
   }
 
-  /** The configuration a *new* round of this game must be opened under. */
-  async effective(gameId: CasinoGameId): Promise<EffectiveGameConfig> {
-    const config = await this.ensure(gameId);
+  /**
+   * Read-only view of a game's config row through a caller-supplied client.
+   *
+   * Used when the caller already holds a transaction connection: it must not
+   * ask the pool for another one, and it must not write. A row that has not been
+   * seeded yet reads as the baseline defaults, which is exactly what seeding
+   * would produce (version 1 is seeded from the baseline), so the effective limits
+   * are identical. `ensure()` still seeds on the pool path.
+   */
+  private async readConfig(gameId: CasinoGameId, db: ConfigReader) {
+    const existing = await db.casinoGameConfig.findUnique({ where: { gameId }, include: { activeVersion: true } });
+    if (existing) return existing;
+    return { enabled: true, maintenance: false, activeVersion: null } as unknown as Awaited<ReturnType<CasinoConfigService['ensure']>>;
+  }
+
+  /**
+   * The configuration a *new* round of this game must be opened under.
+   *
+   * Pass `db` (an open transaction client) when already inside a transaction so
+   * no second pooled connection is acquired while that one is held.
+   */
+  async effective(gameId: CasinoGameId, db?: ConfigReader): Promise<EffectiveGameConfig> {
+    const config = db ? await this.readConfig(gameId, db) : await this.ensure(gameId);
     const active = config.activeVersion;
     const baseline = this.spec(gameId).baseline();
     if (!active) {
@@ -219,12 +243,25 @@ export class CasinoConfigService {
     };
   }
 
+  /**
+   * The single platform settings row, created on first use.
+   *
+   * `upsert` is a read-then-insert, so two concurrent first callers could both
+   * insert and one failed with a unique violation. Creation is instead a single
+   * `INSERT ... ON CONFLICT DO NOTHING` on the primary key: every concurrent first
+   * caller succeeds and exactly one row can exist. Nothing is caught or hidden.
+   */
   private async platform() {
-    return this.prisma.platformSettings.upsert({
-      where: { id: 'singleton' },
-      create: { id: 'singleton' },
-      update: {},
-    });
+    const existing = await this.prisma.platformSettings.findUnique({ where: { id: 'singleton' } });
+    if (existing) return existing;
+    await this.prisma.platformSettings.createMany({ data: [{ id: 'singleton' }], skipDuplicates: true });
+    return this.prisma.platformSettings.findUniqueOrThrow({ where: { id: 'singleton' } });
+  }
+
+  /** Read-only platform flags through a caller-supplied client (no pool acquisition, no write). */
+  private async platformIn(db: ConfigReader) {
+    const row = await db.platformSettings.findUnique({ where: { id: 'singleton' } });
+    return { casinoMaintenance: row?.casinoMaintenance ?? false };
   }
 
   async platformSettings() {
@@ -236,15 +273,15 @@ export class CasinoConfigService {
    * existing round: an operator enabling maintenance must never trap a stake
    * that has already been debited.
    */
-  async assertPlayable(gameId: CasinoGameId) {
-    const platform = await this.platform();
+  async assertPlayable(gameId: CasinoGameId, db?: ConfigReader) {
+    const platform = db ? await this.platformIn(db) : await this.platform();
     if (platform.casinoMaintenance) {
       throw new ServiceUnavailableException({
         code: 'CASINO_MAINTENANCE',
         message: 'The casino is temporarily unavailable.',
       });
     }
-    const config = await this.effective(gameId);
+    const config = await this.effective(gameId, db);
     // The registry keeps its own build-time switch; both must allow play.
     this.registry.assertEnabled(gameId);
     if (!config.enabled) {

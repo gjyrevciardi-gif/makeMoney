@@ -1,0 +1,54 @@
+BACKEND-ONLY STAGING LIST (nothing is staged; review, then run these)
+Branch ui/player-reference-shell, HEAD ada9366.
+
+# --- modified tracked backend files ---
+git add backend/nest-cli.json backend/package.json backend/prisma/schema.prisma
+git add backend/src/admin/admin.controller.ts backend/src/app.module.ts
+git add backend/src/auth/access.guard.ts backend/src/auth/auth.service.ts backend/src/auth/roles.guard.ts
+git add backend/src/bets/bets.controller.ts
+git add backend/src/casino/casino.controller.ts backend/src/casino/casino.module.ts
+git add backend/src/casino/casino-admin.controller.ts backend/src/casino/casino-admin.service.ts
+git add backend/src/casino/casino-config.controller.ts backend/src/casino/casino-config.service.ts
+git add backend/src/casino/games/lucky-lady/lucky-lady.adapter.ts backend/src/casino/games/lucky-lady/lucky-lady.controller.ts
+git add backend/src/casino/platform/game-capability.service.ts
+git add backend/src/casino/platform/math-control/math-control.controller.ts
+git add backend/src/casino/platform/math-control/math-control.jobs.ts
+git add backend/src/casino/platform/math-control/math-control.service.ts
+git add backend/src/operations/sports-operations.controller.ts backend/src/operations/sports-operations.service.ts
+git add backend/src/settlement/settlement.controller.ts backend/src/sports/provider-status.controller.ts
+git add backend/src/wallet/points.service.ts
+git add backend/test/casino-admin-config.integration.spec.ts backend/test/lucky-lady.integration.spec.ts
+git add backend/test/payout-distribution-runtime.spec.ts backend/test/sports-operations.integration.spec.ts
+
+# --- new backend files ---
+git add backend/prisma/migrations/20261005120000_lucky_lady_payout_panel
+git add backend/prisma/migrations/20261005130000_hierarchical_rbac
+git add backend/prisma/migrations/20261006120000_audit_role_revoked
+git add backend/scripts/bootstrap-super-admin.mjs
+git add backend/src/auth/authorization.service.ts backend/src/auth/capabilities.ts backend/src/auth/capabilities.decorator.ts
+git add backend/src/auth/super-admin-bootstrap.ts backend/src/auth/user-admin.controller.ts
+git add backend/src/casino/games/lucky-lady/payout
+git add backend/test/hierarchical-rbac.integration.spec.ts backend/test/rbac-unit.spec.ts
+git add backend/test/lucky-lady-payout-messages.spec.ts backend/test/lucky-lady-payout-panel.integration.spec.ts
+git add backend/test/p0-pts-superadmin-security.integration.spec.ts backend/test/p1-auth-ratelimit-audit.integration.spec.ts
+
+# --- evidence / documentation ---
+git add docs/agent-work/p0-verification
+
+# --- CONCURRENCY GATE (staged; run explicitly, see REPORT.md) ---
+# backend/test/p1-snapshot-concurrency.integration.spec.ts
+#   Now a real availability + integrity gate (passes 4/4 after the pool fix). It takes about 3 minutes
+#   because it generates one real candidate, so decide whether to stage it as an explicit-run test or
+#   exclude it from the default suite. If staged:
+#   git add backend/test/p1-snapshot-concurrency.integration.spec.ts
+
+# --- EXCLUDE from the backend commit ---
+# frontend/**   (player UI rebuild, admin RTP page, capabilities mirror, frontend tests, dev fixture route)
+# .review-fe/   (throwaway copy)
+# pre-*-hashes.txt and post-*-hashes.txt   (untracked evidence scratch at repo root)
+# *.log files   (already gitignored)
+
+# --- BEFORE COMMITTING ---
+# 1. Apply migration 20261006120000_audit_role_revoked to the dev DB when you choose to; it is only applied to toto_gat_test.
+# 2. No RBAC or payout-panel design docs exist yet; add a short backend security note.
+# 3. The concurrency blocker is fixed (see REPORT.md, pool-fix section).

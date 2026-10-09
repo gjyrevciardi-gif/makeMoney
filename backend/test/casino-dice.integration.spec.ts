@@ -50,6 +50,7 @@ describe('server-authoritative dice (PostgreSQL)', () => {
     });
     userId = user.id;
     adminId = admin.id;
+    await prisma.user.updateMany({ where: { role: 'USER' }, data: { createdById: admin.id } });
   });
 
   const fund = (amount = 10_000n) =>
@@ -183,7 +184,9 @@ describe('server-authoritative dice (PostgreSQL)', () => {
 
   it('rejects a cross-user replay when a concurrent idempotency preflight becomes stale', async () => {
     await fund(1_000n);
-    await points.adminGrant(adminId, adminId, 1_000n, 'Contender funding', randomUUID());
+    // An ADMIN cannot fund another ADMIN; a SUPER_ADMIN funds the contender.
+    const funder = await prisma.user.create({ data: { email: `funder-${randomUUID()}@example.test`, passwordHash: 'x', role: 'SUPER_ADMIN', wallet: { create: {} } } });
+    await points.adminGrant(funder.id, adminId, 1_000n, 'Contender funding', randomUUID());
 
     const sharedKey = randomUUID();
     const contenderBalanceBefore =

@@ -1,9 +1,9 @@
 import { Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
-import { CasinoGameType, CasinoRoundStatus, Role } from '@prisma/client';
+import { CasinoGameType, CasinoRoundStatus } from '@prisma/client';
 import { Type } from 'class-transformer';
 import { IsEnum, IsIn, IsInt, IsOptional, IsUUID, Max, Min } from 'class-validator';
 import { AccessGuard, AuthenticatedRequest } from '../auth/access.guard';
-import { Roles } from '../auth/roles.decorator';
+import { Capabilities } from '../auth/capabilities.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { CasinoAdminService } from './casino-admin.service';
 
@@ -21,7 +21,7 @@ class AnalyticsQuery {
 /** Administrator casino visibility. Read-only by construction: there are no writes here. */
 @Controller('admin/casino')
 @UseGuards(AccessGuard, RolesGuard)
-@Roles(Role.ADMIN)
+@Capabilities('GAME_ADMIN')
 export class CasinoAdminController {
   constructor(private readonly admin: CasinoAdminService) {}
 

@@ -1,0 +1,61 @@
+{
+ "method": "reel-set stop weighting scan",
+ "rounds_per_trial": 1000000,
+ "trials": [
+  {
+   "effectiveWeight": 102,
+   "preferredWeight": 1020,
+   "otherWeight": 10,
+   "rounds": 1000000,
+   "rtpPercent": 48.687439999999995,
+   "ci": [
+    47.93126362631939,
+    49.443616373680605
+   ],
+   "base": 44.75289,
+   "scatter": 2.8750999999999998,
+   "feature": 1.05945,
+   "triggerRate": 0.051500000000000004
+  },
+  {
+   "effectiveWeight": 102.5,
+   "rounds": 1000000,
+   "infeasible": "invalid weight for reelStrip1"
+  },
+  {
+   "effectiveWeight": 103,
+   "preferredWeight": 1030,
+   "otherWeight": 10,
+   "rounds": 1000000,
+   "rtpPercent": 47.460190000000004,
+   "ci": [
+    46.71451405142227,
+    48.20586594857773
+   ],
+   "base": 43.39703,
+   "scatter": 2.8667000000000002,
+   "feature": 1.19646,
+   "triggerRate": 0.051699999999999996
+  },
+  {
+   "effectiveWeight": 103.5,
+   "rounds": 1000000,
+   "infeasible": "invalid weight for reelStrip1"
+  },
+  {
+   "effectiveWeight": 104,
+   "preferredWeight": 1040,
+   "otherWeight": 10,
+   "rounds": 1000000,
+   "rtpPercent": 47.708859999999994,
+   "ci": [
+    46.96172447706494,
+    48.455995522935055
+   ],
+   "base": 43.78961,
+   "scatter": 2.8522,
+   "feature": 1.06705,
+   "triggerRate": 0.051199999999999996
+  }
+ ]
+}

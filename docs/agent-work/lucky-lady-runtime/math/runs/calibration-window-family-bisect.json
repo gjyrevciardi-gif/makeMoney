@@ -1,0 +1,71 @@
+{
+ "method": "reel-set stop weighting scan",
+ "rounds_per_trial": 200000,
+ "trials": [
+  {
+   "preferredWeight": 48,
+   "rounds": 200000,
+   "rtpPercent": 105.70645,
+   "ci": [
+    102.69113073685435,
+    108.72176926314567
+   ],
+   "base": 89.8111,
+   "scatter": 7.0035,
+   "feature": 8.89185,
+   "triggerRate": 0.20249999999999999
+  },
+  {
+   "preferredWeight": 64,
+   "rounds": 200000,
+   "rtpPercent": 79.1246,
+   "ci": [
+    76.79394886232737,
+    81.45525113767263
+   ],
+   "base": 69.33915,
+   "scatter": 5.173500000000001,
+   "feature": 4.61195,
+   "triggerRate": 0.1315
+  },
+  {
+   "preferredWeight": 80,
+   "rounds": 200000,
+   "rtpPercent": 62.6248,
+   "ci": [
+    60.58566980629121,
+    64.6639301937088
+   ],
+   "base": 56.11545,
+   "scatter": 4.077,
+   "feature": 2.43235,
+   "triggerRate": 0.0835
+  },
+  {
+   "preferredWeight": 96,
+   "rounds": 200000,
+   "rtpPercent": 50.0677,
+   "ci": [
+    48.48520002474553,
+    51.65019997525447
+   ],
+   "base": 45.69355,
+   "scatter": 2.999,
+   "feature": 1.37515,
+   "triggerRate": 0.055
+  },
+  {
+   "preferredWeight": 112,
+   "rounds": 200000,
+   "rtpPercent": 42.05885,
+   "ci": [
+    40.63035367136294,
+    43.48734632863705
+   ],
+   "base": 38.7764,
+   "scatter": 2.564,
+   "feature": 0.71845,
+   "triggerRate": 0.0395
+  }
+ ]
+}

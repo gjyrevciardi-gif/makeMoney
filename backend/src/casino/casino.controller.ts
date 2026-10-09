@@ -10,7 +10,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { CasinoGameType, CasinoRoundStatus, Role } from '@prisma/client';
+import { CasinoGameType, CasinoRoundStatus } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
   IsEnum,
@@ -24,7 +24,7 @@ import {
   Min,
 } from 'class-validator';
 import { AccessGuard, AuthenticatedRequest } from '../auth/access.guard';
-import { Roles } from '../auth/roles.decorator';
+import { Capabilities } from '../auth/capabilities.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { RATE_LIMITS, RateLimitService } from '../common/rate-limit.service';
 import { CasinoService } from './casino.service';
@@ -84,7 +84,7 @@ class GameTypeParam {
  */
 @Controller('casino')
 @UseGuards(AccessGuard, RolesGuard)
-@Roles(Role.USER, Role.ADMIN)
+@Capabilities('GAME_PLAY')
 export class CasinoController {
   constructor(
     private readonly casino: CasinoService,

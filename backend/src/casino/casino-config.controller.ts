@@ -9,7 +9,6 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { Role } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
   IsBoolean,
@@ -23,7 +22,7 @@ import {
   Min,
 } from 'class-validator';
 import { AccessGuard, AuthenticatedRequest } from '../auth/access.guard';
-import { Roles } from '../auth/roles.decorator';
+import { Capabilities } from '../auth/capabilities.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { RATE_LIMITS, RateLimitService } from '../common/rate-limit.service';
 import { CasinoConfigService } from './casino-config.service';
@@ -84,7 +83,7 @@ class VersionParams {
  */
 @Controller('admin/casino/config')
 @UseGuards(AccessGuard, RolesGuard)
-@Roles(Role.ADMIN)
+@Capabilities('GAME_ADMIN')
 export class CasinoConfigController {
   constructor(
     private readonly configs: CasinoConfigService,
@@ -180,7 +179,7 @@ export class CasinoConfigController {
 /** Platform-wide maintenance switches, kept off the per-game path. */
 @Controller('admin/platform')
 @UseGuards(AccessGuard, RolesGuard)
-@Roles(Role.ADMIN)
+@Capabilities('PLATFORM_MANAGE')
 export class PlatformSettingsController {
   constructor(
     private readonly configs: CasinoConfigService,

@@ -1,0 +1,71 @@
+
+> test
+> node -e "const raw=process.env.DATABASE_URL||''; if(!raw) throw new Error('DATABASE_URL is required for backend tests'); const name=new URL(raw).pathname.replace(/^\/+/, '').split('/')[0]||''; const safe=name.toLowerCase().includes('_test'); if(!safe || name.toLowerCase()==='fools_gold' || name.toLowerCase()==='postgres') throw new Error('Unsafe test database: ' + name);" && node --experimental-vm-modules ../node_modules/jest/bin/jest.js --runInBand test/user-accounts.integration.spec.ts --verbose
+
+{"event":"HTTP_REQUEST","requestId":"3117fda5-1d3a-47f7-a2ae-18e3f8a6aa7f","method":"POST","route":"/auth/register","statusCode":201,"durationMs":7}
+{"event":"HTTP_REQUEST","requestId":"86cfa227-c72e-4a1a-8fa3-5839e738a86c","method":"POST","route":"/auth/register","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"5c2f2906-66db-48a9-a6c9-840629d25668","method":"POST","route":"/admin/users","statusCode":201,"durationMs":136}
+{"event":"HTTP_REQUEST","requestId":"b0e7d8ca-0ddd-4ec3-8d70-03f81da5ea7e","method":"POST","route":"/admin/users","statusCode":201,"durationMs":104}
+{"event":"HTTP_REQUEST","requestId":"9cd48b93-709f-4961-83e8-d00c3160ccd5","method":"POST","route":"/auth/login","statusCode":201,"durationMs":99}
+{"event":"HTTP_REQUEST","requestId":"762fb5f0-bbe5-41f6-9727-7010955b457a","method":"POST","route":"/admin/users/:userId/password/reveal","statusCode":201,"durationMs":14}
+{"event":"HTTP_REQUEST","requestId":"02efe33e-d89e-4cc7-af01-9b92a2d5b36f","method":"POST","route":"/admin/users","statusCode":201,"durationMs":99}
+{"event":"HTTP_REQUEST","requestId":"703e3704-169a-4002-a289-831b030966fd","method":"POST","route":"/admin/users","statusCode":201,"durationMs":4}
+{"event":"HTTP_REQUEST","requestId":"39da1046-603b-4d41-82da-65b723a93b09","method":"POST","route":"/admin/users","statusCode":201,"durationMs":4}
+{"event":"HTTP_REQUEST","requestId":"1245be07-20a1-43b6-b8c1-bc041abf9de7","method":"POST","route":"/admin/users","statusCode":201,"durationMs":133}
+{"event":"HTTP_REQUEST","requestId":"c555c32a-fd7d-4fd0-8ea8-2314e42eaca9","method":"POST","route":"/admin/users","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"12954500-30b0-450f-9765-61e1967c753a","method":"POST","route":"/admin/users","statusCode":201,"durationMs":6}
+{"event":"HTTP_REQUEST","requestId":"45040739-c3db-4a47-8b61-d847c9ca13f0","method":"POST","route":"/admin/users","statusCode":201,"durationMs":3}
+{"event":"HTTP_REQUEST","requestId":"31c8f128-3ac8-47bb-af6e-4a64169ff525","method":"POST","route":"/admin/users","statusCode":201,"durationMs":0}
+{"event":"HTTP_REQUEST","requestId":"72f5b109-2fc1-4d55-859b-9ef293ebcab3","method":"POST","route":"/admin/users","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"1449a60d-74cd-4acd-bccf-5e5f6c02ad8f","method":"POST","route":"/admin/users","statusCode":201,"durationMs":101}
+{"event":"HTTP_REQUEST","requestId":"7a50581d-42a4-40b7-b5ef-f922eade9096","method":"POST","route":"/admin/users","statusCode":201,"durationMs":105}
+{"event":"HTTP_REQUEST","requestId":"44325957-f8e5-4867-9d0e-f1789b490fb0","method":"POST","route":"/auth/login","statusCode":201,"durationMs":84}
+{"event":"HTTP_REQUEST","requestId":"d615f650-2ffb-476b-a980-6794f501b65f","method":"POST","route":"/auth/login","statusCode":201,"durationMs":92}
+{"event":"HTTP_REQUEST","requestId":"546e0108-8002-459e-84aa-aff953e825fe","method":"POST","route":"/auth/login","statusCode":201,"durationMs":99}
+{"event":"HTTP_REQUEST","requestId":"2cca6820-f081-462d-b856-4eb70b461858","method":"POST","route":"/auth/login","statusCode":201,"durationMs":131}
+{"event":"HTTP_REQUEST","requestId":"048828e2-0fe4-48de-8f40-46dc6b877e22","method":"POST","route":"/auth/login","statusCode":201,"durationMs":111}
+{"event":"HTTP_REQUEST","requestId":"ff213b9a-1056-400a-bd35-cd29cc75c46f","method":"POST","route":"/auth/login","statusCode":201,"durationMs":103}
+{"event":"HTTP_REQUEST","requestId":"c9fe1592-5d39-4977-b4c7-b12b6188b38d","method":"POST","route":"/admin/users/:userId/password","statusCode":201,"durationMs":147}
+{"event":"HTTP_REQUEST","requestId":"147de126-ba8c-4fbf-9c23-eb94dbef3d15","method":"POST","route":"/auth/login","statusCode":201,"durationMs":110}
+{"event":"HTTP_REQUEST","requestId":"ef3ed3c2-ad50-40f6-beff-0d075500c106","method":"POST","route":"/auth/login","statusCode":201,"durationMs":104}
+{"event":"HTTP_REQUEST","requestId":"6fc021bf-5b88-4a0d-918d-838d154047e3","method":"POST","route":"/admin/users/:userId/password/reveal","statusCode":201,"durationMs":13}
+{"event":"HTTP_REQUEST","requestId":"181a9b1a-7cfe-4a9a-b493-da9c869d7fd4","method":"POST","route":"/admin/users/:userId/password","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"71714f6c-3f01-4f7a-9fdc-f45cd82b23da","method":"POST","route":"/admin/users/:userId/password","statusCode":201,"durationMs":99}
+{"event":"HTTP_REQUEST","requestId":"85153183-c506-42bb-816e-ef9ab8e7891b","method":"POST","route":"/admin/users/:userId/password/reveal","statusCode":201,"durationMs":9}
+{"event":"HTTP_REQUEST","requestId":"74059b26-16c0-4ad5-ae2e-574f02df9d76","method":"POST","route":"/admin/users/:userId/password","statusCode":201,"durationMs":94}
+{"event":"HTTP_REQUEST","requestId":"5018bcba-e254-4bbb-91ce-340e3fa7927a","method":"POST","route":"/admin/users/:userId/password/reveal","statusCode":201,"durationMs":6}
+{"event":"HTTP_REQUEST","requestId":"b79c3b1c-cc7c-4ee5-b662-e974cefbb419","method":"POST","route":"/admin/users/:userId/password","statusCode":201,"durationMs":282}
+{"event":"HTTP_REQUEST","requestId":"24c9eaf5-6f58-4ca4-a196-7c063f7bb09d","method":"POST","route":"/admin/users/:userId/password/reveal","statusCode":201,"durationMs":10}
+{"event":"HTTP_REQUEST","requestId":"b70f96bb-ac41-441f-9eaf-ce0963b13db3","method":"POST","route":"/auth/login","statusCode":201,"durationMs":101}
+{"event":"HTTP_REQUEST","requestId":"bef2d239-eb50-471c-a0e0-a036f2980141","method":"POST","route":"/admin/users/:userId/password/reveal","statusCode":201,"durationMs":16}
+{"event":"HTTP_REQUEST","requestId":"388cd8fd-32c0-4bbd-97cc-8e08d8323814","method":"POST","route":"/admin/users/:userId/password","statusCode":201,"durationMs":120}
+{"event":"HTTP_REQUEST","requestId":"5574e526-3793-4bf8-8821-bc2f706e5ab1","method":"POST","route":"/admin/users","statusCode":201,"durationMs":7}
+{"event":"HTTP_UNHANDLED_EXCEPTION","requestId":"5574e526-3793-4bf8-8821-bc2f706e5ab1","method":"POST","route":"/admin/users","errorType":"ServiceUnavailableException"}
+{"event":"HTTP_REQUEST","requestId":"2a251383-f923-44d6-b262-23cd48b885e1","method":"POST","route":"/admin/users/:userId/password","statusCode":201,"durationMs":2}
+{"event":"HTTP_UNHANDLED_EXCEPTION","requestId":"2a251383-f923-44d6-b262-23cd48b885e1","method":"POST","route":"/admin/users/6d2e246c-1a8f-4062-9372-e7f38bab5609/password","errorType":"ServiceUnavailableException"}
+{"event":"HTTP_REQUEST","requestId":"216f7dd7-5a58-47d8-a8c5-466f3fb81dae","method":"POST","route":"/auth/login","statusCode":201,"durationMs":136}
+{"event":"HTTP_REQUEST","requestId":"b68a5e13-b765-41f8-a26e-78e1f72b6317","method":"POST","route":"/admin/users/:userId/username","statusCode":201,"durationMs":19}
+{"event":"HTTP_REQUEST","requestId":"64265a7e-bf6f-4a1c-b129-801a5f8ea235","method":"POST","route":"/admin/users/:userId/username","statusCode":201,"durationMs":10}
+{"event":"HTTP_REQUEST","requestId":"bc87e0d2-0e33-4898-8523-c967ad446664","method":"POST","route":"/admin/users/:userId/username","statusCode":201,"durationMs":6}
+FAIL test/user-accounts.integration.spec.ts (26.313 s)
+  ● administrator-managed accounts (PostgreSQL + Redis) › audits every reveal without ever recording the password, and says so for a password from before the vault
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected substring: "NOT_FOUND"
+    Received string:    "{\"code\":\"PASSWORD_NOT_AVAILABLE\",\"message\":\"This password was set before the vault existed. Set a new password to make it viewable.\"}"
+
+      at Object.<anonymous> (test/C:/Users/Admin/orca/workspaces/toto/toto-game-adapter-template/backend/test/user-accounts.integration.spec.ts:193:41)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 11 passed, 12 total
+Snapshots:   0 total
+Time:        26.645 s
+Ran all test suites matching test/user-accounts.integration.spec.ts.
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path C:\Users\Admin\orca\workspaces\toto\toto-game-adapter-template\backend
+npm error workspace backend
+npm error location C:\Users\Admin\orca\workspaces\toto\toto-game-adapter-template\backend
+npm error command failed
+npm error command C:\WINDOWS\SYSTEM32\cmd.exe /d /s /c node -e "const raw=process.env.DATABASE_URL||''; if(!raw) throw new Error('DATABASE_URL is required for backend tests'); const name=new URL(raw).pathname.replace(/^\/+/, '').split('/')[0]||''; const safe=name.toLowerCase().includes('_test'); if(!safe || name.toLowerCase()==='fools_gold' || name.toLowerCase()==='postgres') throw new Error('Unsafe test database: ' + name);" && node --experimental-vm-modules ../node_modules/jest/bin/jest.js --runInBand test/user-accounts.integration.spec.ts --verbose

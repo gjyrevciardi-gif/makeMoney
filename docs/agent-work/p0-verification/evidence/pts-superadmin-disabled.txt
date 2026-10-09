@@ -1,0 +1,22 @@
+
+> test
+> node -e "const raw=process.env.DATABASE_URL||''; if(!raw) throw new Error('DATABASE_URL is required for backend tests'); const name=new URL(raw).pathname.replace(/^\/+/, '').split('/')[0]||''; const safe=name.toLowerCase().includes('_test'); if(!safe || name.toLowerCase()==='fools_gold' || name.toLowerCase()==='postgres') throw new Error('Unsafe test database: ' + name);" && node --experimental-vm-modules ../node_modules/jest/bin/jest.js --runInBand test/p0-pts-superadmin-security.integration.spec.ts --verbose
+
+{"event":"HTTP_REQUEST","requestId":"0728eef4-1c09-4200-a9bb-875b6a9061e4","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":43}
+{"event":"HTTP_REQUEST","requestId":"8a2efd5c-9e8c-4ec4-9202-bf20e1d2742c","method":"POST","route":"/admin/users/:userId/coins/remove","statusCode":201,"durationMs":23}
+{"event":"HTTP_REQUEST","requestId":"3ddff634-0018-46e4-9682-92f854b6012a","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":44}
+{"event":"HTTP_REQUEST","requestId":"5c471be9-95d1-4864-91d0-67e2998bdd57","method":"POST","route":"/admin/users/:userId/coins/remove","statusCode":201,"durationMs":21}
+{"event":"HTTP_REQUEST","requestId":"3b7c1fab-a6c6-4caf-9efc-792227cd0e0e","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":10}
+{"event":"HTTP_REQUEST","requestId":"b83a1973-3660-42fb-9733-a310d3f3dc2b","method":"POST","route":"/admin/users/:userId/coins/remove","statusCode":201,"durationMs":11}
+{"event":"HTTP_REQUEST","requestId":"2fdfda73-9c82-42f1-98c4-870c70807164","method":"POST","route":"/admin/users/:userId/coins","statusCode":201,"durationMs":8}
+{"event":"HTTP_REQUEST","requestId":"be989ea9-569b-4345-8533-548356f40b2a","method":"POST","route":"/admin/users/:userId/coins/remove","statusCode":201,"durationMs":8}
+{"event":"HTTP_REQUEST","requestId":"eccbfbf3-033b-45db-a17e-cc27bbb30b3c","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":58}
+{"event":"HTTP_REQUEST","requestId":"aa780610-5fcd-4acf-989b-65b6750cb86c","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":26}
+{"event":"HTTP_REQUEST","requestId":"0762f6e9-583c-4694-a8b8-0a7356f0f300","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":21}
+{"event":"HTTP_REQUEST","requestId":"da203b5d-d56f-41cf-ab7f-18bf4802b7d2","method":"GET","route":"/admin/casino/math","statusCode":200,"durationMs":31}
+{"event":"HTTP_REQUEST","requestId":"528c012a-38db-466f-bc72-217a9f88ce05","method":"POST","route":"/casino/lucky-lady/launch","statusCode":201,"durationMs":116}
+Test Suites: 1 passed, 1 total
+Tests:       9 passed, 9 total
+Snapshots:   0 total
+Time:        19.677 s
+Ran all test suites matching test/p0-pts-superadmin-security.integration.spec.ts.

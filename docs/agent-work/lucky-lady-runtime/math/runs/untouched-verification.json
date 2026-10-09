@@ -1,0 +1,24 @@
+{
+ "client": {
+  "path": "C:/Users/Admin/orca/research/game-pack-forensics/external/frontend-hunt/files/heidi-luong1109--game/public/games/LuckyLadysCharmDX",
+  "upstreamRepo": "heidi-luong1109/game",
+  "upstreamCommit": "1eb3234892790d0c4ded54233f369aff176d9d8d",
+  "upstreamTreeTruncated": false,
+  "localFiles": 185,
+  "upstreamFiles": 185,
+  "hashMismatches": [],
+  "untrackedExtra": [],
+  "unchanged": true
+ },
+ "runtimeShim": {
+  "path": "C:/Users/Admin/orca/research/game-pack-forensics/runtime/LuckyLadysCharmDX/php-shim",
+  "files": {
+   "compat.php": "dfc47469eb188a81433521fdf0257d0492d2207b04b2ea68918f599d9fcd7c58",
+   "real-methods.php": "ab1198eb93bc3ad0b8a38d9006440f15128e130766b90ff760a7e696ddcf2cc5",
+   "recovery-client.js": "abcff586aa5c10b51ce76c2e4efffb6ba30197d4c7c8ba6e493110ebeebcc491",
+   "recovery.php": "d81163a80ee0dfb0b13da41faad8677e3585a0a87264839b199de904a7ffa6bf",
+   "router.php": "cb413845b8fd1288d0199cc0b9e21e48d48c379c3c06f08f225ffb8ebf82214e"
+  },
+  "note": "accepted harness files as deployed; this task did not modify them"
+ }
+}

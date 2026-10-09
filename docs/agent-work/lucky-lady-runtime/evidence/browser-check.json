@@ -1,0 +1,479 @@
+{
+ "generatedAt": "2026-10-04T16:23:53.996Z",
+ "checks": 92,
+ "failures": 0,
+ "results": [
+  {
+   "name": "client.file-count-185",
+   "ok": true,
+   "detail": "files=185"
+  },
+  {
+   "name": "harness.up",
+   "ok": true,
+   "detail": "harness reachable"
+  },
+  {
+   "name": "gateway.up",
+   "ok": true,
+   "detail": "gateway reachable"
+  },
+  {
+   "name": "frontend.up",
+   "ok": true,
+   "detail": "Next launcher reachable"
+  },
+  {
+   "name": "platform.grant-via-audited-admin-path",
+   "ok": true,
+   "detail": "100000"
+  },
+  {
+   "name": "platform.login-issues-access-token",
+   "ok": true,
+   "detail": "token issued"
+  },
+  {
+   "name": "launch.admin-denied",
+   "ok": true,
+   "detail": "status=403"
+  },
+  {
+   "name": "launch.anonymous-denied",
+   "ok": true,
+   "detail": "status=401"
+  },
+  {
+   "name": "launch.player-token-issued",
+   "ok": true,
+   "detail": "status=201"
+  },
+  {
+   "name": "launch.stores-only-the-hash",
+   "ok": true,
+   "detail": "hash stored"
+  },
+  {
+   "name": "gateway.requires-game-capability",
+   "ok": true,
+   "detail": "status=401"
+  },
+  {
+   "name": "gateway.rejects-forged-capability",
+   "ok": true,
+   "detail": "status=401"
+  },
+  {
+   "name": "platform.rejects-forged-capability",
+   "ok": true,
+   "detail": "status=401"
+  },
+  {
+   "name": "exchange.redirects-to-clean-url",
+   "ok": true,
+   "detail": "status=303 location=/play"
+  },
+  {
+   "name": "exchange.sets-httponly-game-cookie",
+   "ok": true,
+   "detail": "ll_session=<redacted>; HttpOnly; SameSite=Strict; Path=/"
+  },
+  {
+   "name": "exchange.never-puts-token-in-url",
+   "ok": true,
+   "detail": "token absent from location"
+  },
+  {
+   "name": "exchange.single-use",
+   "ok": true,
+   "detail": "status=401"
+  },
+  {
+   "name": "client.settings-lock-10-lines",
+   "ok": true,
+   "detail": "[10]"
+  },
+  {
+   "name": "client.stake-ladder-is-whole-points",
+   "ok": true,
+   "detail": "[1,2,5,10,20]"
+  },
+  {
+   "name": "client.settings-frozen-profile",
+   "ok": true,
+   "detail": "{\"gameId\":\"lucky-lady.rtp50.v1\",\"rtpControlEnabled\":true,\"targetRtpPercent\":50,\"activeMathProfile\":\"lucky-lady.rtp50.v1\",\"profileHash\":\"eb0a22171a3479cea3b0238269edd4b0dc5d9486c57e4b057fa6ee0f1a70be5f\",\"validatedLines\":10,\"stakeUnit\":\"WHOLE_POINTS\"}"
+  },
+  {
+   "name": "client.renders-15-symbols",
+   "ok": true,
+   "detail": "15"
+  },
+  {
+   "name": "client.zero-welcome-credits-and-wallet-balance",
+   "ok": true,
+   "detail": "{\"balance\":100000,\"phase\":\"IDLE\"}"
+  },
+  {
+   "name": "harness.seed-queue-applied",
+   "ok": true,
+   "detail": "{\"draws\":0,\"queued\":1,\"lastSeed\":null}"
+  },
+  {
+   "name": "paid.round-started",
+   "ok": true,
+   "detail": "phase reached PENDING_WIN"
+  },
+  {
+   "name": "paid.visible-15-symbols-match-server",
+   "ok": true,
+   "detail": "{\"reel1\":[\"P_6\",\"P_1\",\"10\"],\"reel2\":[\"P_3\",\"P_2\",\"P_5\"],\"reel3\":[\"9\",\"J\",\"P_3\"],\"reel4\":[\" vs {\"reel1\":[\"P_6\",\"P_1\",\"10\"],\"reel2\":[\"P_3\",\"P_2\",\"P_5\"],\"reel3\":[\"9\",\"J\",\"P_3\"],\"reel4\":[\""
+  },
+  {
+   "name": "harness.deterministic-seed-used",
+   "ok": true,
+   "detail": "{\"draws\":1,\"queued\":0,\"lastSeed\":\"ll-0\"}"
+  },
+  {
+   "name": "paid.displayed-stake-is-whole-points",
+   "ok": true,
+   "detail": "{\"perLine\":1,\"total\":10,\"lines\":10}"
+  },
+  {
+   "name": "paid.displayed-total-stake-equals-ledger-debit",
+   "ok": true,
+   "detail": "displayed=10 ledger=-10"
+  },
+  {
+   "name": "paid.exactly-one-debit",
+   "ok": true,
+   "detail": "moves=1 amount=-10"
+  },
+  {
+   "name": "paid.pending-win-not-yet-credited",
+   "ok": true,
+   "detail": "pending=4"
+  },
+  {
+   "name": "paid.platform-balance-is-debited-only",
+   "ok": true,
+   "detail": "balance=99990 credit=99990"
+  },
+  {
+   "name": "receipt.posted-for-authoritative-action",
+   "ok": true,
+   "detail": "actionId=51074e8b-1a4f-4c1b-9d3f-b160cfb35a0d"
+  },
+  {
+   "name": "receipt.posted-after-board-rendered",
+   "ok": true,
+   "detail": "{\"reel1\":[\"P_6\",\"P_1\",\"10\"],\"reel2\":[\"P_3\",\"P_2\",\"P_5\"],\"reel3\":[\"9\",\"J\",\"P_3\"],\"reel4\":[\"Q\",\"P_4\",\"P_1\"],\"reel5\":[\"P_6\""
+  },
+  {
+   "name": "collect.one-exact-credit",
+   "ok": true,
+   "detail": "credits=1 amount=4 pending=4"
+  },
+  {
+   "name": "collect.wallet-reconciles",
+   "ok": true,
+   "detail": "balance=99994"
+  },
+  {
+   "name": "recovery.refresh-preserves-state",
+   "ok": true,
+   "detail": "{\"round\":\"1a7d1b3f-e175-442f-a889-b9aec77089fb\",\"phase\":\"IDLE\"}"
+  },
+  {
+   "name": "recovery.refresh-restores-same-board",
+   "ok": true,
+   "detail": "{\"reel1\":[\"P_6\",\"P_1\",\"10\"],\"reel2\":[\"P_3\",\"P_2\",\"P_5\"],\"reel3\":[\"9\",\"J\",\"P_3\"],\"reel4\":[\"Q\",\"P_4\",\"P_1\"],\"reel5\":[\"P_6\""
+  },
+  {
+   "name": "recovery.refresh-adds-no-ledger-row",
+   "ok": true,
+   "detail": "grant + bet + collect"
+  },
+  {
+   "name": "feature.round-started",
+   "ok": true,
+   "detail": "phase reached FREE_SPINS"
+  },
+  {
+   "name": "feature.awards-15-not-future-total",
+   "ok": true,
+   "detail": "{\"total\":15,\"current\":0,\"remaining\":15,\"multiplier\":3}"
+  },
+  {
+   "name": "feature.no-future-sequence-exposed",
+   "ok": true,
+   "detail": "server-private future feature stays server-side"
+  },
+  {
+   "name": "feature.refresh-mid-feature-preserved",
+   "ok": true,
+   "detail": "{\"total\":15,\"current\":6,\"remaining\":9,\"multiplier\":3}"
+  },
+  {
+   "name": "feature.completes-15-spins",
+   "ok": true,
+   "detail": "phase=PENDING_WIN current=15"
+  },
+  {
+   "name": "feature.no-extra-wager-debit",
+   "ok": true,
+   "detail": "one debit per paid round"
+  },
+  {
+   "name": "feature.collect-reaches-idle",
+   "ok": true,
+   "detail": "collects the pending feature win"
+  },
+  {
+   "name": "feature.settled-before-next-round",
+   "ok": true,
+   "detail": "client returned to idle"
+  },
+  {
+   "name": "retrigger.seed-queued",
+   "ok": true,
+   "detail": "{\"draws\":2,\"queued\":1,\"lastSeed\":\"ll-2391\"}"
+  },
+  {
+   "name": "retrigger.round-started",
+   "ok": true,
+   "detail": "phase reached FREE_SPINS"
+  },
+  {
+   "name": "retrigger.adds-15-at-the-live-event",
+   "ok": true,
+   "detail": "15 -> 30"
+  },
+  {
+   "name": "retrigger.15-to-30-observed",
+   "ok": true,
+   "detail": "observations=1 total=30"
+  },
+  {
+   "name": "retrigger.feature-completes-30-spins",
+   "ok": true,
+   "detail": "phase=PENDING_WIN current=30"
+  },
+  {
+   "name": "retrigger.collect-reaches-idle",
+   "ok": true,
+   "detail": "collects the retriggered feature win"
+  },
+  {
+   "name": "gamble.round-started",
+   "ok": true,
+   "detail": "phase reached PENDING_WIN"
+  },
+  {
+   "name": "gamble.entry-reaches-gamble-screen",
+   "ok": true,
+   "detail": "phase reached GAMBLE"
+  },
+  {
+   "name": "gamble.red-guess-recorded",
+   "ok": true,
+   "detail": "one native red/black attempt"
+  },
+  {
+   "name": "gamble.native-attempt-recorded",
+   "ok": true,
+   "detail": "{\"cards\":[\"H\"],\"attempts\":1}"
+  },
+  {
+   "name": "gamble.pending-win-doubles-on-win",
+   "ok": true,
+   "detail": "4 -> 8"
+  },
+  {
+   "name": "gamble.refresh-keeps-the-rounded-state-without-errors",
+   "ok": true,
+   "detail": "{\"phase\":\"GAMBLE\",\"pending\":8,\"balance\":100892}"
+  },
+  {
+   "name": "gamble.refresh-restores-the-last-spin-board",
+   "ok": true,
+   "detail": "{\"reel1\":[\"P_6\",\"P_1\",\"10\"],\"reel2\":[\"P_3\",\"P_2\",\"P_5\"],\"reel3\":[\"9\",\"J\",\"P_3\"],\"reel4\":[\"Q\",\"P_4\",\"P_1\"],\"reel5\":[\"P_6\""
+  },
+  {
+   "name": "gamble.refresh-keeps-the-native-gamble-presentation",
+   "ok": true,
+   "detail": "{\"cards\":[\"H\"],\"attempts\":1}"
+  },
+  {
+   "name": "gamble.moves-no-ledger-entries",
+   "ok": true,
+   "detail": "credits only at collect"
+  },
+  {
+   "name": "gamble.collect-reaches-idle",
+   "ok": true,
+   "detail": "collects the gambled win"
+  },
+  {
+   "name": "gamble.collect-credits-the-doubled-pending",
+   "ok": true,
+   "detail": "credits=4 last=8"
+  },
+  {
+   "name": "gamble.refresh-after-collect-is-stable",
+   "ok": true,
+   "detail": "{\"phase\":\"IDLE\",\"balance\":100900,\"wallet\":\"100900\"}"
+  },
+  {
+   "name": "gamble.refresh-after-collect-keeps-the-board",
+   "ok": true,
+   "detail": "{\"reel1\":[\"P_6\",\"P_1\",\"10\"],\"reel2\":[\"P_3\",\"P_2\",\"P_5\"],\"reel3\":[\"9\",\"J\",\"P_3\"],\"reel4\":[\"Q\",\"P_4\",\"P_1\"],\"reel5\":[\"P_6\""
+  },
+  {
+   "name": "gamble-loss.round-started",
+   "ok": true,
+   "detail": "phase reached PENDING_WIN"
+  },
+  {
+   "name": "gamble-loss.entry-reaches-gamble-screen",
+   "ok": true,
+   "detail": "phase reached GAMBLE"
+  },
+  {
+   "name": "gamble-loss.red-guess-recorded",
+   "ok": true,
+   "detail": "one native red/black attempt"
+  },
+  {
+   "name": "gamble-loss.closes-with-zero-pending",
+   "ok": true,
+   "detail": "{\"phase\":\"IDLE\",\"pending\":0}"
+  },
+  {
+   "name": "gamble-loss-debits-no-stake-and-credits-nothing",
+   "ok": true,
+   "detail": "wallet 100890"
+  },
+  {
+   "name": "gamble-loss.refresh-keeps-idle-state-without-errors",
+   "ok": true,
+   "detail": "{\"phase\":\"IDLE\",\"pending\":0}"
+  },
+  {
+   "name": "gamble-loss.refresh-restores-the-last-spin-board",
+   "ok": true,
+   "detail": "{\"reel1\":[\"P_6\",\"P_1\",\"10\"],\"reel2\":[\"P_3\",\"P_2\",\"P_5\"],\"reel3\":[\"9\",\"J\",\"P_3\"],\"reel4\":[\"Q\",\"P_4\",\"P_1\"],\"reel5\":[\"P_6\""
+  },
+  {
+   "name": "idor.rival-sees-own-empty-state",
+   "ok": true,
+   "detail": "{\"round\":\"none\",\"balance\":1000}"
+  },
+  {
+   "name": "idor.cross-user-round-header-refused",
+   "ok": true,
+   "detail": "status=409"
+  },
+  {
+   "name": "ledger.sum-equals-wallet-delta",
+   "ok": true,
+   "detail": "100890 vs 100890"
+  },
+  {
+   "name": "ledger.rows-carry-reason-and-key",
+   "ok": true,
+   "detail": "10 entries"
+  },
+  {
+   "name": "launcher.untrusted-launch-origin-blocked",
+   "ok": true,
+   "detail": "status=403"
+  },
+  {
+   "name": "launcher.missing-launch-origin-blocked",
+   "ok": true,
+   "detail": "status=403"
+  },
+  {
+   "name": "launcher.foreign-origin-gameplay-blocked",
+   "ok": true,
+   "detail": "status=403"
+  },
+  {
+   "name": "launcher.configured-origin-authorization",
+   "ok": true,
+   "detail": "status=401"
+  },
+  {
+   "name": "launcher.noreferrer-null-origin-authorization",
+   "ok": true,
+   "detail": "status=403"
+  },
+  {
+   "name": "launcher.sign-in-succeeds",
+   "ok": true,
+   "detail": "status=201"
+  },
+  {
+   "name": "launcher.page-offers-the-play-action",
+   "ok": true,
+   "detail": "button enabled"
+  },
+  {
+   "name": "launcher.new-tab-lands-on-the-clean-game-url",
+   "ok": true,
+   "detail": "http://127.0.0.1:8790/play"
+  },
+  {
+   "name": "launcher.game-tab-sees-the-platform-wallet",
+   "ok": true,
+   "detail": "100890 vs 100890"
+  },
+  {
+   "name": "launcher.game-tab-loads-the-native-symbol-set",
+   "ok": true,
+   "detail": "fifteen native symbols"
+  },
+  {
+   "name": "launcher.paid-round-board-matches-the-server",
+   "ok": true,
+   "detail": "{\"reel1\":[\"9\",\"K\",\"Q\"],\"reel2\":[\"P_5\",\"P_2\",\"P_6\"],\"reel3\":[\"J\",\"9\",\"P_3\"],\"reel4\":[\"P_1\",\"Q\",\"P_4\"],\"reel5\":[\"P_5\",\"J\","
+  },
+  {
+   "name": "launcher.paid-round-debits-exactly-once",
+   "ok": true,
+   "detail": "5 -> 6"
+  },
+  {
+   "name": "rng.production-path-draws-one-per-paid-round-and-gamble",
+   "ok": true,
+   "detail": "{\"draws\":8,\"queued\":0,\"lastSeed\":\"csprng:fc40064bd62b1a89256d2c84cdddeed26fe010e4361849cd62df28aab3dacd94\"}"
+  },
+  {
+   "name": "network.no-external-requests",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "client.no-page-errors",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "client.185-files-unchanged",
+   "ok": true,
+   "detail": "manifest identical"
+  }
+ ],
+ "outboundRequests": [],
+ "pageErrors": [],
+ "childErrors": [],
+ "screenshots": [
+  "01-idle.png",
+  "02-paid-round.png",
+  "03-free-spins.png",
+  "04-gamble.png",
+  "05-final.png",
+  "06-launcher.png",
+  "07-launcher-game.png"
+ ]
+}

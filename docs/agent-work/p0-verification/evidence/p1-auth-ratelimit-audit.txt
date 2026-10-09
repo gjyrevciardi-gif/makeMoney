@@ -1,0 +1,48 @@
+
+> test
+> node -e "const raw=process.env.DATABASE_URL||''; if(!raw) throw new Error('DATABASE_URL is required for backend tests'); const name=new URL(raw).pathname.replace(/^\/+/, '').split('/')[0]||''; const safe=name.toLowerCase().includes('_test'); if(!safe || name.toLowerCase()==='fools_gold' || name.toLowerCase()==='postgres') throw new Error('Unsafe test database: ' + name);" && node --experimental-vm-modules ../node_modules/jest/bin/jest.js --runInBand test/p1-auth-ratelimit-audit.integration.spec.ts --verbose
+
+{"event":"HTTP_REQUEST","requestId":"1238b019-0e1e-4d54-9134-315b3698b63a","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":31}
+{"event":"HTTP_REQUEST","requestId":"61d4e6b9-49f9-494a-a0ad-913181485165","method":"POST","route":"/auth/login","statusCode":201,"durationMs":116}
+{"event":"HTTP_REQUEST","requestId":"4dabeb16-142e-4315-9684-3b2dcefd7ec0","method":"POST","route":"/auth/login","statusCode":201,"durationMs":93}
+{"event":"HTTP_REQUEST","requestId":"e642672e-9d9c-4194-b5e4-716083f01fc0","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":25}
+{"event":"HTTP_REQUEST","requestId":"47ae4cee-a498-4af9-8139-3c7c64d886ff","method":"POST","route":"/auth/login","statusCode":201,"durationMs":155}
+{"event":"HTTP_REQUEST","requestId":"51c47c59-94f9-416f-8e8d-0efc88ac9254","method":"POST","route":"/auth/login","statusCode":201,"durationMs":93}
+{"event":"HTTP_REQUEST","requestId":"8dfe5242-1d0b-423c-9da1-75c56ee26201","method":"GET","route":"/casino/games","statusCode":200,"durationMs":15}
+{"event":"HTTP_REQUEST","requestId":"0988afca-a370-4e3a-9117-38a341b89935","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":17}
+{"event":"HTTP_REQUEST","requestId":"a9204ccf-5ba4-4e87-8bf8-bb5d0139dd0b","method":"POST","route":"/auth/refresh","statusCode":201,"durationMs":14}
+{"event":"HTTP_REQUEST","requestId":"62a17a9f-61f3-4949-984c-82a50da8636f","method":"POST","route":"/auth/login","statusCode":201,"durationMs":109}
+{"event":"HTTP_REQUEST","requestId":"5ca2d8b2-0fd3-4fe9-bd4a-0e9a33f6c449","method":"POST","route":"/auth/refresh","statusCode":201,"durationMs":13}
+{"event":"HTTP_REQUEST","requestId":"c6ae0a0c-7206-40b9-8b4d-0a1bd0d24f8c","method":"POST","route":"/auth/refresh","statusCode":201,"durationMs":13}
+{"event":"HTTP_REQUEST","requestId":"bacf371d-5587-4ca2-8a4d-ea91c5a7fc0d","method":"POST","route":"/auth/login","statusCode":201,"durationMs":99}
+{"event":"HTTP_REQUEST","requestId":"b717d0b8-59e1-450d-89cc-64bea8953d30","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":37}
+{"event":"HTTP_REQUEST","requestId":"752382de-b42d-45a9-8ad1-a06f6ec0dde4","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":27}
+{"event":"HTTP_REQUEST","requestId":"b025fea5-6d5d-42c9-aac1-f82f8007a0b7","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":26}
+{"event":"HTTP_REQUEST","requestId":"1b03404d-8f03-4ef5-8e06-bd6355f4eeec","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":25}
+{"event":"HTTP_REQUEST","requestId":"e68ee550-1e76-41ab-932d-6e02225c1fb8","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":40}
+{"event":"HTTP_REQUEST","requestId":"5aab24ac-bad0-4a76-beb5-a4dd29fc3782","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":34}
+{"event":"HTTP_REQUEST","requestId":"571086c5-2a9a-4a2f-963f-728a545e2743","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":37}
+{"event":"HTTP_REQUEST","requestId":"a780f951-c2bd-47a2-90cb-9a9bb3e98e34","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":36}
+{"event":"HTTP_REQUEST","requestId":"d4ff436a-42f4-4627-b468-8388a7fb14ad","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":36}
+{"event":"HTTP_REQUEST","requestId":"0bea6942-f97e-4cff-9fa0-b22096d94fe1","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":56}
+{"event":"HTTP_REQUEST","requestId":"d732f3eb-db30-45f7-9595-bfdb2ea9bd7c","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":36}
+{"event":"HTTP_REQUEST","requestId":"66ea6b6f-666a-4328-a896-c4081d686636","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":21}
+{"event":"HTTP_REQUEST","requestId":"2650da72-0442-47c0-88c1-5e720936f7af","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":22}
+{"event":"HTTP_REQUEST","requestId":"5fd8a0e4-afc3-4fa5-aef1-3e58028aba25","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":22}
+{"event":"HTTP_REQUEST","requestId":"205ad948-a935-49d4-85ed-b0631252eab9","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":20}
+{"event":"HTTP_REQUEST","requestId":"29ce0d1a-1d1d-4fc9-85cc-09639171ce7a","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":22}
+{"event":"HTTP_REQUEST","requestId":"723fec50-8bf5-4ad0-b692-d310cb28a487","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":20}
+{"event":"HTTP_REQUEST","requestId":"e6330df4-517b-4f61-acbd-636e7a529968","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":19}
+{"event":"HTTP_REQUEST","requestId":"1a4a2660-d64c-4885-b575-3b0cb861e33d","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":17}
+{"event":"HTTP_REQUEST","requestId":"518a3b1e-283c-46ca-b92b-77b5f0021e62","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":17}
+{"event":"HTTP_REQUEST","requestId":"cc59749b-64a7-4fee-8283-1afecdbc07cf","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"123a6829-63dc-4b9b-a0f1-d008277d277b","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"c858e64d-83c3-4cc9-aa2e-dc0adf4b9562","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":22}
+{"event":"HTTP_REQUEST","requestId":"dcbd5ccd-5d2e-480b-81c3-6e2464555f96","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":20}
+{"event":"HTTP_REQUEST","requestId":"4be31694-e553-4da8-987b-66cbe00324a4","method":"POST","route":"/admin/users/:userId/role","statusCode":201,"durationMs":19}
+{"event":"HTTP_REQUEST","requestId":"d37d428b-da92-4612-9a32-ae8f04442455","method":"POST","route":"/admin/users/:userId/status","statusCode":201,"durationMs":21}
+Test Suites: 1 passed, 1 total
+Tests:       5 passed, 5 total
+Snapshots:   0 total
+Time:        17.231 s, estimated 20 s
+Ran all test suites matching test/p1-auth-ratelimit-audit.integration.spec.ts.

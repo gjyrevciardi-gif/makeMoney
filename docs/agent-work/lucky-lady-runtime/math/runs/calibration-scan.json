@@ -1,0 +1,126 @@
+{
+ "method": "low-symbol stop-weight scan",
+ "rounds_per_trial": 100000,
+ "trials": [
+  {
+   "lowSymbolWeight": 2,
+   "rounds": 100000,
+   "rtpPercent": 339.0803,
+   "ci": [
+    325.5771444293341,
+    352.58345557066593
+   ],
+   "base": 196.68110000000001,
+   "feature": 118.8512,
+   "triggerRate": 1.078
+  },
+  {
+   "lowSymbolWeight": 4,
+   "rounds": 100000,
+   "rtpPercent": 272.6172,
+   "ci": [
+    262.88092897758355,
+    282.35347102241644
+   ],
+   "base": 171.9522,
+   "feature": 81.059,
+   "triggerRate": 0.8619999999999999
+  },
+  {
+   "lowSymbolWeight": 8,
+   "rounds": 100000,
+   "rtpPercent": 234.33929999999998,
+   "ci": [
+    225.3064276645398,
+    243.3721723354602
+   ],
+   "base": 158.35250000000002,
+   "feature": 57.876799999999996,
+   "triggerRate": 0.683
+  },
+  {
+   "lowSymbolWeight": 16,
+   "rounds": 100000,
+   "rtpPercent": 224.40159999999997,
+   "ci": [
+    215.9534468955199,
+    232.84975310448007
+   ],
+   "base": 154.3234,
+   "feature": 53.5722,
+   "triggerRate": 0.656
+  },
+  {
+   "lowSymbolWeight": 24,
+   "rounds": 100000,
+   "rtpPercent": 218.87409999999997,
+   "ci": [
+    211.1248043535327,
+    226.62339564646726
+   ],
+   "base": 150.5895,
+   "feature": 52.0026,
+   "triggerRate": 0.673
+  },
+  {
+   "lowSymbolWeight": 32,
+   "rounds": 100000,
+   "rtpPercent": 216.2118,
+   "ci": [
+    208.4505774454336,
+    223.97302255456643
+   ],
+   "base": 151.3785,
+   "feature": 48.985299999999995,
+   "triggerRate": 0.642
+  },
+  {
+   "lowSymbolWeight": 48,
+   "rounds": 100000,
+   "rtpPercent": 211.64329999999998,
+   "ci": [
+    204.05339811574748,
+    219.23320188425248
+   ],
+   "base": 151.3658,
+   "feature": 44.7695,
+   "triggerRate": 0.605
+  },
+  {
+   "lowSymbolWeight": 64,
+   "rounds": 100000,
+   "rtpPercent": 205.88989999999998,
+   "ci": [
+    198.2971333478148,
+    213.48266665218517
+   ],
+   "base": 143.2012,
+   "feature": 47.5817,
+   "triggerRate": 0.5910000000000001
+  },
+  {
+   "lowSymbolWeight": 96,
+   "rounds": 100000,
+   "rtpPercent": 204.23110000000003,
+   "ci": [
+    196.63950148671807,
+    211.82269851328198
+   ],
+   "base": 145.5965,
+   "feature": 43.3726,
+   "triggerRate": 0.583
+  },
+  {
+   "lowSymbolWeight": 128,
+   "rounds": 100000,
+   "rtpPercent": 197.47410000000002,
+   "ci": [
+    190.46028933350135,
+    204.4879106664987
+   ],
+   "base": 145.4002,
+   "feature": 37.173899999999996,
+   "triggerRate": 0.538
+  }
+ ]
+}

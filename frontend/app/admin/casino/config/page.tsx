@@ -12,6 +12,9 @@ import {
   describeAdminError,
   formatPoints,
 } from '../../../../lib/admin';
+import { useSession } from '../../../../lib/queries';
+import { hasCapability } from '../../../../lib/capabilities';
+import { AdminAccessGate } from '../../../../components/admin/admin-access-gate';
 
 const SLOT_PROFILES = ['STANDARD', 'REDUCED', 'MINIMAL'];
 
@@ -33,6 +36,8 @@ export default function CasinoConfigPage() {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [history, setHistory] = useState<Record<string, ConfigVersion[]>>({});
   const [drafts, setDrafts] = useState<Record<string, Record<string, string>>>({});
+  const session = useSession();
+  const platformManager = hasCapability(session.data?.role, 'PLATFORM_MANAGE');
 
   const load = useCallback(async () => {
     const list = await adminGet<ConfigList>('/admin/casino/config');
@@ -183,17 +188,7 @@ export default function CasinoConfigPage() {
     return run('platform', () => adminSend('/admin/platform/maintenance', 'PATCH', patch), 'Maintenance updated.');
   };
 
-  if (state === 'denied') {
-    return (
-      <main className="ops-page ops-centered">
-        <div className="ops-denied">
-          <p className="ops-kicker">RESTRICTED</p>
-          <h1>Administrators only</h1>
-          <Link className="ops-link" href="/">Back to the site</Link>
-        </div>
-      </main>
-    );
-  }
+  if (state === 'denied') return <AdminAccessGate area="Casino configuration" />;
 
   return (
     <main className="ops-page">
@@ -207,7 +202,7 @@ export default function CasinoConfigPage() {
         </div>
         <nav>
           <Link href="/admin/users">Users</Link>
-          <Link href="/admin/sports">Sports operations</Link>
+          {platformManager && <Link href="/admin/sports">Sports operations</Link>}
         </nav>
       </header>
 
@@ -233,9 +228,10 @@ export default function CasinoConfigPage() {
 
         {state === 'ready' && config && (
           <>
-            <section className="ops-section">
-              <div className="ops-section-heading"><h2>Platform maintenance</h2></div>
-              <div className="admin-platform">
+            {platformManager && (
+              <section className="ops-section">
+                <div className="ops-section-heading"><h2>Platform maintenance</h2></div>
+                <div className="admin-platform">
                 <label className="admin-switch">
                   <input
                     type="checkbox"
@@ -258,8 +254,9 @@ export default function CasinoConfigPage() {
                   <span>Sportsbook maintenance</span>
                   <small>Blocks new bets. Settlement and payouts continue.</small>
                 </label>
-              </div>
-            </section>
+                </div>
+              </section>
+            )}
 
             <section className="ops-section">
               <div className="ops-section-heading">

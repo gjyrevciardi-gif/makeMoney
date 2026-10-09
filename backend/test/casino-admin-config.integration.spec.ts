@@ -94,13 +94,17 @@ describe('super admin casino configuration (PostgreSQL + Redis)', () => {
         data: {
           email: adminEmail,
           passwordHash: hash,
-          role: 'ADMIN',
+          // Platform maintenance and provider/settlement switches are
+          // PLATFORM_MANAGE, held by SUPER_ADMIN; this suite is the super-admin
+          // configuration path.
+          role: 'SUPER_ADMIN',
           wallet: { create: {} },
         },
       }),
     ]);
     userId = user.id;
     adminId = admin.id;
+    await prisma.user.updateMany({ where: { role: 'USER' }, data: { createdById: admin.id } });
     await points.adminGrant(adminId, userId, 200_000n, 'Config funding', randomUUID());
   });
 
@@ -138,7 +142,9 @@ describe('super admin casino configuration (PostgreSQL + Redis)', () => {
         .set('Authorization', `Bearer ${bearer}`)
         .expect(200);
 
-      expect(response.body.games).toHaveLength(8);
+      // Nine registry games: the imported Lucky Lady bundle joins the
+      // first-party catalogue and is seeded the same way.
+      expect(response.body.games).toHaveLength(9);
       const dice = response.body.games.find((game: { gameId: string }) => game.gameId === 'dice');
       expect(dice.enabled).toBe(true);
       expect(dice.maintenance).toBe(false);
@@ -168,6 +174,7 @@ describe('super admin casino configuration (PostgreSQL + Redis)', () => {
         crash: 'DIRECT',
         plinko: 'PROFILE',
         'fools-gold-rush': 'PROFILE',
+        'lucky-lady': 'PROFILE',
         'titans-tempest': 'CANONICAL',
         roulette: 'CANONICAL',
         blackjack: 'RULE_BASED',

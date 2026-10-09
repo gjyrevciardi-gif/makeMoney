@@ -1,6 +1,7 @@
 import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { Prisma, Role, SportsResultStatus } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
+import { hasCapability } from '../auth/capabilities';
 import { SettlementService } from '../settlement/settlement.service';
 import { OperationsHealthService } from './operations-health.service';
 import { sportsOperationsConfig } from './sports-operations.config';
@@ -31,9 +32,9 @@ export class SportsOperationsService {
   private async assertAdmin(actorId: string, action: string, targetId?: string) {
     const actor = await this.prisma.user.findUnique({
       where: { id: actorId },
-      select: { role: true },
+      select: { role: true, disabled: true },
     });
-    if (actor?.role === Role.ADMIN) return;
+    if (actor && !actor.disabled && hasCapability(actor.role, 'PLATFORM_MANAGE')) return;
     await this.prisma.auditLog.create({
       data: {
         actorId,

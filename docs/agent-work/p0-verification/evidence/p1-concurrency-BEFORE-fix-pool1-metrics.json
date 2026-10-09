@@ -1,0 +1,30 @@
+[
+  {
+    "scenario": "proof-pool1-n3",
+    "pool": 1,
+    "concurrentRounds": 3,
+    "flipping": false,
+    "completed": 0,
+    "failed": 3,
+    "poolOrTransactionStartErrors": 3,
+    "otherErrors": 0,
+    "errorSamples": [
+      "Timed out fetching a new connection from the connection pool. More info: http://pris.ly/d/connection-pool (Current connection pool timeout: 10, connection limit",
+      "\nInvalid `prisma.platformSettings.upsert()` invocation:\n\n\nTimed out fetching a new connection from the connection pool. More info: http://pris.ly/d/connection-p"
+    ],
+    "durationMs": 10152,
+    "roundsWritten": 0,
+    "usersWithMoreThanOneRound": 0,
+    "duplicateDebits": 0,
+    "duplicateActionRows": 0,
+    "coherentDefault": 0,
+    "coherentCustom": 0,
+    "mixedSnapshots": 0,
+    "balanceLedgerMismatches": 0,
+    "failedRoundsWithSideEffects": 0,
+    "replays": 0,
+    "replayResponseMismatches": 0,
+    "replayNewLedgerRows": 0,
+    "flips": 0
+  }
+]

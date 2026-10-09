@@ -1,0 +1,57 @@
+
+> test
+> node -e "const raw=process.env.DATABASE_URL||''; if(!raw) throw new Error('DATABASE_URL is required for backend tests'); const name=new URL(raw).pathname.replace(/^\/+/, '').split('/')[0]||''; const safe=name.toLowerCase().includes('_test'); if(!safe || name.toLowerCase()==='fools_gold' || name.toLowerCase()==='postgres') throw new Error('Unsafe test database: ' + name);" && node --experimental-vm-modules ../node_modules/jest/bin/jest.js --runInBand test/user-accounts.integration.spec.ts --verbose
+
+{"event":"HTTP_REQUEST","requestId":"eaf889c1-e95b-4ccd-80d0-8a6946fc4b74","method":"POST","route":"/auth/register","statusCode":201,"durationMs":11}
+{"event":"HTTP_REQUEST","requestId":"3298e29e-c576-4300-a6f8-33300d4d630a","method":"POST","route":"/auth/register","statusCode":201,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"03894631-56de-4883-bff3-196279a61ba2","method":"POST","route":"/admin/users","statusCode":201,"durationMs":122}
+{"event":"HTTP_REQUEST","requestId":"7bbcc48e-fe56-4d5a-bb57-fe38cdf78358","method":"POST","route":"/admin/users","statusCode":201,"durationMs":116}
+{"event":"HTTP_REQUEST","requestId":"d0ba1031-d816-429c-8a3f-c0475e65757d","method":"POST","route":"/auth/login","statusCode":201,"durationMs":119}
+{"event":"HTTP_REQUEST","requestId":"872d35bd-fea5-4fb5-8c78-5cf2cc7dd7b0","method":"POST","route":"/admin/users/:userId/password/reveal","statusCode":201,"durationMs":20}
+{"event":"HTTP_REQUEST","requestId":"dc4ed53e-bebf-4eac-92c4-0f927f21901c","method":"POST","route":"/admin/users","statusCode":201,"durationMs":123}
+{"event":"HTTP_REQUEST","requestId":"73594e6c-3510-4ef1-a3f1-c18355722e25","method":"POST","route":"/admin/users","statusCode":201,"durationMs":4}
+{"event":"HTTP_REQUEST","requestId":"be8e89c3-eee6-406d-a551-710b53f8e3fd","method":"POST","route":"/admin/users","statusCode":201,"durationMs":5}
+{"event":"HTTP_REQUEST","requestId":"da118a42-c1d4-4010-b3be-e2babf82addb","method":"POST","route":"/admin/users","statusCode":201,"durationMs":120}
+{"event":"HTTP_REQUEST","requestId":"f3d366fd-af82-4e1a-ac6a-7ed2af1a7cf3","method":"POST","route":"/admin/users","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"2bc97456-c446-4316-83fe-bf26921f4361","method":"POST","route":"/admin/users","statusCode":201,"durationMs":3}
+{"event":"HTTP_REQUEST","requestId":"6f18dd6f-f281-4956-9ab9-3bad81bbef5d","method":"POST","route":"/admin/users","statusCode":201,"durationMs":2}
+{"event":"HTTP_REQUEST","requestId":"7a2d88b4-e2bc-4b7a-a65c-fbd88563efb5","method":"POST","route":"/admin/users","statusCode":201,"durationMs":1}
+{"event":"HTTP_REQUEST","requestId":"7a1fed0d-7e5f-4e70-8d7b-de73c7c27fe0","method":"POST","route":"/admin/users","statusCode":201,"durationMs":0}
+{"event":"HTTP_REQUEST","requestId":"078a2b74-fa2f-4dd5-b1d1-5c199c02a1ee","method":"POST","route":"/admin/users","statusCode":201,"durationMs":114}
+{"event":"HTTP_REQUEST","requestId":"243b6765-66bf-4428-b36d-ebe1582cf36b","method":"POST","route":"/admin/users","statusCode":201,"durationMs":154}
+{"event":"HTTP_REQUEST","requestId":"5de43f32-2029-483e-bdd5-109eec4fa494","method":"POST","route":"/auth/login","statusCode":201,"durationMs":123}
+{"event":"HTTP_REQUEST","requestId":"e17fef7c-f83b-41a4-8a79-7c3d1ef81ad9","method":"POST","route":"/auth/login","statusCode":201,"durationMs":110}
+{"event":"HTTP_REQUEST","requestId":"ceecd258-4073-4183-8ca2-d7a79303575e","method":"POST","route":"/auth/login","statusCode":201,"durationMs":109}
+{"event":"HTTP_REQUEST","requestId":"1e81a10c-0aff-4477-8260-a9ee9e760162","method":"POST","route":"/auth/login","statusCode":201,"durationMs":96}
+{"event":"HTTP_REQUEST","requestId":"5e68d2a0-55a2-4f40-b6f2-6cd211f32ddc","method":"POST","route":"/auth/login","statusCode":201,"durationMs":88}
+{"event":"HTTP_REQUEST","requestId":"93fe5ce7-648c-481c-95c0-688dc94a5564","method":"POST","route":"/auth/login","statusCode":201,"durationMs":92}
+{"event":"HTTP_REQUEST","requestId":"0ffee02d-cd11-432a-bc8e-1a468d99c8bc","method":"POST","route":"/admin/users/:userId/password","statusCode":201,"durationMs":103}
+{"event":"HTTP_REQUEST","requestId":"8dd9b058-0272-4b7e-809b-2e43b3bb7775","method":"POST","route":"/auth/login","statusCode":201,"durationMs":111}
+{"event":"HTTP_REQUEST","requestId":"3a0091a9-00d1-4043-b7fa-8b9df953e735","method":"POST","route":"/auth/login","statusCode":201,"durationMs":174}
+{"event":"HTTP_REQUEST","requestId":"5e50deaf-8ea9-4ca0-b92a-8bf38adab66a","method":"POST","route":"/admin/users/:userId/password/reveal","statusCode":201,"durationMs":15}
+{"event":"HTTP_REQUEST","requestId":"560e8c3a-681d-4c9e-858f-b10e702e19f6","method":"POST","route":"/admin/users/:userId/password","statusCode":201,"durationMs":0}
+{"event":"HTTP_REQUEST","requestId":"2ab6adbe-c0c0-49be-9e18-3999eef63028","method":"POST","route":"/admin/users/:userId/password","statusCode":201,"durationMs":83}
+{"event":"HTTP_REQUEST","requestId":"7af5bbba-31b7-474a-954b-d2f7b63d7994","method":"POST","route":"/admin/users/:userId/password/reveal","statusCode":201,"durationMs":8}
+{"event":"HTTP_REQUEST","requestId":"07d0113e-3a39-4d2d-8840-0275722fc21f","method":"POST","route":"/admin/users/:userId/password","statusCode":201,"durationMs":84}
+{"event":"HTTP_REQUEST","requestId":"6ae2839f-4ce6-4fe1-8a91-a15f8bc503ed","method":"POST","route":"/admin/users/:userId/password/reveal","statusCode":201,"durationMs":6}
+{"event":"HTTP_REQUEST","requestId":"84396886-54ca-4209-b693-ae9e559edef1","method":"POST","route":"/admin/users/:userId/password","statusCode":201,"durationMs":120}
+{"event":"HTTP_REQUEST","requestId":"ae1f052f-86cb-444a-9f5e-c5f458b7a2b7","method":"POST","route":"/admin/users/:userId/password/reveal","statusCode":201,"durationMs":18}
+{"event":"HTTP_REQUEST","requestId":"b6ef5574-c25d-4d75-87fc-e8b0e6a2f441","method":"POST","route":"/auth/login","statusCode":201,"durationMs":128}
+{"event":"HTTP_REQUEST","requestId":"44545fe8-e1c6-461a-af01-0ce1bba4975e","method":"POST","route":"/admin/users/:userId/password/reveal","statusCode":201,"durationMs":12}
+{"event":"HTTP_REQUEST","requestId":"7292c598-01c2-4115-b71a-50a72d46657d","method":"POST","route":"/admin/users/:userId/password","statusCode":201,"durationMs":130}
+{"event":"HTTP_REQUEST","requestId":"3db539df-fcbb-43bd-bdb1-a3276c66a4c1","method":"POST","route":"/admin/users/:userId/password/reveal","statusCode":201,"durationMs":23}
+{"event":"HTTP_REQUEST","requestId":"d7f64276-58ca-40ca-bbaf-8861f0f0cfe5","method":"POST","route":"/admin/users/:userId/password/reveal","statusCode":201,"durationMs":23}
+{"event":"HTTP_REQUEST","requestId":"1b6373d9-735a-4085-84d3-1b2bec7eeeec","method":"POST","route":"/admin/users/:userId/password","statusCode":201,"durationMs":103}
+{"event":"HTTP_REQUEST","requestId":"0ed8cf60-89d6-490a-a7f6-610e997be977","method":"POST","route":"/admin/users","statusCode":201,"durationMs":2}
+{"event":"HTTP_UNHANDLED_EXCEPTION","requestId":"0ed8cf60-89d6-490a-a7f6-610e997be977","method":"POST","route":"/admin/users","errorType":"ServiceUnavailableException"}
+{"event":"HTTP_REQUEST","requestId":"88db4815-be12-4a51-982b-fd97860eeb7e","method":"POST","route":"/admin/users/:userId/password","statusCode":201,"durationMs":2}
+{"event":"HTTP_UNHANDLED_EXCEPTION","requestId":"88db4815-be12-4a51-982b-fd97860eeb7e","method":"POST","route":"/admin/users/f0e0b0ee-6f9f-4989-8ea6-a099a07bd35e/password","errorType":"ServiceUnavailableException"}
+{"event":"HTTP_REQUEST","requestId":"28c6e8c1-013e-41f5-9488-80dbbf5894df","method":"POST","route":"/auth/login","statusCode":201,"durationMs":92}
+{"event":"HTTP_REQUEST","requestId":"cbc2f796-bf56-4120-a7ac-c54999a289bc","method":"POST","route":"/admin/users/:userId/username","statusCode":201,"durationMs":17}
+{"event":"HTTP_REQUEST","requestId":"8432249e-4f7e-4706-9cd0-2a9aae3c55e1","method":"POST","route":"/admin/users/:userId/username","statusCode":201,"durationMs":15}
+{"event":"HTTP_REQUEST","requestId":"c4276cb8-42b4-4ff1-b47c-179b26920c57","method":"POST","route":"/admin/users/:userId/username","statusCode":201,"durationMs":9}
+Test Suites: 1 passed, 1 total
+Tests:       12 passed, 12 total
+Snapshots:   0 total
+Time:        24.303 s, estimated 27 s
+Ran all test suites matching test/user-accounts.integration.spec.ts.

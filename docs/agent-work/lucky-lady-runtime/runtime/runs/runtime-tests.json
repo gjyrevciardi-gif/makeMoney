@@ -1,0 +1,670 @@
+{
+ "phase": "isolated runtime integration tests (receipts, concurrency, credit ledgers, HTTP retrigger, gamble loss)",
+ "pinned": {
+  "engineSha256": "0f02bb1e78eafdd99a51015c4bf83848050ca6b6e898123759d1442787d12843",
+  "rulesSha256": "4c03dd436f18307d9f98dc2148ff422251faa2d5c1c928062257187883acfc57"
+ },
+ "probes": {
+  "concurrent": {
+   "requestId": "concurrent-45",
+   "statuses": [
+    200,
+    200
+   ],
+   "identicalBytes": true,
+   "betDebits": 1,
+   "acceptedActionExecutions": 1,
+   "completeOutcomeRngInvocations": 1,
+   "engineRngDraws": 80
+  },
+  "retrigger": {
+   "requestId": "rt-fs-51",
+   "headers": {
+    "x-pilot-version": "2",
+    "x-pilot-round": "cd04258de27f0169d3817056c5cdfd60"
+   },
+   "beforeTotal": 15,
+   "afterTotal": 30,
+   "consumed": 30,
+   "finalTotal": 30,
+   "replayStatus": 200,
+   "replayIdentical": true,
+   "ledgerUnchanged": true,
+   "countersUnchanged": true,
+   "executionCounters": {
+    "actionExecutions": 31,
+    "outcomeGenerations": 1,
+    "engineRngDraws": 155,
+    "gambleGenerations": 0,
+    "gambleRngDraws": 0
+   }
+  },
+  "credit": {
+   "gambleSeed": "gamble-win-0",
+   "wagerCents": 100,
+   "paidWinCents": 300,
+   "gambleStakeCents": 300,
+   "paidWinRows": 1,
+   "gambleWinRows": 1,
+   "collectLedgerRows": [
+    3,
+    3
+   ],
+   "finalBalanceCents": 1000500
+  },
+  "gambleLoss": {
+   "gambleSeed": "gamble-lose-2",
+   "dealerCard": "S",
+   "gambleState": "lose",
+   "stakeCents": 300,
+   "lossRows": 1,
+   "winRows": 0,
+   "balanceBefore": 1000200,
+   "balanceAfter": 999900,
+   "balanceAfterRefresh": 999900
+  }
+ },
+ "results": [
+  {
+   "name": "core.injected-crash-rolls-back-settlement",
+   "ok": true,
+   "detail": "injected crash after debit, before credit"
+  },
+  {
+   "name": "core.no-ledger-rows-after-rollback",
+   "ok": true,
+   "detail": "rows=0"
+  },
+  {
+   "name": "core.prepared-outcome-durable-after-crash",
+   "ok": true,
+   "detail": "player-1:core-1"
+  },
+  {
+   "name": "core.retry-settles-cleanly",
+   "ok": true,
+   "detail": "spin"
+  },
+  {
+   "name": "core.retry-reuses-same-draw",
+   "ok": true,
+   "detail": "same board as the prepared draw"
+  },
+  {
+   "name": "core.ledger-deltas-reconcile",
+   "ok": true,
+   "detail": "net=-100 balance=99900"
+  },
+  {
+   "name": "core.exactly-one-bet-debit",
+   "ok": true,
+   "detail": "[\"bet\"]"
+  },
+  {
+   "name": "core.round-locks-engine-hash",
+   "ok": true,
+   "detail": "0f02bb1e78eafdd99a51015c4bf83848050ca6b6e898123759d1442787d12843"
+  },
+  {
+   "name": "core.prepared-body-mismatch-409",
+   "ok": true,
+   "detail": "request id reused with different action semantics"
+  },
+  {
+   "name": "core.next-action-blocked-until-ack",
+   "ok": true,
+   "detail": "previous action not acknowledged"
+  },
+  {
+   "name": "core.ack-recorded-for-exact-action",
+   "ok": true,
+   "detail": "{\"responseEvent\":\"ack\",\"actionId\":\"block-1\",\"accepted\":true}"
+  },
+  {
+   "name": "core.next-action-allowed-after-ack",
+   "ok": true,
+   "detail": "spin"
+  },
+  {
+   "name": "core.round-identity-verified-on-load",
+   "ok": true,
+   "detail": "saved round maths identity does not match the loaded evaluator/profile"
+  },
+  {
+   "name": "money.balance-is-post-debit-pre-win",
+   "ok": true,
+   "detail": "Balance=999 expected<=999"
+  },
+  {
+   "name": "money.winLines-in-currency",
+   "ok": true,
+   "detail": "[{\"Count\":2,\"Line\":4,\"Win\":0.2,\"stepWin\":0.2,\"winReel1\":[2,\"P_5\"],\"winReel2\":[1,\"P_5\"],\"winReel3\":[\"none\",\"none\"],\"winReel4\":[\"none\",\"none\"],\"winReel5\":[\"none\",\"none\"]},{\"Count\":2,\"Line\":9,\"Win\":0.2,\"stepWin\":0.4,\"winReel1\":[2,\"P_5\"],\"winReel2\":[1,\"P_5\"],\"winReel3\":[\"none\",\"none\"],\"winReel4\":[\"none\",\"none\"],\"winReel5\":[\"none\",\"none\"]}]"
+  },
+  {
+   "name": "money.totalWin-matches-lines",
+   "ok": true,
+   "detail": "totalWin=0.4 sum=0.4"
+  },
+  {
+   "name": "money.afterBalance-reconciles",
+   "ok": true,
+   "detail": "999+0.4 vs 999.4"
+  },
+  {
+   "name": "money.scatterWin-currency",
+   "ok": true,
+   "detail": "0"
+  },
+  {
+   "name": "money.native-units-are-integer-cents",
+   "ok": true,
+   "detail": "[[\"bet\",-100],[\"paid-win\",40]]"
+  },
+  {
+   "name": "recover.crash-left-prepared",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "recover.first-read-shows-settled-round",
+   "ok": true,
+   "detail": "roundId=5ba42b3c5de22bcc12f5cdac4af8963a"
+  },
+  {
+   "name": "recover.second-read-identical",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "recover.first-read-exposes-stored-board",
+   "ok": true,
+   "detail": "board=true"
+  },
+  {
+   "name": "recover.rebuilt-action-awaits-receipt",
+   "ok": true,
+   "detail": "{\"actionId\":\"rec-1\",\"receipt\":{\"event\":\"bet\",\"delivered\":false,\"acked\":false}}"
+  },
+  {
+   "name": "recover.canonical-retry-after-crash-settles",
+   "ok": true,
+   "detail": "ok"
+  },
+  {
+   "name": "recover.canonical-retry-no-second-debit",
+   "ok": true,
+   "detail": "[\"bet\"]"
+  },
+  {
+   "name": "recover.round-resumed-without-draw",
+   "ok": true,
+   "detail": "roundId=5ba42b3c5de22bcc12f5cdac4af8963a"
+  },
+  {
+   "name": "recover.exactly-one-debit",
+   "ok": true,
+   "detail": "[\"bet\"]"
+  },
+  {
+   "name": "recover.prepared-cleared",
+   "ok": true,
+   "detail": "prepared rows left=0"
+  },
+  {
+   "name": "recover.same-stored-board",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "recover.replay-after-restart",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "recover.receipt-survives-restart",
+   "ok": true,
+   "detail": "{\"actionId\":\"rec-1\",\"event\":\"bet\",\"delivered\":false,\"acked\":false}"
+  },
+  {
+   "name": "recover.replay-conflict-after-restart",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "http.server-up",
+   "ok": true,
+   "detail": "(node:7684) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+  },
+  {
+   "name": "http.settings-config-present",
+   "ok": true,
+   "detail": "{\"gameId\":\"LuckyLadysCharmDX\",\"rtpControlEnabled\":true,\"targetRtpPercent\":50,\"activeMathProfile\":\"lucky-lady.rtp50.v1\",\"profileHash\":\"eb0a22171a3479cea3b0238269edd4b0dc5d9486c57e4b057fa6ee0f1a70be5f\"}"
+  },
+  {
+   "name": "http.settings-lines-10",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "http.settings-no-future-leak",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "http.idle-has-no-pending-action",
+   "ok": true,
+   "detail": "{\"event\":null,\"delivered\":false,\"acked\":true}"
+  },
+  {
+   "name": "guard.missing-request-id-rejected",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "guard.missing-version-rejected-on-initial-bet",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "guard.wrong-version-rejected-on-initial-bet",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "stake.ladder-enforced",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "stake.unsupported-lines-rejected",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "http.bet-settled",
+   "ok": true,
+   "detail": "spin"
+  },
+  {
+   "name": "http.bet-exposes-action-identity",
+   "ok": true,
+   "detail": "{\"actionId\":\"http-bet-1\",\"receipt\":{\"event\":\"bet\",\"delivered\":false,\"acked\":false}}"
+  },
+  {
+   "name": "http.bet-ledger-exact",
+   "ok": true,
+   "detail": "[\"bet\",\"paid-win\"]"
+  },
+  {
+   "name": "receipt.read-allowed-while-pending",
+   "ok": true,
+   "detail": "{\"event\":\"bet\",\"delivered\":true,\"acked\":false}"
+  },
+  {
+   "name": "http.bet-duplicate-same-id-cached",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "http.bet-duplicate-no-new-ledger",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "http.same-id-changed-body-409",
+   "ok": true,
+   "detail": "409"
+  },
+  {
+   "name": "http.replay-canonical-whitespace-200",
+   "ok": true,
+   "detail": "status=200"
+  },
+  {
+   "name": "http.replay-canonical-keyorder-numeric-200",
+   "ok": true,
+   "detail": "status=200"
+  },
+  {
+   "name": "http.replay-semantic-conflict-409",
+   "ok": true,
+   "detail": "status=409"
+  },
+  {
+   "name": "receipt.next-mutation-rejected-before-ack",
+   "ok": true,
+   "detail": "409 {\"responseEvent\":\"error\",\"reason\":\"previous action not acknowledged\"}"
+  },
+  {
+   "name": "ack.unknown-id-is-harmless",
+   "ok": true,
+   "detail": "{\"responseEvent\":\"ack\",\"actionId\":\"no-such-action\",\"accepted\":false,\"reason\":\"unknown action\"}"
+  },
+  {
+   "name": "ack.unknown-id-does-not-release",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "ack.exact-action-accepted",
+   "ok": true,
+   "detail": "{\"responseEvent\":\"ack\",\"actionId\":\"http-bet-1\",\"accepted\":true}"
+  },
+  {
+   "name": "ack.duplicate-is-idempotent",
+   "ok": true,
+   "detail": "{\"responseEvent\":\"ack\",\"actionId\":\"http-bet-1\",\"accepted\":true}"
+  },
+  {
+   "name": "ack.releases-exact-action",
+   "ok": true,
+   "detail": "{\"event\":\"bet\",\"delivered\":true,\"acked\":true}"
+  },
+  {
+   "name": "http.feature-phase-active",
+   "ok": true,
+   "detail": "FREE_SPINS total=15"
+  },
+  {
+   "name": "http.freespin-progresses",
+   "ok": true,
+   "detail": "{\"total\":15,\"current\":1,\"remaining\":14,\"multiplier\":3}"
+  },
+  {
+   "name": "money.stepWin-includes-prior-bonus",
+   "ok": true,
+   "detail": "last stepWin=n/a totalWin=5.4"
+  },
+  {
+   "name": "http.freespin-stale-version-409",
+   "ok": true,
+   "detail": "409"
+  },
+  {
+   "name": "http.freespin-locked-stake-enforced",
+   "ok": true,
+   "detail": "409"
+  },
+  {
+   "name": "http.freespin-duplicate-cached",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "ack.stale-id-does-not-release-newer-action",
+   "ok": true,
+   "detail": "{\"responseEvent\":\"ack\",\"actionId\":\"http-bet-1\",\"accepted\":false,\"reason\":\"stale action; a newer result is pending\"}"
+  },
+  {
+   "name": "ack.stale-does-not-open-next-action",
+   "ok": true,
+   "detail": "409 {\"responseEvent\":\"error\",\"reason\":\"previous action not acknowledged\"}"
+  },
+  {
+   "name": "http.feature-completed",
+   "ok": true,
+   "detail": "PENDING_WIN"
+  },
+  {
+   "name": "http.gamble-entry",
+   "ok": true,
+   "detail": "GAMBLE"
+  },
+  {
+   "name": "http.gamble-red-settled",
+   "ok": true,
+   "detail": "{\"dealerCard\":\"S\",\"gambleState\":\"lose\",\"totalWin\":0,\"afterBalance\":9999,\"Balance\":10066.5}"
+  },
+  {
+   "name": "http.gamble-duplicate-cached",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "http.collect-not-required-after-loss",
+   "ok": true,
+   "detail": "gamble loss settled to IDLE"
+  },
+  {
+   "name": "concurrent.idle-round-ready",
+   "ok": true,
+   "detail": "IDLE acked=true"
+  },
+  {
+   "name": "concurrent.exactly-two-requests-both-200",
+   "ok": true,
+   "detail": "[200,200]"
+  },
+  {
+   "name": "concurrent.identical-original-json",
+   "ok": true,
+   "detail": "identical=true"
+  },
+  {
+   "name": "concurrent.one-bet-debit",
+   "ok": true,
+   "detail": "betDebits=1"
+  },
+  {
+   "name": "concurrent.one-accepted-action-execution",
+   "ok": true,
+   "detail": "{\"requestId\":\"concurrent-45\",\"statuses\":[200,200],\"identicalBytes\":true,\"betDebits\":1,\"acceptedActionExecutions\":1,\"completeOutcomeRngInvocations\":1,\"engineRngDraws\":80}"
+  },
+  {
+   "name": "concurrent.one-complete-outcome-generation",
+   "ok": true,
+   "detail": "{\"requestId\":\"concurrent-45\",\"statuses\":[200,200],\"identicalBytes\":true,\"betDebits\":1,\"acceptedActionExecutions\":1,\"completeOutcomeRngInvocations\":1,\"engineRngDraws\":80}"
+  },
+  {
+   "name": "concurrent.engine-samples-not-a-single-int",
+   "ok": true,
+   "detail": "engineRngDraws=+80 (one complete-outcome generation, not one integer)"
+  },
+  {
+   "name": "http.reads-not-cached-but-non-consuming",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "http.ledger-balance-reconciles",
+   "ok": true,
+   "detail": "{\"last\":{\"id\":8,\"round_id\":\"63ee0f2c76b29c5ba336ec9025275f7a\",\"request_id\":\"concurrent-45\",\"kind\":\"paid-win\",\"delta\":500,\"before_balance\":999800,\"after_balance\":1000300,\"created_at\":\"2026-09-29T08:03:11.504Z\"},\"balance\":1000300}"
+  },
+  {
+   "name": "http.restart-preserves-ledger-and-state",
+   "ok": true,
+   "detail": "ledger=8->8"
+  },
+  {
+   "name": "retrigger.server-up",
+   "ok": true,
+   "detail": "(node:38656) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+  },
+  {
+   "name": "retrigger.http-trigger-awards-15",
+   "ok": true,
+   "detail": "{\"total\":15,\"current\":0,\"remaining\":15,\"multiplier\":3}"
+  },
+  {
+   "name": "retrigger.http-adds-15-exactly-once",
+   "ok": true,
+   "detail": "awards=1 15->30"
+  },
+  {
+   "name": "retrigger.http-consumes-exactly-30-spins",
+   "ok": true,
+   "detail": "consumed=30"
+  },
+  {
+   "name": "retrigger.http-feature-settles",
+   "ok": true,
+   "detail": "PENDING_WIN"
+  },
+  {
+   "name": "retrigger.replay-200-identical-json",
+   "ok": true,
+   "detail": "status=200"
+  },
+  {
+   "name": "retrigger.replay-same-profile-and-round",
+   "ok": true,
+   "detail": "{\"id\":\"lucky-lady.rtp50.v1\",\"hash\":\"eb0a22171a3479cea3b0238269edd4b0dc5d9486c57e4b057fa6ee0f1a70be5f\",\"version\":1}"
+  },
+  {
+   "name": "retrigger.replay-no-ledger-movement",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "retrigger.replay-no-extra-rng-or-execution",
+   "ok": true,
+   "detail": "{\"actionExecutions\":31,\"outcomeGenerations\":1,\"engineRngDraws\":155,\"gambleGenerations\":0,\"gambleRngDraws\":0}"
+  },
+  {
+   "name": "retrigger.replay-advances-no-free-counter",
+   "ok": true,
+   "detail": "{\"total\":30,\"current\":30,\"remaining\":0,\"multiplier\":3} vs {\"total\":30,\"current\":30,\"remaining\":0,\"multiplier\":3}"
+  },
+  {
+   "name": "retrigger.live-state-kept-30",
+   "ok": true,
+   "detail": "{\"total\":30,\"current\":30,\"remaining\":0,\"multiplier\":3}"
+  },
+  {
+   "name": "credit.server-up",
+   "ok": true,
+   "detail": "(node:23620) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+  },
+  {
+   "name": "credit.paid-win-settled",
+   "ok": true,
+   "detail": "spin totalWin=3 phase=PENDING_WIN"
+  },
+  {
+   "name": "credit.exactly-one-bet-debit",
+   "ok": true,
+   "detail": "[{\"id\":1,\"round_id\":\"36e206726fc6813f57c13b427ff37da5\",\"request_id\":\"credit-bet-109\",\"kind\":\"bet\",\"delta\":-100,\"before_balance\":1000000,\"after_balance\":999900,\"created_at\":\"2026-09-29T08:03:12.908Z\"}]"
+  },
+  {
+   "name": "credit.exactly-one-paid-win-credit",
+   "ok": true,
+   "detail": "rows=1 delta=300 expected=300"
+  },
+  {
+   "name": "credit.balance-increased-once",
+   "ok": true,
+   "detail": "1000000 - 100 + 300 vs 1000200"
+  },
+  {
+   "name": "credit.balance-is-post-debit-pre-win",
+   "ok": true,
+   "detail": "Balance=9999 expected=9999"
+  },
+  {
+   "name": "credit.native-units-integer-cents",
+   "ok": true,
+   "detail": "[[\"bet\",-100],[\"paid-win\",300]]"
+  },
+  {
+   "name": "credit.gamble-entry",
+   "ok": true,
+   "detail": "GAMBLE"
+  },
+  {
+   "name": "credit.gamble-win-asserted",
+   "ok": true,
+   "detail": "seed=gamble-win-0 state=win"
+  },
+  {
+   "name": "credit.gamble-win-credits-once",
+   "ok": true,
+   "detail": "rows=1 delta=300 stake=300"
+  },
+  {
+   "name": "credit.gamble-win-balance-delta",
+   "ok": true,
+   "detail": "1000200 -> 1000500 stake=300"
+  },
+  {
+   "name": "credit.gamble-replay-identical",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "credit.gamble-replay-adds-zero-credits",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "credit.collect-settles-to-idle",
+   "ok": true,
+   "detail": "{\"phase\":\"IDLE\",\"pendingWin\":0}"
+  },
+  {
+   "name": "credit.collect-adds-zero-credits",
+   "ok": true,
+   "detail": "rows=3->3"
+  },
+  {
+   "name": "credit.collect-replay-returns-original-settlement",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "credit.collect-replay-adds-zero-credits",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "loss.server-up",
+   "ok": true,
+   "detail": "(node:28712) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+  },
+  {
+   "name": "loss.pending-win-exists-before-gamble",
+   "ok": true,
+   "detail": "{\"phase\":\"PENDING_WIN\",\"pendingWin\":3}"
+  },
+  {
+   "name": "loss.gamble-entry",
+   "ok": true,
+   "detail": "GAMBLE"
+  },
+  {
+   "name": "loss.dealer-card-opposes-chosen-color",
+   "ok": true,
+   "detail": "seed=gamble-lose-2 state=lose card=S"
+  },
+  {
+   "name": "loss.pending-win-zeroed",
+   "ok": true,
+   "detail": "0"
+  },
+  {
+   "name": "loss.phase-returns-to-idle",
+   "ok": true,
+   "detail": "IDLE"
+  },
+  {
+   "name": "loss.exactly-one-loss-debit",
+   "ok": true,
+   "detail": "loss=1 delta=-300 win=0 stake=300"
+  },
+  {
+   "name": "loss.balance-settles-back-to-stake",
+   "ok": true,
+   "detail": "1000000 - 100 vs 999900"
+  },
+  {
+   "name": "loss.replay-identical-and-inert",
+   "ok": true,
+   "detail": "status=200 ledger=3->3"
+  },
+  {
+   "name": "loss.refresh-state-correct",
+   "ok": true,
+   "detail": "{\"phase\":\"IDLE\",\"pendingWin\":0,\"balance\":9999}"
+  }
+ ],
+ "failures": []
+}

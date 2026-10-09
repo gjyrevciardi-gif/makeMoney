@@ -1,2 +1,21 @@
-{"collection":"@nestjs/schematics","sourceRoot":"src"}
-
+{
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "src",
+  "compilerOptions": {
+    "assets": [
+      {
+        "include": "casino/games/lucky-lady/math/**/*",
+        "outDir": "dist/src"
+      },
+      {
+        "include": "casino/platform/math-control/*.js",
+        "outDir": "dist/src"
+      },
+      {
+        "include": "casino/games/lucky-lady/payout/*.js",
+        "outDir": "dist/src"
+      }
+    ],
+    "watchAssets": false
+  }
+}

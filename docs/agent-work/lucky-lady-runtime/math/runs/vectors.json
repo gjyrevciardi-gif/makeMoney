@@ -1,0 +1,408 @@
+{
+ "oracleSourceSha256": {
+  "server": "9b7961b867e7b897b39f23274e1d6abf151b3fce5e18ed8ba278aa704a07423b",
+  "settings": "372aff5e9f275d96693f0e88740080b64922086091546c80ea8c40cdc397b095"
+ },
+ "oracleConstants": {
+  "slotWildMpl": 2,
+  "slotFreeMpl": 3,
+  "slotFreeCount": 15
+ },
+ "rulesProvenance": {
+  "server": {
+   "path": "C:\\Users\\Admin\\orca\\research\\game-pack-forensics\\external\\evidence\\taxipult-goldsvet\\casino\\app\\Games\\LuckyLadysCharmDX\\Server.php",
+   "sha256": "9b7961b867e7b897b39f23274e1d6abf151b3fce5e18ed8ba278aa704a07423b",
+   "bytes": 43517
+  },
+  "settings": {
+   "path": "C:\\Users\\Admin\\orca\\research\\game-pack-forensics\\external\\evidence\\taxipult-goldsvet\\casino\\app\\Games\\LuckyLadysCharmDX\\SlotSettings.php",
+   "sha256": "372aff5e9f275d96693f0e88740080b64922086091546c80ea8c40cdc397b095",
+   "bytes": 43523
+  },
+  "reels": {
+   "path": "C:\\Users\\Admin\\orca\\research\\game-pack-forensics\\external\\evidence\\taxipult-goldsvet\\casino\\app\\Games\\LuckyLadysCharmDX\\reels.txt",
+   "sha256": "64cf839d1f584061f4e3fe813377c4f0396832a52e7e26493974e71363235efa",
+   "bytes": 5353
+  },
+  "paytableLines": {
+   "9": 167,
+   "10": 159,
+   "P_1": 79,
+   "P_2": 87,
+   "P_3": 95,
+   "P_4": 103,
+   "P_5": 111,
+   "P_6": 119,
+   "A": 127,
+   "K": 135,
+   "Q": 143,
+   "J": 151,
+   "SCAT": 175
+  },
+  "linesBlockLine": null
+ },
+ "vectors": 514,
+ "mismatches": [],
+ "edgeRows": [
+  {
+   "id": "no-win",
+   "lines": [],
+   "scatterCount": 0,
+   "scatterWin": 0,
+   "total": 0
+  },
+  {
+   "id": "ordinary-3-of-a-kind",
+   "lines": [
+    {
+     "line": 0,
+     "win": 15
+    }
+   ],
+   "scatterCount": 0,
+   "scatterWin": 0,
+   "total": 15
+  },
+  {
+   "id": "leading-wild",
+   "lines": [
+    {
+     "line": 0,
+     "win": 30
+    }
+   ],
+   "scatterCount": 0,
+   "scatterWin": 0,
+   "total": 30
+  },
+  {
+   "id": "all-wild-line",
+   "lines": [
+    {
+     "line": 0,
+     "win": 9000
+    },
+    {
+     "line": 9,
+     "win": 100
+    }
+   ],
+   "scatterCount": 0,
+   "scatterWin": 0,
+   "total": 9100
+  },
+  {
+   "id": "mixed-wilds",
+   "lines": [
+    {
+     "line": 0,
+     "win": 150
+    }
+   ],
+   "scatterCount": 0,
+   "scatterWin": 0,
+   "total": 150
+  },
+  {
+   "id": "scatter-2",
+   "lines": [],
+   "scatterCount": 2,
+   "scatterWin": 20,
+   "total": 20
+  },
+  {
+   "id": "scatter-3-trigger",
+   "lines": [],
+   "scatterCount": 3,
+   "scatterWin": 50,
+   "total": 50
+  },
+  {
+   "id": "scatter-4",
+   "lines": [],
+   "scatterCount": 4,
+   "scatterWin": 200,
+   "total": 200
+  },
+  {
+   "id": "scatter-5",
+   "lines": [],
+   "scatterCount": 5,
+   "scatterWin": 5000,
+   "total": 5000
+  },
+  {
+   "id": "multiline",
+   "lines": [
+    {
+     "line": 0,
+     "win": 250
+    },
+    {
+     "line": 1,
+     "win": 250
+    },
+    {
+     "line": 2,
+     "win": 750
+    },
+    {
+     "line": 7,
+     "win": 2
+    }
+   ],
+   "scatterCount": 0,
+   "scatterWin": 0,
+   "total": 1252
+  },
+  {
+   "id": "line3-1-line-enabled",
+   "lines": [
+    {
+     "line": 0,
+     "win": 15
+    }
+   ],
+   "scatterCount": 0,
+   "scatterWin": 0,
+   "total": 15
+  },
+  {
+   "id": "free-multiplier",
+   "lines": [
+    {
+     "line": 0,
+     "win": 45
+    }
+   ],
+   "scatterCount": 0,
+   "scatterWin": 0,
+   "total": 45
+  },
+  {
+   "id": "free-multiplier-5-lines",
+   "lines": [
+    {
+     "line": 0,
+     "win": 750
+    },
+    {
+     "line": 1,
+     "win": 750
+    },
+    {
+     "line": 2,
+     "win": 2250
+    }
+   ],
+   "scatterCount": 0,
+   "scatterWin": 0,
+   "total": 3750
+  },
+  {
+   "id": "bet-3-stake",
+   "lines": [
+    {
+     "line": 0,
+     "win": 45
+    }
+   ],
+   "scatterCount": 0,
+   "scatterWin": 0,
+   "total": 45
+  }
+ ],
+ "awardRows": [
+  {
+   "id": "award-first-trigger",
+   "freeGamesBefore": 0,
+   "scattersCount": 3,
+   "engineFreeGamesAfter": 15,
+   "oracleFreeGamesAfter": 15
+  },
+  {
+   "id": "award-retrigger",
+   "freeGamesBefore": 15,
+   "scattersCount": 3,
+   "engineFreeGamesAfter": 30,
+   "oracleFreeGamesAfter": 30
+  },
+  {
+   "id": "award-two-below-three",
+   "freeGamesBefore": 0,
+   "scattersCount": 2,
+   "engineFreeGamesAfter": 0,
+   "oracleFreeGamesAfter": 0
+  },
+  {
+   "id": "award-five-scatters-retrigger",
+   "freeGamesBefore": 30,
+   "scattersCount": 5,
+   "engineFreeGamesAfter": 45,
+   "oracleFreeGamesAfter": 45
+  }
+ ],
+ "featureRounds": {
+  "exact15": {
+   "spins": 15,
+   "retriggers": 0,
+   "draws": 80,
+   "win": 4500,
+   "totalWin": 4550
+  },
+  "exact30": {
+   "spins": 30,
+   "retriggers": 1,
+   "draws": 155,
+   "win": 8750,
+   "totalWin": 8800
+  }
+ },
+ "checks": [
+  {
+   "name": "reference.all-vectors-match-original-line-by-line",
+   "ok": true,
+   "detail": "514 vectors, 0 mismatches"
+  },
+  {
+   "name": "feature.award-rule-matches-original.award-first-trigger",
+   "ok": true,
+   "detail": "15 vs 15"
+  },
+  {
+   "name": "feature.award-rule-matches-original.award-retrigger",
+   "ok": true,
+   "detail": "30 vs 30"
+  },
+  {
+   "name": "feature.award-rule-matches-original.award-two-below-three",
+   "ok": true,
+   "detail": "0 vs 0"
+  },
+  {
+   "name": "feature.award-rule-matches-original.award-five-scatters-retrigger",
+   "ok": true,
+   "detail": "45 vs 45"
+  },
+  {
+   "name": "feature.award-uses-source-free-count",
+   "ok": true,
+   "detail": "freeCount=15 freeMpl=3"
+  },
+  {
+   "name": "feature.exact-15-free-spins",
+   "ok": true,
+   "detail": "spins=15 awarded=15"
+  },
+  {
+   "name": "feature.exact-15-no-retrigger",
+   "ok": true,
+   "detail": "retriggers=0"
+  },
+  {
+   "name": "feature.exact-15-draw-count",
+   "ok": true,
+   "detail": "draws=80 expected=80"
+  },
+  {
+   "name": "feature.exact-15-sequence-length",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "feature.exact-30-one-retrigger",
+   "ok": true,
+   "detail": "spins=30 retriggers=1"
+  },
+  {
+   "name": "feature.exact-30-draw-count",
+   "ok": true,
+   "detail": "draws=155 expected=155"
+  },
+  {
+   "name": "feature.retrigger-flag-on-sequence",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "feature.remaining-after-retrigger",
+   "ok": true,
+   "detail": "remaining=29"
+  },
+  {
+   "name": "feature.cumulative-payouts-consistent",
+   "ok": true,
+   "detail": "featureWin=8750 replay=8750"
+  },
+  {
+   "name": "feature.multiplier-from-source",
+   "ok": true,
+   "detail": "multiplier=3"
+  },
+  {
+   "name": "generator.one-stop-draw-per-reel-per-spin",
+   "ok": true,
+   "detail": "draws=5"
+  },
+  {
+   "name": "rng.deterministic-repeatable",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "rng.seed-sensitive",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "rng.rejects-span-over-32bit",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "rng.rejects-fractional-bounds",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "rng.rejects-inverted-range",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "engine.rejects-zero-bet",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "engine.rejects-lines-over-ten",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "engine.rejects-fractional-stake",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "engine.rejects-out-of-range-injected-rng",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "profile.rejects-all-zero-weights",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "profile.rejects-fractional-weights",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "profile.rejects-wrong-weight-length",
+   "ok": true,
+   "detail": ""
+  }
+ ]
+}

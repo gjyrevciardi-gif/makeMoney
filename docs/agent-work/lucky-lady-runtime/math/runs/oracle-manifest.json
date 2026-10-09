@@ -1,0 +1,21 @@
+{
+ "generated": "2026-09-28T14:38:23.553Z",
+ "oraclePath": "C:\\Users\\Admin\\orca\\research\\game-pack-forensics\\runtime\\LuckyLadysCharmDX\\math-oracle\\lucky-lady-oracle.php",
+ "oracleSha256": "ab6d357bb515ec3b30bb5bc47f30ddbccdf1d3457774a247f7a7453fde310efa",
+ "sourceHashesVerified": {
+  "server": "9b7961b867e7b897b39f23274e1d6abf151b3fce5e18ed8ba278aa704a07423b",
+  "settings": "372aff5e9f275d96693f0e88740080b64922086091546c80ea8c40cdc397b095",
+  "reels": "64cf839d1f584061f4e3fe813377c4f0396832a52e7e26493974e71363235efa"
+ },
+ "extractedBlocks": {
+  "evalBlockChars": 14977,
+  "awardBlockChars": 1115,
+  "evalBlockLine": 397,
+  "awardBlockLine": 648
+ },
+ "constants": {
+  "slotWildMpl": 2,
+  "slotFreeMpl": 3,
+  "slotFreeCount": 15
+ }
+}

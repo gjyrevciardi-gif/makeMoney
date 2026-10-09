@@ -1,0 +1,68 @@
+{
+ "profileId": "RAW-UNIFORM-ORIGINAL-STRIPS",
+ "profileHash": null,
+ "evaluator": "lucky-lady.original-evaluator.v1",
+ "sourceHashes": {
+  "server": {
+   "path": "C:\\Users\\Admin\\orca\\research\\game-pack-forensics\\external\\evidence\\taxipult-goldsvet\\casino\\app\\Games\\LuckyLadysCharmDX\\Server.php",
+   "sha256": "9b7961b867e7b897b39f23274e1d6abf151b3fce5e18ed8ba278aa704a07423b",
+   "bytes": 43517
+  },
+  "settings": {
+   "path": "C:\\Users\\Admin\\orca\\research\\game-pack-forensics\\external\\evidence\\taxipult-goldsvet\\casino\\app\\Games\\LuckyLadysCharmDX\\SlotSettings.php",
+   "sha256": "372aff5e9f275d96693f0e88740080b64922086091546c80ea8c40cdc397b095",
+   "bytes": 43523
+  },
+  "reels": {
+   "path": "C:\\Users\\Admin\\orca\\research\\game-pack-forensics\\external\\evidence\\taxipult-goldsvet\\casino\\app\\Games\\LuckyLadysCharmDX\\reels.txt",
+   "sha256": "64cf839d1f584061f4e3fe813377c4f0396832a52e7e26493974e71363235efa",
+   "bytes": 5353
+  },
+  "paytableLines": {
+   "9": 167,
+   "10": 159,
+   "P_1": 79,
+   "P_2": 87,
+   "P_3": 95,
+   "P_4": 103,
+   "P_5": 111,
+   "P_6": 119,
+   "A": 127,
+   "K": 135,
+   "Q": 143,
+   "J": 151,
+   "SCAT": 175
+  },
+  "linesBlockLine": null
+ },
+ "seed": "raw-baseline-1",
+ "bet": 1,
+ "lines": 10,
+ "rounds": 1000000,
+ "wager": 10000000,
+ "totalReturn": 46600262,
+ "rtpPercent": 466.00262,
+ "rtpStderrPercent": 2.8888131224332128,
+ "rtpCi95Percent": [
+  460.3406503219642,
+  471.66458967803584
+ ],
+ "baseReturn": 23938248,
+ "baseContributionPercent": 239.38248,
+ "scatterReturn": 2845070,
+ "scatterContributionPercent": 28.4507,
+ "featureReturn": 19816944,
+ "featureContributionPercent": 198.16944,
+ "hitRatePercent": 53.715199999999996,
+ "lineHitRatePercent": 46.8081,
+ "scatterPayRatePercent": 11.0044,
+ "featureTriggerRatePercent": 1.3878,
+ "retriggerRatePercent": 0.3709,
+ "freeSpinsPerRound": 0.263805,
+ "maxFeatureSpinsInRound": 135,
+ "maxRoundReturnX": 3818.8,
+ "varianceOfRoundReturn": 834.5241256342329,
+ "houseEdgePercent": -366.00262,
+ "gamble": "excluded: the original gamble is a separate post-win double-or-nothing; it never changes board generation",
+ "seconds": 15.357
+}
