@@ -10,6 +10,7 @@ import {
 import { analyseSlotRtp } from './games/slots/slot.rtp';
 import { TITANS_TEMPEST_V1, tumbleVersion } from './games/slots/tumble.definition';
 import { LUCKY_LADY_V1, luckyLadyVersion } from './games/lucky-lady/lucky-lady.definition';
+import { CLASSIC_V1, classicVersion } from './games/book-of-ra-classic/classic.definition';
 
 /**
  * The code-level baseline for every game, and the rules for what an operator
@@ -379,6 +380,46 @@ export const GAME_CONFIG_SPECS: Record<CasinoGameId, GameConfigSpec> = {
     },
   },
 
+  'book-of-ra-classic': {
+    gameId: 'book-of-ra-classic',
+    rtpControl: 'PROFILE',
+    baseline: () => ({
+      minStake: CLASSIC_V1.minStake,
+      maxStake: CLASSIC_V1.maxStake,
+      rtpBps: CLASSIC_V1.declaredRtpBps,
+      gameSpecific: { profile: CLASSIC_V1.profileId },
+      label: classicVersion(),
+    }),
+    label: () => classicVersion(),
+    validate: (candidate) => {
+      if (candidate.rtpBps !== null && candidate.rtpBps !== CLASSIC_V1.declaredRtpBps) {
+        fail(
+          'RTP_NOT_ADJUSTABLE',
+          'This game ships one frozen validated profile; its return cannot be dialled.',
+        );
+      }
+      const profile = candidate.gameSpecific.profile;
+      if (profile !== undefined && profile !== CLASSIC_V1.profileId) {
+        fail('UNKNOWN_SLOT_PROFILE', 'Only the validated Classic RTP50 profile exists for this game.');
+      }
+      // The native ladder is fixed: 1..9 lines at a whole-point per-line stake
+      // of 1/2/5/10/20, so a round wagers exactly 1..180 points. An operator may
+      // change availability, never the denomination, which is why a candidate
+      // that moves the limits is refused instead of ignored.
+      if (candidate.minStake !== CLASSIC_V1.minStake) {
+        fail(
+          'STAKE_LIMITS_ARE_FIXED',
+          `At least one line is always active, so the minimum stake is fixed at ${CLASSIC_V1.minStake} point.`,
+        );
+      }
+      if (candidate.maxStake !== CLASSIC_V1.maxStake) {
+        fail(
+          'STAKE_LIMITS_ARE_FIXED',
+          `The native ladder caps a round at ${CLASSIC_V1.lines} lines x 20 points, i.e. ${CLASSIC_V1.maxStake} points.`,
+        );
+      }
+    },
+  },
   'lucky-lady': {
     gameId: 'lucky-lady',
     rtpControl: 'PROFILE',
@@ -431,6 +472,9 @@ export function candidateRtpBps(gameId: CasinoGameId, candidate: GameConfigCandi
   }
   if (gameId === 'lucky-lady') {
     return LUCKY_LADY_V1.declaredRtpBps;
+  }
+  if (gameId === 'book-of-ra-classic') {
+    return CLASSIC_V1.declaredRtpBps;
   }
   return candidate.rtpBps;
 }

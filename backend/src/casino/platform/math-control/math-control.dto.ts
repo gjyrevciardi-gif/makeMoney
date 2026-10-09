@@ -10,6 +10,7 @@ import {
   Max,
   MaxLength,
   Min,
+  MinLength,
   ValidateNested,
 } from 'class-validator';
 import {
@@ -72,4 +73,31 @@ export class ValidationOptionsDto {
 export class ActivateMathDto {
   /** Optimistic concurrency: the active-pointer version the operator saw. */
   @IsOptional() @IsInt() @Min(1) expectedVersion?: number;
+}
+
+/**
+ * Reset request, transport layer.
+ *
+ * `expectedVersion` is the same optimistic concurrency token activation uses.
+ * `actionId` is an optional replay-safe key: the shared pointer move ignores it,
+ * while a game panel whose default transition is indexed by action id (Lucky
+ * Lady) uses it, or a server-generated one when it is absent.
+ */
+export class ResetMathDto {
+  @IsOptional() @IsInt() @Min(1) expectedVersion?: number;
+  @IsOptional() @IsString() @MinLength(8) @MaxLength(120) actionId?: string;
+}
+
+/**
+ * Rollback request, transport layer.
+ *
+ * Same shape and same optimistic `expectedVersion` token as the DEFAULT reset.
+ * `actionId` is the replay-safe key: the shared rollback resolves an exact
+ * replay of a completed transition from its own recorded row, and a game whose
+ * lifecycle is owned by its own panel uses it (or a server-generated one when
+ * it is absent) exactly as its legacy route does.
+ */
+export class RollbackMathDto {
+  @IsOptional() @IsInt() @Min(1) expectedVersion?: number;
+  @IsOptional() @IsString() @MinLength(8) @MaxLength(120) actionId?: string;
 }

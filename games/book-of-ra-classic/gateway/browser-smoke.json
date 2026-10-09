@@ -1,0 +1,1207 @@
+{
+ "generatedAt": "2026-10-07T16:55:47.386Z",
+ "mode": "loopback-stub-platform",
+ "boundary": "stub answers getSettings with the native error envelope; the settings payload is the platform contract",
+ "checks": 19,
+ "failures": 0,
+ "results": [
+  {
+   "name": "gateway.up",
+   "ok": true,
+   "detail": "healthz reachable"
+  },
+  {
+   "name": "exchange.redirects-to-play",
+   "ok": true,
+   "detail": "status=303 location=/play"
+  },
+  {
+   "name": "exchange.sets-an-httponly-game-cookie",
+   "ok": true,
+   "detail": "boc_session=<redacted>; HttpOnly; SameSite=Strict; Path=/"
+  },
+  {
+   "name": "page.serves-the-entry-document",
+   "ok": true,
+   "detail": "200 http://127.0.0.1:63387/play"
+  },
+  {
+   "name": "page.document-carries-the-restrictive-csp",
+   "ok": true,
+   "detail": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src '"
+  },
+  {
+   "name": "client.font-shim-ran-the-native-bootstrap",
+   "ok": true,
+   "detail": "isFontLoaded=true"
+  },
+  {
+   "name": "client.bridge-installed-its-hooks",
+   "ok": true,
+   "detail": "ServerConnect/GameReel wrapped, receipt list present"
+  },
+  {
+   "name": "client.gateway-sourced-every-native-script",
+   "ok": true,
+   "detail": "no script from another origin"
+  },
+  {
+   "name": "client.native-getSettings-reaches-the-platform-route",
+   "ok": true,
+   "detail": "{\"slotEvent\":\"getSettings\"}"
+  },
+  {
+   "name": "client.carries-the-game-session-header",
+   "ok": true,
+   "detail": "<present>"
+  },
+  {
+   "name": "client.rejected-read-is-reconciled-by-reloading-the-authoritative-state",
+   "ok": true,
+   "detail": "[{\"url\":\"http://127.0.0.1:63387/play\",\"at\":1791392144542},{\"url\":\"http://127.0.0.1:63387/play\",\"at\":1791392146565}]"
+  },
+  {
+   "name": "client.re-reaches-the-platform-route-after-the-reload",
+   "ok": true,
+   "detail": "2 gameplay calls"
+  },
+  {
+   "name": "assets.every-native-asset-resolved",
+   "ok": true,
+   "detail": "ok=83 failed=0"
+  },
+  {
+   "name": "assets.served-the-local-font-stylesheet",
+   "ok": true,
+   "detail": "83 native responses"
+  },
+  {
+   "name": "assets.did-not-request-the-external-webfont-loader",
+   "ok": true,
+   "detail": "no /games/BookOfRaCL/js/lib/webfont.js request"
+  },
+  {
+   "name": "network.no-external-request",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "client.no-page-errors",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "client.rejected-envelope-is-handled-by-the-bridge-not-native-alert",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "client.no-settings-payload-was-invented-anywhere",
+   "ok": true,
+   "detail": "{\"isFontLoaded\":true,\"bridgeInstalled\":true,\"recoveryReady\":false,\"recovery\":null,\"sessionId\":\"914570\"}"
+  }
+ ],
+ "browserState": {
+  "isFontLoaded": true,
+  "bridgeInstalled": true,
+  "recoveryReady": false,
+  "recovery": null,
+  "sessionId": "914570"
+ },
+ "dialogs": [],
+ "outboundRequests": [],
+ "pageErrors": [],
+ "navigations": [
+  {
+   "url": "http://127.0.0.1:63387/play",
+   "at": 1791392144542
+  },
+  {
+   "url": "http://127.0.0.1:63387/play",
+   "at": 1791392146565
+  }
+ ],
+ "requests": [
+  {
+   "url": "http://127.0.0.1:63387/play",
+   "method": "GET",
+   "type": "document"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/css/fonts.css",
+   "method": "GET",
+   "type": "stylesheet"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/js/lib/pixi.min.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/js/lib/createjs.min.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/js/classes/GameButton.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/js/classes/GameBack.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/js/classes/GameUI.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/js/classes/GameView.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/js/classes/GameReels.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/js/classes/GameLines.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/js/classes/GameCounters.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/js/classes/GameRules.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/js/classes/GameGamble.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/js/classes/GameBonus.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/js/classes/GameMessages.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/js/core.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/js/utils.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/js/loader.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/js/classes/Sounds.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/recovery-client.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/preview-font-ready.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/css/Verdana.woff",
+   "method": "GET",
+   "type": "font"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/css/Verdana-Bold.woff",
+   "method": "GET",
+   "type": "font"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/css/ArialMT.woff",
+   "method": "GET",
+   "type": "font"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/css/Arial-BoldMT.woff",
+   "method": "GET",
+   "type": "font"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/css/Georgia.woff",
+   "method": "GET",
+   "type": "font"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/css/Georgia-Bold.woff",
+   "method": "GET",
+   "type": "font"
+  },
+  {
+   "url": "http://127.0.0.1:63387/game/BookOfRaCL/server?sessionId=914570",
+   "method": "POST",
+   "type": "fetch"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/loading.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress0.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress1.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress2.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress3.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress4.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress5.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress6.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress7.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress8.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress9.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress10.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress11.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress12.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress13.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress14.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress15.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress16.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress17.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress18.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress19.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress20.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress21.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress22.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress23.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/play",
+   "method": "GET",
+   "type": "document"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/css/fonts.css",
+   "method": "GET",
+   "type": "stylesheet"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/js/lib/pixi.min.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/js/lib/createjs.min.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/js/classes/GameButton.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/js/classes/GameBack.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/js/classes/GameUI.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/js/classes/GameView.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/js/classes/GameReels.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/js/classes/GameLines.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/js/classes/GameCounters.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/js/classes/GameRules.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/js/classes/GameGamble.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/js/classes/GameBonus.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/js/classes/GameMessages.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/js/core.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/js/utils.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/js/loader.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/js/classes/Sounds.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/recovery-client.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/preview-font-ready.js",
+   "method": "GET",
+   "type": "script"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/css/Verdana.woff",
+   "method": "GET",
+   "type": "font"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/css/Verdana-Bold.woff",
+   "method": "GET",
+   "type": "font"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/css/ArialMT.woff",
+   "method": "GET",
+   "type": "font"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/css/Arial-BoldMT.woff",
+   "method": "GET",
+   "type": "font"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/css/Georgia.woff",
+   "method": "GET",
+   "type": "font"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/css/Georgia-Bold.woff",
+   "method": "GET",
+   "type": "font"
+  },
+  {
+   "url": "http://127.0.0.1:63387/game/BookOfRaCL/server?sessionId=914570",
+   "method": "POST",
+   "type": "fetch"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/loading.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress0.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress1.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress2.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress3.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress4.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress5.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress6.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress7.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress8.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress9.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress10.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress11.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress12.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress13.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress14.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress15.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress16.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress17.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress18.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress19.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress20.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress21.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress22.png",
+   "method": "GET",
+   "type": "image"
+  },
+  {
+   "url": "http://127.0.0.1:63387/games/BookOfRaCL/source/LOADER/progress23.png",
+   "method": "GET",
+   "type": "image"
+  }
+ ],
+ "assetResponses": [
+  {
+   "url": "/play",
+   "status": 200,
+   "type": "text/html"
+  },
+  {
+   "url": "/games/BookOfRaCL/css/fonts.css",
+   "status": 200,
+   "type": "text/css"
+  },
+  {
+   "url": "/games/BookOfRaCL/js/classes/GameBack.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/games/BookOfRaCL/js/classes/GameButton.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/games/BookOfRaCL/js/classes/GameUI.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/games/BookOfRaCL/js/lib/createjs.min.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/games/BookOfRaCL/js/lib/pixi.min.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/games/BookOfRaCL/js/classes/GameView.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/games/BookOfRaCL/js/classes/GameCounters.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/games/BookOfRaCL/js/classes/GameLines.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/games/BookOfRaCL/js/classes/GameRules.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/games/BookOfRaCL/js/classes/GameGamble.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/games/BookOfRaCL/js/classes/GameReels.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/games/BookOfRaCL/js/classes/GameBonus.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/games/BookOfRaCL/js/classes/GameMessages.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/games/BookOfRaCL/js/core.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/games/BookOfRaCL/js/utils.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/games/BookOfRaCL/js/loader.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/games/BookOfRaCL/js/classes/Sounds.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/recovery-client.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/preview-font-ready.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/games/BookOfRaCL/css/Verdana.woff",
+   "status": 200,
+   "type": "font/woff"
+  },
+  {
+   "url": "/games/BookOfRaCL/css/Verdana-Bold.woff",
+   "status": 200,
+   "type": "font/woff"
+  },
+  {
+   "url": "/games/BookOfRaCL/css/Georgia-Bold.woff",
+   "status": 200,
+   "type": "font/woff"
+  },
+  {
+   "url": "/games/BookOfRaCL/css/Georgia.woff",
+   "status": 200,
+   "type": "font/woff"
+  },
+  {
+   "url": "/games/BookOfRaCL/css/Arial-BoldMT.woff",
+   "status": 200,
+   "type": "font/woff"
+  },
+  {
+   "url": "/games/BookOfRaCL/css/ArialMT.woff",
+   "status": 200,
+   "type": "font/woff"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/loading.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress0.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress1.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress2.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress3.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress4.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress5.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress6.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress7.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress8.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress9.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress10.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress11.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress12.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress13.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress14.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress15.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress16.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress17.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress18.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress19.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress20.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress21.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress22.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress23.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/game/BookOfRaCL/server?sessionId=914570",
+   "status": 200,
+   "type": "application/json"
+  },
+  {
+   "url": "/play",
+   "status": 200,
+   "type": "text/html"
+  },
+  {
+   "url": "/games/BookOfRaCL/css/fonts.css",
+   "status": 200,
+   "type": "text/css"
+  },
+  {
+   "url": "/games/BookOfRaCL/js/classes/GameButton.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/games/BookOfRaCL/js/classes/GameBack.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/games/BookOfRaCL/js/lib/createjs.min.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/games/BookOfRaCL/js/classes/GameUI.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/games/BookOfRaCL/js/lib/pixi.min.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/games/BookOfRaCL/js/classes/GameView.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/games/BookOfRaCL/js/classes/GameReels.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/games/BookOfRaCL/js/classes/GameLines.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/games/BookOfRaCL/js/classes/GameCounters.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/games/BookOfRaCL/js/classes/GameRules.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/games/BookOfRaCL/js/classes/GameGamble.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/games/BookOfRaCL/js/classes/GameBonus.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/games/BookOfRaCL/js/classes/GameMessages.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/games/BookOfRaCL/js/utils.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/games/BookOfRaCL/js/loader.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/games/BookOfRaCL/js/classes/Sounds.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/games/BookOfRaCL/js/core.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/recovery-client.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/preview-font-ready.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "url": "/games/BookOfRaCL/css/Verdana.woff",
+   "status": 200,
+   "type": "font/woff"
+  },
+  {
+   "url": "/games/BookOfRaCL/css/Verdana-Bold.woff",
+   "status": 200,
+   "type": "font/woff"
+  },
+  {
+   "url": "/games/BookOfRaCL/css/Arial-BoldMT.woff",
+   "status": 200,
+   "type": "font/woff"
+  },
+  {
+   "url": "/games/BookOfRaCL/css/Georgia.woff",
+   "status": 200,
+   "type": "font/woff"
+  },
+  {
+   "url": "/games/BookOfRaCL/css/Georgia-Bold.woff",
+   "status": 200,
+   "type": "font/woff"
+  },
+  {
+   "url": "/games/BookOfRaCL/css/ArialMT.woff",
+   "status": 200,
+   "type": "font/woff"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress3.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress2.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress1.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress0.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/loading.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress8.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress7.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress6.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress5.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress4.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress9.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress10.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress11.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress12.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress13.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress14.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress15.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress16.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress17.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress18.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress19.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress20.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress21.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress22.png",
+   "status": 200,
+   "type": "image/png"
+  },
+  {
+   "url": "/games/BookOfRaCL/source/LOADER/progress23.png",
+   "status": 200,
+   "type": "image/png"
+  }
+ ],
+ "stubPlatformCalls": [
+  {
+   "method": "POST",
+   "url": "/casino/book-of-ra-classic/launch/exchange",
+   "sessionHeader": null,
+   "requestId": null,
+   "body": "{\"token\":\"<fixture-token>\"}"
+  },
+  {
+   "method": "POST",
+   "url": "/casino/book-of-ra-classic/session/gameplay?sessionId=914570",
+   "sessionHeader": "<present>",
+   "requestId": "53a38fa6-968d-4732-bdb3-36e2757448ed",
+   "body": "{\"slotEvent\":\"getSettings\"}"
+  },
+  {
+   "method": "POST",
+   "url": "/casino/book-of-ra-classic/session/gameplay?sessionId=914570",
+   "sessionHeader": "<present>",
+   "requestId": "10e8c1ff-1f8e-461f-aea8-9c85c8cbfb99",
+   "body": "{\"slotEvent\":\"getSettings\"}"
+  }
+ ],
+ "screenshot": "C:\\Users\\Admin\\orca\\workspaces\\toto\\book-of-ra-current\\games\\book-of-ra-classic\\gateway\\browser-smoke.png"
+}
