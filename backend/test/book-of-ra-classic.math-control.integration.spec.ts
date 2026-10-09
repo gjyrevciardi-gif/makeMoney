@@ -134,8 +134,8 @@ describe('Book of Ra Classic admin math control (PostgreSQL + Redis)', () => {
     ]);
     userId = player.id;
     adminId = admin.id;
-    userToken = (await auth.login(player.email, password)).pair.accessToken;
-    adminToken = (await auth.login(admin.email, password)).pair.accessToken;
+    userToken = (await auth.login(userEmail, password)).pair.accessToken;
+    adminToken = (await auth.login(adminEmail, password)).pair.accessToken;
   });
 
   it('is ADMIN-only on every Classic mathematics route', async () => {

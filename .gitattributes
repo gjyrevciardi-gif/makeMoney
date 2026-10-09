@@ -15,3 +15,7 @@ docker-compose*.yml text eol=lf
 
 # Lucky Lady verifies these accepted math artifacts byte-for-byte at runtime.
 backend/src/casino/games/lucky-lady/math/** text eol=lf
+
+# Book of Ra Classic verifies its frozen profile and rules by hash at runtime, so a
+# CRLF checkout on Windows would break the check. Pin them to LF like Lucky Lady's.
+backend/src/casino/games/book-of-ra-classic/math/** text eol=lf

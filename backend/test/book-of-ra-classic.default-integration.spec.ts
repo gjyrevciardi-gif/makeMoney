@@ -165,8 +165,8 @@ describe('book of ra classic shared admin DEFAULT reset (PostgreSQL + Redis)', (
     ]);
     userId = player.id;
     adminId = admin.id;
-    userToken = (await auth.login(player.email, password)).pair.accessToken;
-    adminToken = (await auth.login(admin.email, password)).pair.accessToken;
+    userToken = (await auth.login(userEmail, password)).pair.accessToken;
+    adminToken = (await auth.login(adminEmail, password)).pair.accessToken;
   }, 60_000);
 
   const bearer = (token: string) => `Bearer ${token}`;
