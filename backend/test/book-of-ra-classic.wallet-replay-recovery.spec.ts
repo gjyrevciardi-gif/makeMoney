@@ -158,7 +158,7 @@ describe('Book of Ra Classic wallet, replay and recovery (real shared storage)',
    */
   beforeEach(async () => {
     const player = await prisma.user.create({
-      data: { email: uniqueTestEmail(`classic-wallet-${stamp}`), passwordHash: 'x', wallet: { create: {} } },
+      data: { email: uniqueTestEmail(`classic-wallet-${stamp}`), passwordHash: 'x', createdById: adminId, wallet: { create: {} } },
     });
     userId = player.id;
     // Supported ledger funding only: the audited admin grant path, never a

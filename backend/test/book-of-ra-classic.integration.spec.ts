@@ -208,6 +208,8 @@ describe('Book of Ra Classic platform integration (PostgreSQL)', () => {
     adminId = admin.id;
     superId = superAdmin.id;
     disabledId = disabled.id;
+    // The administrator funds these players, so they must be inside its reach.
+    await prisma.user.updateMany({ where: { id: { in: [userId, rivalId] } }, data: { createdById: adminId } });
     game = adapterWith();
   });
 

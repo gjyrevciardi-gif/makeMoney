@@ -242,6 +242,8 @@ describe('Book of Ra Classic launch acceptance (PostgreSQL + Redis)', () => {
       prisma.user.create({ data: { email: mail.super, passwordHash, role: 'SUPER_ADMIN', wallet: { create: {} } } }),
     ]);
     userId = user.id;
+    // The administrator funds these players, so they must be inside its reach.
+    await prisma.user.update({ where: { id: userId }, data: { createdById: admin.id } });
     tokenOf.user = await login(mail.user);
     tokenOf.admin = await login(mail.admin);
     tokenOf.super = await login(mail.super);

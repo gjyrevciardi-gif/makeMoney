@@ -134,6 +134,8 @@ describe('Book of Ra Classic admin math control (PostgreSQL + Redis)', () => {
     ]);
     userId = player.id;
     adminId = admin.id;
+    // The administrator funds these players, so they must be inside its reach.
+    await prisma.user.update({ where: { id: userId }, data: { createdById: adminId } });
     userToken = (await auth.login(userEmail, password)).pair.accessToken;
     adminToken = (await auth.login(adminEmail, password)).pair.accessToken;
   });
@@ -162,8 +164,12 @@ describe('Book of Ra Classic admin math control (PostgreSQL + Redis)', () => {
     expect(generated.body.status).toBe('SUPPORTED');
     const profileId = generated.body.profile.profileId as string;
     const profileHash = generated.body.profile.canonicalHash as string;
-    expect(generated.body.profile.policy.maxWinScope).toBe('RESOLVED_SPIN');
-    expect(generated.body.profile.policy.maxWinEnabled).toBe(true);
+    // `generate` returns the profile summary; the applied policy is read from the profile detail.
+    const detail = await admin.get(`/admin/casino/math/${CLASSIC_ID}/profiles/${profileId}`)
+      .set('authorization', `Bearer ${adminToken}`)
+      .expect(200);
+    expect(detail.body.profile.policy.maxWinScope).toBe('RESOLVED_SPIN');
+    expect(detail.body.profile.policy.maxWinEnabled).toBe(true);
 
     // Unvalidated mathematics can never go live.
     await expect(math.activate(adminId, CLASSIC_ID, profileId)).rejects.toMatchObject({

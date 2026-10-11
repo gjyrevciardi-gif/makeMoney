@@ -172,7 +172,7 @@ describe('slots security and platform integration (PostgreSQL + Redis)', () => {
       expect(playable).toEqual(
         ['BLACKJACK', 'CRASH', 'DICE', 'MINES', 'PLINKO', 'ROULETTE', 'SLOTS', 'SLOTS', 'SLOTS', 'SLOTS'],
       );
-      const slot = games.find((game) => game.gameType === 'SLOTS');
+      const slot = games.find((game) => game.route === '/casino/slots/fools-gold-rush');
       expect(slot?.name).toBe("Fool's Gold Rush");
       expect(slot?.route).toBe('/casino/slots/fools-gold-rush');
     });

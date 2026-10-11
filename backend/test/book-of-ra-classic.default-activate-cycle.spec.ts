@@ -94,9 +94,12 @@ describe('book of ra classic DEFAULT -> ACTIVATE -> DEFAULT -> ACTIVATE (Postgre
   let redis: RedisService;
 
   const password = 'correct-horse-battery';
-  const adminEmail = uniqueTestEmail('classic-activate-admin');
-  const playerOneEmail = uniqueTestEmail('classic-activate-player-one');
-  const playerTwoEmail = uniqueTestEmail('classic-activate-player-two');
+  // Fresh identities per test: players that received a points grant own ledger
+  // rows and cannot be deleted, so tests never reuse an email.
+  let adminEmail = uniqueTestEmail('classic-activate-admin');
+  let playerOneEmail = uniqueTestEmail('classic-activate-player-one');
+  let playerTwoEmail = uniqueTestEmail('classic-activate-player-two');
+  const usedEmails: string[] = [];
   let adminToken: string;
   let adminId: string;
   let playerOneId: string;
@@ -106,7 +109,7 @@ describe('book of ra classic DEFAULT -> ACTIVATE -> DEFAULT -> ACTIVATE (Postgre
   const cleanup = async () => {
     const games = [CLASSIC_ID, LUCKY_LADY_PAYOUT_GAME_ID];
     const userIds = (
-      await prisma.user.findMany({ where: { email: { in: [adminEmail, playerOneEmail, playerTwoEmail] } } })
+      await prisma.user.findMany({ where: { email: { in: [...usedEmails, adminEmail, playerOneEmail, playerTwoEmail] } } })
     ).map((user) => user.id);
     const attempts: Array<Promise<unknown>> = [
       prisma.gameActiveMathProfile.deleteMany({ where: { gameId: { in: games } } }),
@@ -151,6 +154,10 @@ describe('book of ra classic DEFAULT -> ACTIVATE -> DEFAULT -> ACTIVATE (Postgre
   }, 60_000);
 
   beforeEach(async () => {
+    adminEmail = uniqueTestEmail('classic-activate-admin');
+    playerOneEmail = uniqueTestEmail('classic-activate-player-one');
+    playerTwoEmail = uniqueTestEmail('classic-activate-player-two');
+    usedEmails.push(adminEmail, playerOneEmail, playerTwoEmail);
     const hash = await argon2.hash(password);
     const [admin, playerOne, playerTwo] = await Promise.all([
       prisma.user.create({ data: { email: adminEmail, passwordHash: hash, role: 'SUPER_ADMIN', wallet: { create: {} } } }),
@@ -161,6 +168,12 @@ describe('book of ra classic DEFAULT -> ACTIVATE -> DEFAULT -> ACTIVATE (Postgre
     playerOneId = playerOne.id;
     playerTwoId = playerTwo.id;
     adminToken = (await auth.login(adminEmail, password)).pair.accessToken;
+  }, 60_000);
+
+  // Each test builds its own fixture users and asserts exact pointer versions, so
+  // it must start from this spec's clean slate.
+  afterEach(async () => {
+    await cleanup();
   }, 60_000);
 
   const bearer = (token: string) => `Bearer ${token}`;
@@ -306,7 +319,7 @@ describe('book of ra classic DEFAULT -> ACTIVATE -> DEFAULT -> ACTIVATE (Postgre
       rounds: new GameRoundService(prisma),
     };
     const adapter = new ClassicAdapter(prisma, platform, configs, math, { rng: intRng(rngSeed) });
-    await points.adminGrant(adminId, userId, 10_000n, 'Classic DEFAULT->ACTIVATE round funding', `grant-${requestId}`);
+    await points.adminGrant(adminId, userId, 10_000n, 'Classic DEFAULT->ACTIVATE round funding', `grant-${userId}-${requestId}`);
     const session = await prisma.gameSession.create({
       data: { userId, gameId: CLASSIC_ID, tokenHash, expiresAt: new Date(Date.now() + 3_600_000) },
     });

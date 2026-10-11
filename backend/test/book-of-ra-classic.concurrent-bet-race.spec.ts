@@ -122,22 +122,24 @@ describe('Book of Ra Classic concurrent same-key bet race (patched reuse branch)
     ) as Array<{ db: string; port: number | null }>;
     const db = live[0]?.db;
     const serverPort = live[0]?.port;
-    const targetOk = configured.hostname === '127.0.0.1'
-      && configured.port === '55432'
-      && configuredName === 'boc_classic_test'
-      && db === 'boc_classic_test';
+    // Same rule as the repository-wide test guard: only a disposable *_test
+    // database on this machine, and the live connection must be that same one.
+    const targetOk = ['127.0.0.1', 'localhost'].includes(configured.hostname)
+      && configuredName.toLowerCase().includes('_test')
+      && !['fools_gold', 'postgres'].includes(configuredName.toLowerCase())
+      && db === configuredName;
     if (!targetOk) {
       throw new Error(`REFUSED_UNSAFE_DATABASE: ${configured.hostname}:${configured.port}/${configuredName} live=${db}`);
     }
     // eslint-disable-next-line no-console
-    console.log(`[race] isolated storage: 127.0.0.1:55432/as ${db} (server port ${serverPort})`);
+    console.log(`[race] isolated storage: ${configured.hostname}:${configured.port}/as ${db} (server port ${serverPort})`);
 
     const admin = await prisma.user.create({
       data: { email: uniqueTestEmail(`race-admin-${stamp}`), passwordHash: 'x', role: 'ADMIN', wallet: { create: {} } },
     });
     adminId = admin.id;
     const player = await prisma.user.create({
-      data: { email: uniqueTestEmail(`race-player-${stamp}`), passwordHash: 'x', wallet: { create: {} } },
+      data: { email: uniqueTestEmail(`race-player-${stamp}`), passwordHash: 'x', createdById: adminId, wallet: { create: {} } },
     });
     userId = player.id;
     // Unique fixture funding through the real points path; never an overwrite.
