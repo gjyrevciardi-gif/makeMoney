@@ -19,21 +19,28 @@ function parseKey(raw: string | undefined, label: string): Buffer {
 }
 
 /**
- * Encrypted, revealable copy of a user's password.
+ * Shared AES-256-GCM cipher for server-secret columns.
  *
- * Exists only so an ADMIN or SUPER_ADMIN can read a password back. Login never
- * uses it: login verifies the argon2 hash. AES-256-GCM with a fresh random IV for
- * every write; the owning user id is bound in as additional authenticated data, so
- * a ciphertext copied onto another user's row fails to decrypt.
+ * RETIRED for passwords (milestone A1): no user password is encrypted or stored
+ * anywhere. The only remaining caller is `MfaService`, which uses it to seal a
+ * user's TOTP secret into `UserTotp`. The class name and the `PASSWORD_VAULT_*`
+ * environment variable names are kept unchanged so the TOTP secrets already in
+ * production keep decrypting with the same keys.
+ *
+ * AES-256-GCM with a fresh random IV for every write; the owning user id is bound
+ * in as additional authenticated data, so a ciphertext copied onto another user's
+ * row fails to decrypt.
  *
  * The key lives in the process environment (`PASSWORD_VAULT_KEY`, 32 bytes,
  * base64), never in the database or the repo, so a database dump or backup holds
  * only ciphertext. To rotate: set a new `PASSWORD_VAULT_KEY` + `PASSWORD_VAULT_KEY_ID`
  * and keep the old one in `PASSWORD_VAULT_PREVIOUS_KEYS` (JSON `{"<keyId>": "<base64>"}`)
- * until every row has been rewritten (a password set or change re-encrypts it).
+ * until every `UserTotp` row has been rewritten (re-running 2FA setup re-encrypts it).
  *
  * If the key is missing or malformed, every vault operation fails closed with 503
- * rather than silently skipping the vault.
+ * rather than silently skipping the cipher. Account creation and password changes
+ * never touch this service, so they work without `PASSWORD_VAULT_KEY`; only the
+ * MFA enrolment/verify paths require it.
  */
 @Injectable()
 export class PasswordVaultService {

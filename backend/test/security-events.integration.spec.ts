@@ -102,6 +102,8 @@ describe('player ownership and security notifications (PostgreSQL + Redis)', () 
     expect(list.body.map((u: { username: string }) => u.username)).toEqual(['plr1']);
     await server().get(`/admin/users/${ids.plr2}/detail`).set(bearer(admin1)).expect(404);
     await server().get(`/admin/users/${ids.plr2}/ledger`).set(bearer(admin1)).expect(404);
+    // Reveal is unmapped since milestone A1, so it reads as not found for anybody,
+    // including an administrator who must not know this account exists.
     await server().post(`/admin/users/${ids.plr2}/password/reveal`).set(bearer(admin1)).expect(404);
     await server().post(`/admin/users/${ids.plr2}/password`).set(bearer(admin1)).send({ password: 'new-password-1' }).expect(404);
     await server().post(`/admin/users/${ids.plr2}/status`).set(bearer(admin1)).send({ disabled: true }).expect(403);

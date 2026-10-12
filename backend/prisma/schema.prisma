@@ -168,6 +168,8 @@ model User {
   securityEventsActed   SecurityEvent[]           @relation("SecurityEventActor")
   securityEventsOwned   SecurityEvent[]           @relation("SecurityEventOwner")
   securityEventsTop     SecurityEvent[]           @relation("SecurityEventTop")
+  /// RETIRED (milestone A1). No application code reads or writes this relation;
+  /// it remains so the retired table is not dropped by a schema rebuild.
   passwordVault         UserPasswordVault?
   totp                  UserTotp?
   recoveryCodes         UserRecoveryCode[]
@@ -195,10 +197,12 @@ model User {
   gamePreparedOutcomes  GamePreparedOutcome[]      @relation("GamePreparedOutcomeOwner")
 }
 
-/// Encrypted, revealable copy of a user's password, kept ONLY so an ADMIN or
-/// SUPER_ADMIN can read it back. Login never uses it (login verifies the argon2
-/// hash). AES-256-GCM, bound to the owning user id, with the key held outside the
-/// database. Kept in its own table so ordinary user queries never touch it.
+/// RETIRED (milestone A1): reversible password storage was removed. No code path
+/// writes or reads this table any more, and migration
+/// `20261012130000_retire_password_vault` purges every remaining row. The table and
+/// this model are kept deliberately so purging the data stays a data-only change
+/// instead of a destructive `DROP TABLE`. Passwords now exist only as an Argon2id
+/// hash on `User.passwordHash`.
 model UserPasswordVault {
   userId      String   @id @db.Uuid
   ciphertext  String

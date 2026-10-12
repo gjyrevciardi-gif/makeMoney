@@ -121,7 +121,9 @@ describe('manager role and point transfers (PostgreSQL + Redis)', () => {
     const adminB = await tokenFor('adminB');
     const mgr1 = await tokenFor('mgr1');
     await server().post(`/admin/users/${ids.mgr1}/password`).set(bearer(adminA)).send({ password: 'manager-pass-1' }).expect(201);
-    expect((await server().post(`/admin/users/${ids.mgr1}/password/reveal`).set(bearer(adminA)).expect(201)).body.password).toBe('manager-pass-1');
+    // The new password answers by login only; the reveal route is gone (milestone A1).
+    await auth.login('mgr1', 'manager-pass-1');
+    await server().post(`/admin/users/${ids.mgr1}/password/reveal`).set(bearer(adminA)).expect(404);
     await server().post(`/admin/users/${ids.plr1}/password`).set(bearer(adminA)).send({ password: 'player-pass-1' }).expect(201);
     await server().post(`/admin/users/${ids.mgr1}/password`).set(bearer(adminB)).send({ password: 'hostile-pass-1' }).expect(404);
     await server().post(`/admin/users/${ids.mgr1}/status`).set(bearer(adminB)).send({ disabled: true }).expect(403);
