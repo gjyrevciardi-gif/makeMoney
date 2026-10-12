@@ -22,12 +22,17 @@ export class AccessGuard implements CanActivate {
     }
     const token = parts[1];
     try {
-      const payload = await this.jwt.verifyAsync<{ sub: string; typ?: string }>(token);
+      const payload = await this.jwt.verifyAsync<{ sub: string; typ?: string; av?: unknown }>(token);
       // A second-factor challenge proves only the password step; it is never an access token.
       if (payload.typ) throw new Error('not an access token');
+      // The token carries the session version it was issued under. A missing,
+      // malformed or stale claim is refused before anything else: there is no
+      // timestamp to compare, just an exact integer match against the account.
+      const version = payload.av;
+      if (typeof version !== 'number' || !Number.isSafeInteger(version) || version < 0) throw new Error('invalid session version claim');
       const user = await this.prisma.user.findUnique({
         where: { id: payload.sub },
-        select: { id: true, role: true, disabled: true },
+        select: { id: true, role: true, disabled: true, authVersion: true },
       });
       if (!user) throw new Error('missing user');
       if (user.disabled) {
@@ -35,6 +40,7 @@ export class AccessGuard implements CanActivate {
         // is read from the database, never from the token.
         throw new ForbiddenException('ACCOUNT_DISABLED');
       }
+      if (version !== user.authVersion) throw new Error('stale session version');
       request.actor = { id: user.id, role: user.role };
       return true;
     } catch (error) {
