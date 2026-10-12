@@ -126,8 +126,12 @@ describe('manager role and point transfers (PostgreSQL + Redis)', () => {
     await server().post(`/admin/users/${ids.mgr1}/password`).set(bearer(adminB)).send({ password: 'hostile-pass-1' }).expect(404);
     await server().post(`/admin/users/${ids.mgr1}/status`).set(bearer(adminB)).send({ disabled: true }).expect(403);
 
+    // The password change bumps authVersion, so the token minted above is dead.
+    await server().post(`/admin/users/${ids.adminA}/password`).set(bearer(mgr1)).send({ password: 'hostile-pass-2' }).expect(401);
+    const mgr1AfterReset = (await auth.login('mgr1', 'manager-pass-1')).pair.accessToken;
+
     // A manager cannot touch the administrator above them.
-    await server().post(`/admin/users/${ids.adminA}/password`).set(bearer(mgr1)).send({ password: 'hostile-pass-2' }).expect(404);
+    await server().post(`/admin/users/${ids.adminA}/password`).set(bearer(mgr1AfterReset)).send({ password: 'hostile-pass-2' }).expect(404);
 
     // An administrator promotes their own player to manager, but cannot make an administrator.
     await server().post(`/admin/users/${ids.plrA}/role`).set(bearer(adminA)).send({ role: 'MANAGER' }).expect(201);
