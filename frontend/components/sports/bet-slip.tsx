@@ -7,6 +7,7 @@ import { pickId, useBetSlip, type ReconciledPick } from '../../lib/bet-slip';
 import { describeSportsError } from '../../lib/sports';
 import { useSession, useWallet } from '../../lib/queries';
 import { IconCheck, IconChevron, IconClose } from '../shell/icons';
+import { MobileSlip } from './mobile-slip';
 
 const QUICK_STAKES = [100, 500, 1000, 5000];
 
@@ -279,7 +280,8 @@ export function BetSlipSheet() {
         <>
           <div className="slip-sheet-backdrop" onClick={() => slip.setSheetOpen(false)} />
           <div className="slip-sheet" role="dialog" aria-modal="true" aria-label="Bet slip">
-            <BetSlip onClose={() => slip.setSheetOpen(false)} />
+            <div className="desk-only slip-wrap"><BetSlip onClose={() => slip.setSheetOpen(false)} /></div>
+            <div className="m-only slip-wrap"><MobileSlip onClose={() => slip.setSheetOpen(false)} /></div>
           </div>
         </>
       )}

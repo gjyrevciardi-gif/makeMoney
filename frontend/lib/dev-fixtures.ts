@@ -244,11 +244,67 @@ const fixtureLeg = (
 
 const hoursAgo = (hours: number) => new Date(Date.now() - hours * 3_600_000).toISOString();
 
-export const fixtureWonBets = (): TicketBet[] => [{
-  id: 'fixture-won-1', type: 'SINGLE', status: 'WON', stake: '2000', totalOdds: '2.10', finalOdds: '2.10',
-  potentialPayout: '4200', actualPayout: '4200', createdAt: hoursAgo(5), settledAt: hoursAgo(1),
-  legs: [fixtureLeg('l1', 'Napoli', 'Roma', 'Match Result', 'Napoli', '2.10', 'WON', 0)],
-}];
+const cashed = new Set<string>();
+
+/** Open cash-out values drift slightly each refresh so the flash can be previewed. */
+const driftCash = (value: number, seed: string) => {
+  const slot = Math.floor(Date.now() / 20_000);
+  let hash = 0;
+  for (const char of `${seed}:${slot}`) hash = (hash * 31 + char.charCodeAt(0)) % 1000;
+  return String(Math.max(1, value + ((hash % 5) - 2) * 9));
+};
+
+const sampleBets = (): TicketBet[] => [
+  {
+    id: 'fixture-open-1', type: 'ACCUMULATOR', status: 'OPEN', stake: '1000', totalOdds: '6.12', potentialPayout: '6120',
+    createdAt: hoursAgo(2), cashOutValue: driftCash(412, 'o1'),
+    legs: [
+      fixtureLeg('o1a', 'Arsenal', 'Chelsea', 'Match Result', 'Arsenal', '2.10', 'PENDING', 0),
+      fixtureLeg('o1b', 'Real Madrid', 'Barcelona', 'Match Result', 'Real Madrid', '2.30', 'PENDING', 0),
+      fixtureLeg('o1c', 'Tottenham', 'Newcastle', 'Total Goals', 'Over 2.5', '1.27', 'PENDING', 1),
+    ],
+  },
+  {
+    id: 'fixture-open-2', type: 'SINGLE', status: 'OPEN', stake: '2000', totalOdds: '2.10', potentialPayout: '4200',
+    createdAt: hoursAgo(6), cashOutValue: driftCash(1380, 'o2'),
+    legs: [fixtureLeg('o2a', 'Inter', 'Juventus', 'Match Result', 'Inter', '2.10', 'PENDING', 0)],
+  },
+  {
+    id: 'fixture-open-3', type: 'SINGLE', status: 'OPEN', stake: '500', totalOdds: '1.85', potentialPayout: '925',
+    createdAt: hoursAgo(9),
+    legs: [fixtureLeg('o3a', 'Aston Villa', 'Brighton', 'Match Result', 'Aston Villa', '1.85', 'PENDING', 1)],
+  },
+  {
+    id: 'fixture-won-1', type: 'SINGLE', status: 'WON', stake: '2000', totalOdds: '2.10', finalOdds: '2.10',
+    potentialPayout: '4200', actualPayout: '4200', createdAt: hoursAgo(5), settledAt: hoursAgo(1),
+    legs: [fixtureLeg('w1a', 'Napoli', 'Roma', 'Match Result', 'Napoli', '2.10', 'WON', -1)],
+  },
+  {
+    id: 'fixture-lost-1', type: 'ACCUMULATOR', status: 'LOST', stake: '1000', totalOdds: '4.40', finalOdds: '4.40',
+    potentialPayout: '4400', actualPayout: '0', createdAt: hoursAgo(30), settledAt: hoursAgo(26),
+    legs: [
+      fixtureLeg('l1a', 'Everton', 'West Ham', 'Match Result', 'Everton', '2.20', 'WON', -2),
+      fixtureLeg('l1b', 'Wolves', 'Fulham', 'Match Result', 'Wolves', '2.00', 'LOST', -2),
+    ],
+  },
+  {
+    id: 'fixture-void-1', type: 'SINGLE', status: 'VOID', stake: '500', totalOdds: '1.95', finalOdds: '1.00',
+    potentialPayout: '975', actualPayout: '500', createdAt: hoursAgo(50), settledAt: hoursAgo(44),
+    legs: [fixtureLeg('v1a', 'Brentford', 'Leeds', 'Match Result', 'Brentford', '1.95', 'VOID', -3)],
+  },
+];
+
+/** Sample bets for the phone My Bets preview; a cashed-out bet drops out of Open. */
+export const fixtureBets = (status: 'OPEN' | 'WON' | 'ALL'): TicketBet[] => {
+  const bets = sampleBets().filter((bet) => !(bet.status === 'OPEN' && cashed.has(bet.id)));
+  return status === 'ALL' ? bets : bets.filter((bet) => bet.status === status);
+};
+
+/** Simulates a cash-out so the confirm flow can be previewed. The real platform has none. */
+export const fixtureCashOut = async (betId: string) => {
+  await new Promise((resolve) => setTimeout(resolve, 600));
+  cashed.add(betId);
+};
 
 export const fixtureBoosted = (): BoostedOffer[] => [{
   id: 'boost-1', eventId: 'fixture-live-1', headline: 'Win and 4+ goals', context: 'Liverpool 2–1 Manchester City',

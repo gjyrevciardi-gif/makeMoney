@@ -408,7 +408,7 @@ function HomeScreen() {
       )}
 
       <p className="m-footnote">
-        <span className="m-18">18+</span>
+        <span className="m-age">18+</span>
         Prices refresh automatically · <Link href="/account#limits">Play responsibly</Link>
       </p>
     </div>

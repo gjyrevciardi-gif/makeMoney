@@ -26,6 +26,8 @@ export type SlipPick = {
   startTime: string;
   /** The price the player saw when they tapped. Sent to the backend to verify. */
   displayedOdds: string;
+  /** A boosted price and the price it replaced. Display only; set only if the platform ever supplies one. */
+  boosted?: { was: string };
 };
 
 export type PickStatus = 'OK' | 'CHANGED' | 'UNAVAILABLE' | 'STARTED';
@@ -42,6 +44,8 @@ export type PlacedBet = {
   stake: string;
   totalOdds: string;
   potentialPayout: string;
+  /** The selections that were on the slip, kept so the receipt can list them after the slip clears. */
+  legs?: SlipPick[];
 };
 
 type OddsChangeRow = {
@@ -169,7 +173,7 @@ export function BetSlipProvider({ children }: { children: ReactNode }) {
           displayedOdds: pick.displayedOdds,
         })),
       });
-      setState({ picks: [], stake: '', sheetOpen: true, placing: false, lastPlaced: bet });
+      setState({ picks: [], stake: '', sheetOpen: true, placing: false, lastPlaced: { ...bet, legs: state.picks } });
       invalidateAfterWagering(client);
     } catch (error) {
       const failure = error instanceof ApiError

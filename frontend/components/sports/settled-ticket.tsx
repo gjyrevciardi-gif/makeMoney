@@ -29,6 +29,8 @@ export type TicketBet = {
   actualPayout?: string | null;
   createdAt: string;
   settledAt?: string | null;
+  /** A live cash-out value, when the platform offers one. It does not yet. */
+  cashOutValue?: string | null;
   legs: TicketLeg[];
 };
 

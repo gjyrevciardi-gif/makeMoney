@@ -46,19 +46,48 @@ export function useLiveEventCount() {
   return count;
 }
 
+export type BetStatusFilter = 'OPEN' | 'WON' | 'ALL';
+
+/** The player's bets, as the server recorded them (sample bets only in dev fixtures). */
+async function fetchBets(status: BetStatusFilter): Promise<TicketBet[]> {
+  if (process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_DEV_FIXTURES === '1'
+    && process.env.NEXT_PUBLIC_DEV_FIXTURE_SESSION === '1') {
+    return (await import('./dev-fixtures')).fixtureBets(status);
+  }
+  return getJson<TicketBet[]>(`/bets/me?limit=50${status === 'ALL' ? '' : `&status=${status}`}`);
+}
+
 /**
- * How many bets are open, from the same query (and key) the My Bets page uses,
- * so the badge and the list can never disagree.
+ * The same queries (and keys) the My Bets page uses, so a badge, a banner and
+ * the list can never disagree.
  */
-export function useOpenBetsCount() {
+export function useBets(status: BetStatusFilter) {
   const session = useSession();
-  const bets = useQuery({
-    queryKey: qk.bets('OPEN'),
+  return useQuery({
+    queryKey: qk.bets(status),
     enabled: Boolean(session.data),
-    queryFn: () => getJson<unknown[]>('/bets/me?limit=50&status=OPEN'),
+    queryFn: () => fetchBets(status),
     staleTime: 15_000,
+    // Open bets are the ones whose figures can still change.
+    refetchInterval: status === 'OPEN' ? 20_000 : false,
   });
-  return bets.data?.length ?? 0;
+}
+
+/** How many bets are open. */
+export function useOpenBetsCount() {
+  return useBets('OPEN').data?.length ?? 0;
+}
+
+/**
+ * Cashing out a sports bet. The backend has no such action, so this is
+ * `undefined` in production; the dev fixtures simulate one so the phone flow
+ * can be previewed.
+ */
+export function useCashOutAction() {
+  const enabled = process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_DEV_FIXTURES === '1';
+  return enabled
+    ? async (betId: string) => { await (await import('./dev-fixtures')).fixtureCashOut(betId); }
+    : undefined;
 }
 
 /** The current time, re-read every `everyMs`. Used for the "Starts in mm:ss" countdowns. */
@@ -109,24 +138,13 @@ export type RecentWin = { id: string; payout: string; selection: string; event: 
  * exactly what the server recorded.
  */
 export function useRecentWin() {
-  const session = useSession();
   const [dismissed, setDismissed] = useState<ReadonlySet<string>>(new Set());
 
   useEffect(() => {
     try { setDismissed(new Set(JSON.parse(window.localStorage.getItem(WIN_KEY) ?? '[]') as string[])); } catch { /* none */ }
   }, []);
 
-  const bets = useQuery({
-    queryKey: qk.bets('WON'),
-    enabled: Boolean(session.data),
-    queryFn: async () => {
-      if (process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_DEV_FIXTURES === '1') {
-        return (await import('./dev-fixtures')).fixtureWonBets();
-      }
-      return getJson<TicketBet[]>('/bets/me?limit=50&status=WON');
-    },
-    staleTime: 30_000,
-  });
+  const bets = useBets('WON');
 
   const bet = (bets.data ?? []).find((entry) => entry.settledAt
     && Date.now() - Date.parse(entry.settledAt) < WIN_WINDOW_MS
