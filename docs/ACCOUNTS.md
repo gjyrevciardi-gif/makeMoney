@@ -1,4 +1,4 @@
-# Accounts, roles and the password vault
+# Accounts, roles and passwords
 
 ## Model
 
@@ -22,36 +22,30 @@
 
 | Endpoint | Purpose |
 |---|---|
-| `POST /admin/users` | Create an account `{ username, password?, role? }`. Omit the password to have one generated (returned once). Only a SUPER_ADMIN may pass `role: "ADMIN"`. |
+| `POST /admin/users` | Create an account `{ username, password?, role? }`. Omit the password to have one generated; it is returned once, in this response, and can never be read back. Only a SUPER_ADMIN may pass `role: "ADMIN"`. |
 | `POST /admin/users/:id/password` | Set or reset a password. Revokes the user's refresh tokens. |
-| `POST /admin/users/:id/password/reveal` | Read the current password back. Audited on every call. `no-store`. |
 | `POST /admin/users/:id/username` | Change a username. |
 
 An out-of-reach target (for example an ADMIN naming a SUPER_ADMIN) is answered as 404, so ids cannot be probed.
 All of these share the admin rate limit.
 
-## The password vault (admins can see passwords)
+`POST /admin/users/:id/password/reveal` was **removed** (milestone A1). The route is unmapped, so every
+request answers 404 for every role, and there is no service method behind it.
 
-Login verifies the **argon2 hash** only. A second copy of the password is stored **encrypted** in
-`UserPasswordVault` purely so an ADMIN or SUPER_ADMIN can read it back.
+## Password storage (hash only)
 
-- AES-256-GCM, a fresh random IV on every write, and the owning user id bound in as authenticated data, so a
-  ciphertext moved onto another user's row fails to decrypt.
-- The key is `PASSWORD_VAULT_KEY` (32 random bytes, base64) in the **server environment**: never in the
-  database or the repo. A database dump or backup contains only ciphertext.
-- Generate one: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`
-- **Back the key up separately from the database backups.** If it is lost, stored passwords cannot be shown
-  (users can still log in; an administrator sets new passwords).
-- Production refuses to start without a valid key. If the key is missing or malformed at runtime, create and
-  set-password fail with 503 and change nothing.
-- **Rotation:** set a new `PASSWORD_VAULT_KEY` and `PASSWORD_VAULT_KEY_ID`, and put the old one in
-  `PASSWORD_VAULT_PREVIOUS_KEYS` (JSON `{"<oldKeyId>": "<base64>"}`). Rows are re-encrypted with the new key
-  whenever a password is set. Remove the old key only once no row uses it.
-- **Residual risk:** anyone who obtains both the key and the database can read every password. Protect the key
-  like a root credential. Because an administrator can see a password, a login with it cannot prove who
-  acted; the audit log records every reveal (who, which user, when) but never the password itself.
-- Passwords set before the vault existed (including the first super admin) were only ever hashed, so they cannot
-  be shown. They become viewable the next time the password is set.
+- A password exists only as an **Argon2id hash** on `User.passwordHash`. Login verifies that hash and nothing
+  else. No plaintext and no reversibly encrypted copy is written on create, administrator reset, or own change.
+- The `UserPasswordVault` table is **retired**. No code path reads or writes it, migration
+  `20261012130000_retire_password_vault` purges the historical rows (data only, no `DROP TABLE`), and the empty
+  table plus its Prisma model are kept so a future schema rebuild cannot silently drop unrelated data.
+- A server-generated password (create with no `password`) is returned **once**, in the create response. After
+  that it is not recoverable by anyone, including a SUPER_ADMIN. Losing it means setting a new one.
+- `PASSWORD_VAULT_KEY` / `PASSWORD_VAULT_KEY_ID` / `PASSWORD_VAULT_PREVIOUS_KEYS` are **still required**, but
+  only because administrator TOTP secrets are sealed with the same server cipher (see the MFA section). They no
+  longer protect any password. Production still refuses to start without a valid key.
+- Deployment order, backup handling and the residual risk that historical database snapshots still contain the
+  old ciphertext are in `docs/SECURITY-PASSWORD-STORAGE-A1.md`.
 
 ## Managers and point transfers
 
@@ -105,7 +99,8 @@ There is deliberately **no automatic blocking** of administrators yet.
 - With it on, `POST /auth/login` returns `{ mfaRequired, mfaToken }` instead of a session. The session is only
   issued by `POST /auth/login/2fa` with a valid 6-digit code or an unused recovery code. The challenge token
   lives 5 minutes and is rejected as an access token. A code works once; five wrong tries per minute locks the step.
-- The TOTP secret is stored encrypted with the same `PASSWORD_VAULT_KEY` as the vault.
+- The TOTP secret is stored encrypted with `PASSWORD_VAULT_KEY`. That key no longer protects any password; it is
+  kept (with its key-id and previous-key handling) so existing TOTP rows keep decrypting.
 - `ADMIN_MFA_REQUIRED=true` (default in the production compose file) blocks every admin route until the
   administrator has enrolled. Locally it defaults to off so you cannot lock yourself out while setting up.
 - **Lost phone and recovery codes:** a SUPER_ADMIN resets another administrator (`POST /admin/users/:id/mfa/reset`).

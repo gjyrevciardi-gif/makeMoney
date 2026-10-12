@@ -7,7 +7,6 @@ import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { AUTH_VERSION_CLAIM, AuthService } from '../src/auth/auth.service';
 import { AuthorizationService } from '../src/auth/authorization.service';
-import { PasswordVaultService } from '../src/auth/password-vault.service';
 import { UserAccountsService } from '../src/auth/user-accounts.service';
 import { PrismaService } from '../src/prisma.service';
 import { uniqueTestEmail } from './test-identity';
@@ -92,8 +91,8 @@ describe('auth session revocation (authVersion)', () => {
     app = await createApp();
     // Two accounts services on separate clients so a password race is a real
     // database race rather than one client's transaction scheduling.
-    accountsA = new UserAccountsService(workerA, app.get(AuthorizationService), app.get(PasswordVaultService));
-    accountsB = new UserAccountsService(workerB, app.get(AuthorizationService), app.get(PasswordVaultService));
+    accountsA = new UserAccountsService(workerA, app.get(AuthorizationService));
+    accountsB = new UserAccountsService(workerB, app.get(AuthorizationService));
   });
   afterAll(async () => {
     if (app) await app.close();

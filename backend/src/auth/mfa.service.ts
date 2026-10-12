@@ -22,8 +22,9 @@ export const formatRecoveryCode = (code: string) => `${code.slice(0, 5)}-${code.
 /**
  * Google Authenticator (TOTP) for administrators.
  *
- * The secret is stored encrypted with the same server key as the password vault. A code works once
- * (replay-guarded by the last accepted step), and ten single-use recovery codes cover a lost phone.
+ * The secret is stored encrypted with `PASSWORD_VAULT_KEY`, the shared server cipher key that no
+ * longer protects any password (milestone A1). A code works once (replay-guarded by the last
+ * accepted step), and ten single-use recovery codes cover a lost phone.
  */
 @Injectable()
 export class MfaService {

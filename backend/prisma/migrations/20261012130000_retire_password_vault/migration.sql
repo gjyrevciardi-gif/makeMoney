@@ -1,0 +1,17 @@
+-- Milestone A1: remove reversible password storage.
+--
+-- Data-only change on purpose: `UserPasswordVault` held AES-256-GCM encrypted
+-- copies of user passwords. The application no longer writes or reads it, and the
+-- historical rows are purged here. The empty table and its Prisma model are kept
+-- so this migration does not trigger a destructive schema rebuild / DROP TABLE.
+--
+-- Affects ONLY "UserPasswordVault". No other table is modified: user rows,
+-- password hashes, authVersion counters and MFA (UserTotp) secrets are untouched.
+--
+-- Irreversible: the encrypted rows are deleted, not archived. A rollback must not
+-- reintroduce the old password writers: any pre-A1 binary writes a ciphertext copy
+-- again the next time it sets a password, so going back to an old build means
+-- re-running this purge under the same writers-stopped procedure, and never
+-- serving traffic with old writers plus restored rows:
+-- see docs/SECURITY-PASSWORD-STORAGE-A1.md.
+DELETE FROM "UserPasswordVault";

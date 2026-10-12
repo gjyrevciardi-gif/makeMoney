@@ -19,7 +19,7 @@ class StatusChangeDto {
 
 class CreateUserDto {
   @IsString() @Length(3, 32) username!: string;
-  /** Omit to have the server generate one (returned once, and revealable afterwards). */
+  /** Omit to have the server generate one; it is returned once, in this response. */
   @IsOptional() @IsString() @Length(MIN_PASSWORD_LENGTH, MAX_PASSWORD_LENGTH) password?: string;
   @IsOptional() @IsEnum(Role) role?: Role;
 }
@@ -96,14 +96,6 @@ export class UserAdminController {
   ) {
     await this.throttle(request.actor.id);
     return this.accounts.setPassword(request.actor.id, userId, body.password);
-  }
-
-  /** Read a user's current password back. POST (not GET) and no-store; every reveal is audited. */
-  @Post(':userId/password/reveal')
-  @Header('Cache-Control', 'no-store')
-  async revealPassword(@Req() request: AuthenticatedRequest, @Param('userId', ParseUUIDPipe) userId: string) {
-    await this.throttle(request.actor.id);
-    return this.accounts.revealPassword(request.actor.id, userId);
   }
 
   @Post(':userId/mfa/reset')

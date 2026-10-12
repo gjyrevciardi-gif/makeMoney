@@ -12,7 +12,6 @@ import { PrismaService } from '../prisma.service';
 import { AuthorizationService } from './authorization.service';
 import { canManageUser, capabilityForRoleGrant, hasCapability } from './capabilities';
 import { recordSecurityEvent } from '../security/security-events';
-import { PasswordVaultService } from './password-vault.service';
 
 export const MIN_PASSWORD_LENGTH = 8;
 export const MAX_PASSWORD_LENGTH = 128;
@@ -58,25 +57,27 @@ export type CreatedUser = {
   id: string;
   username: string;
   role: Role;
-  /** Present only when the server generated the password; it is also revealable later. */
+  /** Present only when the server generated the password. Shown once; never retrievable later. */
   generatedPassword?: string;
 };
 
 /**
- * Administrator-managed accounts: create, set password, reveal password, rename.
+ * Administrator-managed accounts: create, set password, rename.
  *
  * Authorization is re-read from the database on every call (a demoted or disabled
  * administrator is refused even with a live token) and the target-role contract of
  * `canManageRole` applies: an ADMIN reaches USER accounts only, a SUPER_ADMIN any.
- * Audit rows never contain a password. The revealable copy lives in the encrypted
- * `UserPasswordVault`; login still verifies the argon2 hash only.
+ *
+ * Only the Argon2id hash is persisted. No plaintext or reversibly encrypted copy of
+ * a password is stored anywhere: audit rows and the retired `UserPasswordVault`
+ * table never receive password material. A server-generated password is returned
+ * by `createUser` exactly once, in the create response.
  */
 @Injectable()
 export class UserAccountsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly authorization: AuthorizationService,
-    private readonly vault: PasswordVaultService,
   ) {}
 
   /** Re-read the actor inside `tx`; refuse a missing, disabled or under-privileged actor. */
@@ -104,7 +105,6 @@ export class UserAccountsService {
     actorId: string,
     input: { username: string; password?: string; role?: Role },
   ): Promise<CreatedUser> {
-    this.vault.assertConfigured();
     await this.authorization.authorize(actorId, 'USER_MANAGE', 'USER_CREATE');
     const role = input.role ?? Role.USER;
     if (role === Role.SUPER_ADMIN) {
@@ -118,7 +118,6 @@ export class UserAccountsService {
     const password = input.password ?? generatePassword();
     assertPassword(password);
     const passwordHash = await argon2.hash(password, { type: argon2.argon2id });
-    const sealed = (userId: string) => this.vault.encrypt(userId, password);
 
     try {
       const created = await this.prisma.$transaction(async (tx) => {
@@ -131,7 +130,6 @@ export class UserAccountsService {
           data: { username, passwordHash, role, createdById: actor.id, wallet: { create: {} } },
           select: { id: true, username: true, role: true },
         });
-        await tx.userPasswordVault.create({ data: { userId: user.id, updatedById: actor.id, ...sealed(user.id) } });
         await tx.auditLog.create({
           data: {
             actorId: actor.id,
@@ -153,7 +151,6 @@ export class UserAccountsService {
 
   /** Set (or reset) a user's password. Revokes every refresh token so old sessions cannot renew. */
   async setPassword(actorId: string, targetId: string, password: string): Promise<{ id: string }> {
-    this.vault.assertConfigured();
     await this.authorization.authorize(actorId, 'USER_MANAGE', 'USER_PASSWORD_SET');
     assertPassword(password);
     const passwordHash = await argon2.hash(password, { type: argon2.argon2id });
@@ -164,12 +161,6 @@ export class UserAccountsService {
       // Bump the session version with the hash change: every access token the
       // target holds stops working, and every refresh token is revoked below.
       await tx.user.update({ where: { id: target.id }, data: { passwordHash, authVersion: { increment: 1 } } });
-      const sealed = this.vault.encrypt(target.id, password);
-      await tx.userPasswordVault.upsert({
-        where: { userId: target.id },
-        create: { userId: target.id, updatedById: actor.id, ...sealed },
-        update: { updatedById: actor.id, ...sealed },
-      });
       await tx.refreshToken.updateMany({ where: { userId: target.id, revokedAt: null }, data: { revokedAt: new Date() } });
       await tx.auditLog.create({
         data: { actorId: actor.id, targetType: 'USER', targetId: target.id, action: 'PASSWORD_SET_BY_ADMIN', result: 'SUCCESS' },
@@ -178,39 +169,11 @@ export class UserAccountsService {
     return { id: targetId };
   }
 
-  /** Read a user's current password back. Every reveal is audited (who, which user, when). */
-  async revealPassword(actorId: string, targetId: string) {
-    await this.authorization.authorize(actorId, 'USER_MANAGE', 'USER_PASSWORD_REVEAL');
-    return this.prisma.$transaction(async (tx) => {
-      const actor = await this.actorIn(tx, actorId);
-      const target = await this.managedTargetIn(tx, actor, targetId);
-      const record = await tx.userPasswordVault.findUnique({ where: { userId: target.id } });
-      if (!record) {
-        throw new NotFoundException({
-          code: 'PASSWORD_NOT_AVAILABLE',
-          message: 'This password was set before the vault existed. Set a new password to make it viewable.',
-        });
-      }
-      const password = this.vault.decrypt(target.id, record);
-      await tx.auditLog.create({
-        data: {
-          actorId: actor.id,
-          targetType: 'USER',
-          targetId: target.id,
-          action: 'PASSWORD_REVEALED',
-          result: 'SUCCESS',
-        },
-      });
-      return { id: target.id, username: target.username, email: target.email, password };
-    });
-  }
-
   /**
    * A user changes their own password. The current one must be right, the new one must differ, every
    * session is signed out, and the administrators who can see this account are notified (never the password).
    */
   async changeOwnPassword(userId: string, currentPassword: string, newPassword: string): Promise<void> {
-    this.vault.assertConfigured();
     assertPassword(newPassword);
     const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { id: true, passwordHash: true, authVersion: true, disabled: true } });
     if (!user || user.disabled || !(await argon2.verify(user.passwordHash, currentPassword))) {
@@ -231,8 +194,6 @@ export class UserAccountsService {
         data: { passwordHash, authVersion: { increment: 1 } },
       });
       if (updated.count !== 1) throw new BadRequestException({ code: 'CURRENT_PASSWORD_INVALID', message: 'The current password is not correct.' });
-      const sealed = this.vault.encrypt(userId, newPassword);
-      await tx.userPasswordVault.upsert({ where: { userId }, create: { userId, updatedById: userId, ...sealed }, update: { updatedById: userId, ...sealed } });
       await tx.refreshToken.updateMany({ where: { userId, revokedAt: null }, data: { revokedAt: new Date() } });
       await tx.auditLog.create({ data: { actorId: userId, targetType: 'USER', targetId: userId, action: 'PASSWORD_CHANGED', result: 'SUCCESS' } });
       await recordSecurityEvent(tx, { type: 'PASSWORD_CHANGED', subjectUserId: userId, actorId: userId, amount: 0n });

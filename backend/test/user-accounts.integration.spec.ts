@@ -6,7 +6,6 @@ import cookieParser from 'cookie-parser';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { AuthService } from '../src/auth/auth.service';
-import { PasswordVaultService } from '../src/auth/password-vault.service';
 import { BigIntInterceptor } from '../src/common/bigint.interceptor';
 import { RedisService } from '../src/common/redis.service';
 import { PrismaService } from '../src/prisma.service';
@@ -15,8 +14,9 @@ import { uniqueTestEmail } from './test-identity';
 /**
  * Administrator-managed accounts on the real platform: public registration is off
  * by default, ADMIN creates USERs and only SUPER_ADMIN creates ADMINs, accounts log
- * in by username, and an administrator can set and reveal passwords through an
- * encrypted vault. Requires an isolated *_test PostgreSQL database and Redis.
+ * in by username, and an administrator can set (but never read back) passwords.
+ * Only the Argon2id hash is persisted. Requires an isolated *_test PostgreSQL
+ * database and Redis.
  */
 describe('administrator-managed accounts (PostgreSQL + Redis)', () => {
   jest.setTimeout(120_000);
@@ -24,17 +24,19 @@ describe('administrator-managed accounts (PostgreSQL + Redis)', () => {
   const prisma = new PrismaService();
   let app: INestApplication;
   let auth: AuthService;
-  let vault: PasswordVaultService;
   let redis: RedisService;
 
   const seedPassword = 'correct-horse-battery';
   const ids: Record<string, string> = {};
   const server = () => request(app.getHttpServer());
   const bearer = (token: string) => ({ authorization: `Bearer ${token}` });
+  /** Rows carry BigInt columns (wallet balance, event amount); keep them dumpable. */
+  const dump = (value: unknown) => JSON.stringify(value, (_key, item) => (typeof item === 'bigint' ? item.toString() : item));
   const tokenFor = async (name: string) => (await auth.login(name, seedPassword)).pair.accessToken;
   const create = (token: string, body: Record<string, unknown>) => server().post('/admin/users').set(bearer(token)).send(body);
   const setPassword = (token: string, userId: string, password: string) =>
     server().post(`/admin/users/${userId}/password`).set(bearer(token)).send({ password });
+  /** The reveal route was removed in milestone A1; every call must fall through to 404. */
   const reveal = (token: string, userId: string) => server().post(`/admin/users/${userId}/password/reveal`).set(bearer(token));
   const login = (identifier: string, password: string) => server().post('/auth/login').send({ identifier, password });
 
@@ -48,7 +50,6 @@ describe('administrator-managed accounts (PostgreSQL + Redis)', () => {
     app.useGlobalInterceptors(new BigIntInterceptor());
     await app.init();
     auth = app.get(AuthService);
-    vault = app.get(PasswordVaultService);
     redis = app.get(RedisService);
     await redis.ensureConnected();
   });
@@ -93,33 +94,40 @@ describe('administrator-managed accounts (PostgreSQL + Redis)', () => {
     }
   });
 
-  it('lets an ADMIN create a USER with a lowercase username, a wallet, an audit row and an encrypted vault entry', async () => {
+  it('lets an ADMIN create a USER with a lowercase username, a wallet and an audit row, storing only the hash', async () => {
     const password = 'Winter-2026!';
     const res = await create(await tokenFor('admin1'), { username: '  Mark.Smith ', password }).expect(201);
     expect(res.body).toMatchObject({ username: 'mark.smith', role: 'USER' });
     expect(res.body.generatedPassword).toBeUndefined();
 
-    const user = await prisma.user.findUniqueOrThrow({ where: { username: 'mark.smith' }, include: { wallet: true, passwordVault: true } });
+    const user = await prisma.user.findUniqueOrThrow({ where: { username: 'mark.smith' }, include: { wallet: true } });
     expect(user.role).toBe('USER');
     expect(user.createdById).toBe(ids.admin1);
     expect(user.email).toBeNull();
     expect(user.wallet?.balance).toBe(0n);
     expect(user.passwordHash.startsWith('$argon2id$')).toBe(true);
-    // Encrypted at rest: neither the vault row nor any audit row contains the password.
-    expect(JSON.stringify(user.passwordVault)).not.toContain(password);
+    // No reversible copy exists at all: the retired vault table stays empty and no
+    // audit row contains the password.
+    expect(await prisma.userPasswordVault.count()).toBe(0);
+    expect(dump(user)).not.toContain(password);
     expect(JSON.stringify(await prisma.auditLog.findMany())).not.toContain(password);
     const audit = await prisma.auditLog.findFirstOrThrow({ where: { action: 'USER_CREATED' } });
     expect(audit).toMatchObject({ actorId: ids.admin1, targetId: user.id });
-    expect(await vault.decrypt(user.id, user.passwordVault!)).toBe(password);
   });
 
-  it('generates a password when none is given, returns it once, and it logs in and can be revealed', async () => {
+  it('generates a password when none is given, returns it once, and it logs in but is never retrievable again', async () => {
     const res = await create(await tokenFor('admin1'), { username: 'generated.one' }).expect(201);
     const generated = res.body.generatedPassword as string;
     expect(generated).toHaveLength(12);
     await login('generated.one', generated).expect(201);
-    const shown = await reveal(await tokenFor('admin1'), res.body.id).expect(201);
-    expect(shown.body.password).toBe(generated);
+    // It is answerable by Argon2id, and by nothing else: no stored copy, no reveal.
+    const stored = await prisma.user.findUniqueOrThrow({ where: { username: 'generated.one' } });
+    expect(await argon2.verify(stored.passwordHash, generated)).toBe(true);
+    expect(await prisma.userPasswordVault.count()).toBe(0);
+    expect(JSON.stringify(stored)).not.toContain(generated);
+    expect(JSON.stringify(await prisma.auditLog.findMany())).not.toContain(generated);
+    await reveal(await tokenFor('admin1'), res.body.id).expect(404);
+    await reveal(await tokenFor('boss'), res.body.id).expect(404);
   });
 
   it('enforces who can create what: USER no, ADMIN creates USERs only, SUPER_ADMIN creates ADMINs, nobody creates a SUPER_ADMIN here', async () => {
@@ -157,7 +165,7 @@ describe('administrator-managed accounts (PostgreSQL + Redis)', () => {
     await login('player', seedPassword).expect(403);
   });
 
-  it('lets an ADMIN set a USER password: old one stops working, sessions are revoked, the vault follows', async () => {
+  it('lets an ADMIN set a USER password: old one stops working, sessions are revoked, and no copy is stored', async () => {
     await login('player', seedPassword).expect(201);
     expect(await prisma.refreshToken.count({ where: { userId: ids.player, revokedAt: null } })).toBeGreaterThan(0);
 
@@ -165,67 +173,81 @@ describe('administrator-managed accounts (PostgreSQL + Redis)', () => {
     await login('player', seedPassword).expect(401);
     expect(await prisma.refreshToken.count({ where: { userId: ids.player, revokedAt: null } })).toBe(0);
     await login('player', 'brand-new-pass').expect(201);
-    expect((await reveal(await tokenFor('admin1'), ids.player).expect(201)).body.password).toBe('brand-new-pass');
+    expect(await prisma.userPasswordVault.count()).toBe(0);
+    await reveal(await tokenFor('admin1'), ids.player).expect(404);
     expect(await prisma.auditLog.count({ where: { action: 'PASSWORD_SET_BY_ADMIN', targetId: ids.player, actorId: ids.admin1 } })).toBe(1);
     expect(JSON.stringify(await prisma.auditLog.findMany())).not.toContain('brand-new-pass');
 
     await setPassword(await tokenFor('admin1'), ids.player, 'short').expect(400);
   });
 
-  it('keeps the role hierarchy for set and reveal: ADMIN reaches USERs only, SUPER_ADMIN reaches everyone, USER nobody', async () => {
+  it('keeps the role hierarchy for set password: ADMIN reaches USERs only, SUPER_ADMIN reaches everyone, USER nobody', async () => {
     const admin = await tokenFor('admin1');
     // An ADMIN cannot even tell another ADMIN or a SUPER_ADMIN exists.
     for (const target of ['admin2', 'boss']) {
       await setPassword(admin, ids[target], 'whatever-123').expect(404);
-      await reveal(admin, ids[target]).expect(404);
     }
     await setPassword(await tokenFor('player'), ids.admin1, 'whatever-123').expect(403);
-    await reveal(await tokenFor('player'), ids.admin1).expect(403);
 
     const boss = await tokenFor('boss');
     await setPassword(boss, ids.admin2, 'set-by-boss-1').expect(201);
-    expect((await reveal(boss, ids.admin2).expect(201)).body.password).toBe('set-by-boss-1');
     await login('admin2', 'set-by-boss-1').expect(201);
   });
 
-  it('audits every reveal without ever recording the password, and says so for a password from before the vault', async () => {
+  it('closes the reveal endpoint for every role and never writes a reveal audit row', async () => {
     const admin = await tokenFor('admin1');
-    // Seeded users have a password hash but no vault row (set before the vault existed).
-    const legacy = await reveal(admin, ids.player).expect(404);
-    expect(legacy.body).toMatchObject({ code: 'PASSWORD_NOT_AVAILABLE' });
+    const boss = await tokenFor('boss');
+    const player = await tokenFor('player');
+    const anonymous = server();
+    // The route is gone: no role can reach it, and an unauthenticated call cannot
+    // even reach a guard that would answer 403.
+    await reveal(admin, ids.player).expect(404);
+    await reveal(boss, ids.admin2).expect(404);
+    await reveal(player, ids.player).expect(404);
+    await anonymous.post(`/admin/users/${ids.player}/password/reveal`).expect(404);
+    // Passing a bad target id must not resurrect a service-level lookup either.
+    await reveal(admin, 'not-a-uuid').expect(404);
     expect(await prisma.auditLog.count({ where: { action: 'PASSWORD_REVEALED' } })).toBe(0);
-
-    await setPassword(admin, ids.player, 'now-viewable-1').expect(201);
-    await reveal(admin, ids.player).expect(201);
-    await reveal(admin, ids.player).expect(201);
-    const rows = await prisma.auditLog.findMany({ where: { action: 'PASSWORD_REVEALED' } });
-    expect(rows).toHaveLength(2);
-    expect(rows.every((row) => row.actorId === ids.admin1 && row.targetId === ids.player)).toBe(true);
-    expect(JSON.stringify(rows)).not.toContain('now-viewable-1');
+    expect(await prisma.userPasswordVault.count()).toBe(0);
   });
 
-  it('binds each ciphertext to its owner and refuses a tampered or relocated one', async () => {
+  it('stores no plaintext or encrypted password copy on create, admin reset or own change', async () => {
     const admin = await tokenFor('admin1');
-    await setPassword(admin, ids.player, 'owner-secret-1').expect(201);
-    const row = await prisma.userPasswordVault.findUniqueOrThrow({ where: { userId: ids.player } });
-    // Copied onto another user's id it fails authentication.
-    expect(() => vault.decrypt(ids.admin2, row)).toThrow();
-    // A flipped ciphertext byte fails authentication too.
-    const flipped = Buffer.from(row.ciphertext, 'base64');
-    flipped[0] ^= 0xff;
-    expect(() => vault.decrypt(ids.player, { ...row, ciphertext: flipped.toString('base64') })).toThrow();
-    expect(vault.decrypt(ids.player, row)).toBe('owner-secret-1');
+    const createPassword = 'create-secret-1';
+    const resetPassword = 'reset-secret-1';
+    const ownPassword = 'own-secret-1';
+    await create(admin, { username: 'no.vault', password: createPassword }).expect(201);
+    await setPassword(admin, ids.player, resetPassword).expect(201);
+    const player = await login('player', resetPassword).expect(201);
+    await server().post('/users/me/password')
+      .set(bearer(player.body.accessToken))
+      .send({ currentPassword: resetPassword, newPassword: ownPassword })
+      .expect(201);
+
+    expect(await prisma.userPasswordVault.count()).toBe(0);
+    const everything = dump({
+      users: await prisma.user.findMany(),
+      vault: await prisma.userPasswordVault.findMany(),
+      audits: await prisma.auditLog.findMany(),
+      events: await prisma.securityEvent.findMany(),
+    });
+    for (const secret of [seedPassword, createPassword, resetPassword, ownPassword]) {
+      expect(everything).not.toContain(secret);
+    }
+    await login('player', ownPassword).expect(201);
   });
 
-  it('fails closed with 503 and creates nothing when the vault key is missing', async () => {
+  it('creates and sets passwords when PASSWORD_VAULT_KEY is not configured (MFA is unused)', async () => {
     const original = process.env.PASSWORD_VAULT_KEY;
+    const admin = await tokenFor('admin1');
     try {
       delete process.env.PASSWORD_VAULT_KEY;
-      await create(await tokenFor('admin1'), { username: 'no.key', password: 'long-enough-1' }).expect(503);
-      await setPassword(await tokenFor('admin1'), ids.player, 'long-enough-1').expect(503);
-      expect(await prisma.user.count({ where: { username: 'no.key' } })).toBe(0);
-      // The password hash was not changed either.
-      await login('player', seedPassword).expect(201);
+      const generated = await create(admin, { username: 'no.key' }).expect(201);
+      await login('no.key', generated.body.generatedPassword as string).expect(201);
+      await setPassword(admin, ids.player, 'works-without-key-1').expect(201);
+      await login('player', seedPassword).expect(401);
+      await login('player', 'works-without-key-1').expect(201);
+      expect(await prisma.userPasswordVault.count()).toBe(0);
     } finally {
       process.env.PASSWORD_VAULT_KEY = original;
     }
