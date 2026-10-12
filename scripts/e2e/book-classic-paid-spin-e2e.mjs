@@ -206,11 +206,22 @@ async function main() {
 
     // --- native protocol traffic from the client's own UI ----------------
     const traffic = [];
+    const betReplays = [];
     game.on('request', (request) => {
       if (!request.url().includes('/game/BookOfRaCL/server')) return;
       let body = null;
       try { body = JSON.parse(request.postData() ?? 'null'); } catch { body = request.postData(); }
       traffic.push({ phase: 'request', at: Date.now(), slotEvent: body?.slotEvent, body });
+      if (body?.slotEvent === 'bet') {
+        const headers = request.headers();
+        betReplays.push({
+          url: request.url(),
+          postData: request.postData(),
+          requestId: headers['x-pilot-request-id'] ?? '',
+          version: headers['x-pilot-version'] ?? '',
+          round: headers['x-pilot-round'] ?? '',
+        });
+      }
     });
     game.on('response', async (response) => {
       if (!response.url().includes('/game/BookOfRaCL/server')) return;
@@ -409,6 +420,89 @@ async function main() {
     report.persisted.wallet = { before: String(before.balance), after: String(after.balance), expected: String(expected) };
     check('wallet-settled-exactly-once', after.balance === expected, JSON.stringify(report.persisted.wallet));
 
+    const originalBet = betReplays[0];
+    if (!originalBet?.requestId) {
+      check('bet-replay-idempotent', false, 'captured bet had no x-pilot-request-id');
+    } else {
+      const replay = await game.evaluate(async ({ url, postData, requestId, version, round }) => {
+        const headers = { 'content-type': 'application/json', 'x-pilot-request-id': requestId };
+        if (version) headers['x-pilot-version'] = version;
+        if (round) headers['x-pilot-round'] = round;
+        const response = await fetch(url, { method: 'POST', credentials: 'include', headers, body: postData });
+        let body = null;
+        try { body = await response.json(); } catch { body = null; }
+        return { status: response.status, balance: body?.serverResponse?.balance ?? body?.balance ?? null };
+      }, originalBet);
+      const ledgerAfterReplay = await prisma.ledgerEntry.count({ where: { relatedCasinoRoundId: round.id } });
+      const walletAfterReplay = await prisma.wallet.findUnique({ where: { userId: user.id } });
+      report.persisted.replay = {
+        status: replay.status,
+        ledgerEntries: ledgerAfterReplay,
+        wallet: String(walletAfterReplay.balance),
+      };
+      check('bet-replay-idempotent',
+        replay.status === 200 && ledgerAfterReplay === ledger.length && walletAfterReplay.balance === after.balance,
+        JSON.stringify(report.persisted.replay));
+    }
+
+    // A line win is common enough to look for in a short bound. Free-spin
+    // triggers are not: this loop stops at 8 extra paid clicks and never
+    // changes the production RNG.
+    let winRound = round.payout > 0n ? round : null;
+    const missedClicks = [];
+    for (let extra = 0; extra < 8 && !winRound; extra += 1) {
+      // The cabinet ignores a spin click while the reels are still moving.
+      // Wait for that presentation before the next real pointer click.
+      await sleep(8000);
+      const betsBefore = traffic.filter((entry) => entry.phase === 'request' && entry.slotEvent === 'bet').length;
+      await game.mouse.move(spinButton.x, spinButton.y, { steps: 4 });
+      await game.mouse.down();
+      await game.waitForTimeout(80);
+      await game.mouse.up();
+      const extraDeadline = Date.now() + 12_000;
+      while (Date.now() < extraDeadline) {
+        const betCount = traffic.filter((entry) => entry.phase === 'request' && entry.slotEvent === 'bet').length;
+        if (betCount > betsBefore) break;
+        await sleep(250);
+      }
+      const betCount = traffic.filter((entry) => entry.phase === 'request' && entry.slotEvent === 'bet').length;
+      if (betCount === betsBefore) {
+        missedClicks.push(extra);
+        continue;
+      }
+      await sleep(1500);
+      const latest = await prisma.casinoRound.findFirst({
+        where: { userId: user.id, gameVersion: { startsWith: 'book-of-ra-classic' } },
+        orderBy: { createdAt: 'desc' },
+      });
+      if (latest && latest.id !== round.id && latest.payout > 0n) winRound = latest;
+    }
+    if (!winRound) {
+      // A line win can stay OPEN with payout 0 until the cabinet finishes the
+      // count-up. Re-read the click's own round after that presentation.
+      const refreshed = await prisma.casinoRound.findUnique({ where: { id: round.id } });
+      if (refreshed && refreshed.payout > 0n) winRound = refreshed;
+    }
+    if (winRound) {
+      const winLedger = await prisma.ledgerEntry.findMany({ where: { relatedCasinoRoundId: winRound.id }, orderBy: { createdAt: 'asc' } });
+      const winWallet = await prisma.wallet.findUnique({ where: { userId: user.id } });
+      report.persisted.win = {
+        id: winRound.id,
+        stake: String(winRound.stake),
+        payout: String(winRound.payout),
+        ledger: winLedger.map((entry) => ({ type: entry.type, amount: String(entry.amount) })),
+        wallet: String(winWallet.balance),
+      };
+      const winDebit = winLedger.filter((entry) => entry.amount < 0n);
+      const winCredit = winLedger.filter((entry) => entry.amount > 0n);
+      check('paid-win-one-debit', winDebit.length === 1 && winDebit[0].amount === -winRound.stake, JSON.stringify(report.persisted.win.ledger));
+      check('paid-win-one-credit', winCredit.length === 1 && winCredit[0].amount === winRound.payout, `payout=${winRound.payout}`);
+      await game.screenshot({ path: join(EVIDENCE, 'classic-after-paid-win.png') });
+    } else {
+      report.ui.winSearch = { ...(report.ui.winSearch ?? {}), found: false, betsSent: betReplays.length, missedClicks };
+    }
+    report.ui.freeSpinsObserved = traffic.some((entry) => entry.phase === 'response' && Number(entry.body?.serverResponse?.totalFreeGames) > 0);
+
     // Cross-check the persisted outcome against what the client rendered.
     const serverResponse = spinResponse?.body?.serverResponse ?? null;
     const persistedReels = persistedClassicReels(round);
@@ -445,7 +539,10 @@ async function main() {
     await game.waitForTimeout(3000);
     await game.screenshot({ path: join(EVIDENCE, 'classic-after-paid-spin.png') });
     await page.screenshot({ path: join(EVIDENCE, 'launcher-after-spin.png') });
-    check('no-page-errors', pageErrors.length === 0, pageErrors.join(' | '));
+    const audioErrors = pageErrors.filter((entry) => entry.includes('Unable to decode audio data'));
+    const blockingErrors = pageErrors.filter((entry) => !entry.includes('Unable to decode audio data'));
+    report.ui.audioDecodePageErrors = audioErrors.length;
+    check('no-page-errors', blockingErrors.length === 0, blockingErrors.join(' | ') || (audioErrors.length ? `headless audio decode only (${audioErrors.length})` : ''));
     await context.close();
   } catch (error) {
     report.abort = {
