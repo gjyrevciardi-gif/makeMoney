@@ -147,10 +147,18 @@ describe('administrator two-factor (PostgreSQL + Redis)', () => {
     expect(JSON.stringify(refused.body)).toContain('MFA');
     await server().get('/auth/2fa/status').set(bearer(token)).expect(200);
 
-    await server().post('/auth/2fa/setup').set(bearer(token)).then(async (setup) => {
-      await server().post('/auth/2fa/enable').set(bearer(token)).send({ code: totpCode(setup.body.secret, currentStep()) }).expect(201);
-    });
-    await server().get('/admin/users').set(bearer(token)).expect(200);
+    const setup = await server().post('/auth/2fa/setup').set(bearer(token)).expect(201);
+    const secret = setup.body.secret as string;
+    await server().post('/auth/2fa/enable').set(bearer(token)).send({ code: totpCode(secret, currentStep()) }).expect(201);
+
+    // Enrolment retires the password-only session: the token that could not reach
+    // admin routes a moment ago is now rejected outright, so it can never inherit
+    // the privileges that two-factor just started protecting.
+    await server().get('/admin/users').set(bearer(token)).expect(401);
+    // The next sign-in must complete the second step before it reaches admin routes.
+    const challenge = (await login('admin1').expect(201)).body.mfaToken as string;
+    const fresh = await second(challenge, totpCode(secret, currentStep() + 1)).expect(201);
+    await server().get('/admin/users').set(bearer(fresh.body.accessToken as string)).expect(200);
     // A player is unaffected.
     await server().get('/users/me').set(bearer(await tokenFor('player'))).expect(200);
   });

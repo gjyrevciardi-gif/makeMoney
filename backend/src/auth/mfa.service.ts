@@ -65,9 +65,17 @@ export class MfaService {
     const codes = Array.from({ length: RECOVERY_CODE_COUNT }, generateRecoveryCode);
     const hashes = await Promise.all(codes.map((c) => argon2.hash(c, { type: argon2.argon2id })));
     await this.prisma.$transaction(async (tx) => {
+      // Serialize with session issuance on the account row. A token minted from
+      // the password step alone must not survive enrolment: the moment two-factor
+      // turns on, the pre-enrolment session version is retired and every refresh
+      // token is revoked, so no existing session inherits the newly protected
+      // privileges. The next sign-in has to complete the second factor.
+      await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${userId}::uuid FOR UPDATE`;
       await tx.userTotp.update({ where: { userId }, data: { enabledAt: new Date(), lastStep: step } });
       await tx.userRecoveryCode.deleteMany({ where: { userId } });
       await tx.userRecoveryCode.createMany({ data: hashes.map((codeHash) => ({ userId, codeHash })) });
+      await tx.user.update({ where: { id: userId }, data: { authVersion: { increment: 1 } } });
+      await tx.refreshToken.updateMany({ where: { userId, revokedAt: null }, data: { revokedAt: new Date() } });
       await tx.auditLog.create({ data: { actorId: userId, targetType: 'USER', targetId: userId, action: 'MFA_ENABLED', result: 'SUCCESS' } });
     });
     return codes.map(formatRecoveryCode);

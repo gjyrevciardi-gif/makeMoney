@@ -14,14 +14,28 @@ export const RATE_LIMITS = {
   gameExchange: { limit: 30, window: 60 },
   gameRead: { limit: 240, window: 60 },
 } as const;
+
+/**
+ * Increment a window and set its expiry in one round trip. `INCR` then `EXPIRE`
+ * as two commands is not atomic: a crash or dropped connection between them
+ * leaves a counter with no TTL, which never rolls over and locks the subject out
+ * for good. Limits and windows are unchanged.
+ */
+const CONSUME_SCRIPT = `
+local count = redis.call('INCR', KEYS[1])
+if count == 1 then
+  redis.call('EXPIRE', KEYS[1], ARGV[1])
+end
+return count
+`;
+
 @Injectable()
 export class RateLimitService {
   constructor(private readonly redis: RedisService) {}
   async consume(scope: string, subject: string, policy: { limit: number; window: number }) {
     await this.redis.ensureConnected();
     const key = `rate:${scope}:${subject}`;
-    const count = await this.redis.client.incr(key);
-    if (count === 1) await this.redis.client.expire(key, policy.window);
+    const count = Number(await this.redis.client.eval(CONSUME_SCRIPT, 1, key, policy.window));
     if (count > policy.limit) throw new HttpException('RATE_LIMITED', HttpStatus.TOO_MANY_REQUESTS);
   }
   async assertAllowed(scope: string, subject: string, policy: { limit: number; window: number }) {

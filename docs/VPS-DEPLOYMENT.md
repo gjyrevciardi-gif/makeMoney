@@ -36,6 +36,8 @@ chmod 600 .env.production
 
 Set unique random PostgreSQL, Redis, JWT access, and JWT refresh secrets.
 Set `DOMAIN`, `ADMIN_EMAIL`, `COOKIE_SECURE=true`, `TRUST_PROXY=true`, and
+`ADMIN_MFA_REQUIRED=true`, then set `TRUST_PROXY_ALLOWLIST` to the proxy peer
+address(es) or subnet (never `*`, `0.0.0.0/0` or `::/0`). Set
 `REGISTRATION_ENABLED=false` after the controlled initial Admin bootstrap.
 URL-encode reserved characters in `DATABASE_URL` and `REDIS_URL`. Never put
 real credentials in Git or in this guide.
