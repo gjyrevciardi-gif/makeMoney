@@ -22,6 +22,9 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 
 const PORT = Number(process.env.BOOK_CLASSIC_GATEWAY_PORT ?? 8791);
 const HOST = process.env.BOOK_CLASSIC_GATEWAY_HOST ?? '127.0.0.1';
+// Listen address is separate from the Host header the browser must present.
+// Containers bind 0.0.0.0; that address is never treated as an allowed Host.
+const BIND_HOST = process.env.BOOK_CLASSIC_BIND_HOST ?? HOST;
 const ORIGIN = process.env.BOOK_CLASSIC_ORIGIN ?? `http://${HOST}:${PORT}`;
 const PLATFORM = (process.env.PLATFORM_URL ?? 'http://localhost:3001').replace(/\/+$/, '');
 const CLIENT_DIR = process.env.BOOK_CLASSIC_CLIENT_DIR ?? '';
@@ -339,9 +342,10 @@ export function createGateway() {
 
 if (process.argv[1] && process.argv[1].endsWith('server.mjs')) {
   const server = createGateway();
-  server.listen(PORT, HOST, () => {
+  server.listen(PORT, BIND_HOST, () => {
     process.stdout.write(`${JSON.stringify({
       listening: ORIGIN,
+      bind: `${BIND_HOST}:${PORT}`,
       platform: PLATFORM,
       game: GAME_ID,
       gameRoute: GAME_ROUTE,

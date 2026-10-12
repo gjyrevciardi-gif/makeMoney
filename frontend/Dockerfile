@@ -11,7 +11,9 @@ WORKDIR /app
 # argument. The browser talks to the API through this public URL and never holds
 # a database, Redis, JWT, or provider credential.
 ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_BOOK_CLASSIC_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL \
+    NEXT_PUBLIC_BOOK_CLASSIC_URL=$NEXT_PUBLIC_BOOK_CLASSIC_URL \
     NEXT_TELEMETRY_DISABLED=1
 COPY package.json package-lock.json ./
 COPY frontend/package.json frontend/package.json

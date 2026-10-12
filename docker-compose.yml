@@ -23,5 +23,31 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+
+  # Loopback-only Classic gateway. The recovered cabinet is bind-mounted for a
+  # private local run and is not part of the image. The published port stays on
+  # 127.0.0.1. ALLOW_REMOTE is set only so the gateway can call the platform
+  # through host.docker.internal; the game origin itself stays loopback, and
+  # the different-hostname checks in server.mjs still run.
+  classic-gateway:
+    build:
+      context: .
+      dockerfile: games/book-of-ra-classic/gateway/Dockerfile
+    environment:
+      BOOK_CLASSIC_GATEWAY_PORT: "8791"
+      BOOK_CLASSIC_BIND_HOST: 0.0.0.0
+      BOOK_CLASSIC_GATEWAY_HOST: 127.0.0.1
+      BOOK_CLASSIC_ORIGIN: http://127.0.0.1:${BOOK_CLASSIC_GATEWAY_PORT:-8791}
+      PLATFORM_URL: http://host.docker.internal:${BACKEND_PORT:-3001}
+      BOOK_CLASSIC_LAUNCH_ORIGINS: http://localhost:${FRONTEND_PORT:-3000}
+      BOOK_CLASSIC_CLIENT_DIR: /client
+      BOOK_CLASSIC_ALLOW_REMOTE: "true"
+      BOOK_CLASSIC_COOKIE_SECURE: "false"
+    ports:
+      - "127.0.0.1:${BOOK_CLASSIC_GATEWAY_PORT:-8791}:8791"
+    volumes:
+      - ./games/book-of-ra-classic/client:/client:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 volumes:
   postgres_data:

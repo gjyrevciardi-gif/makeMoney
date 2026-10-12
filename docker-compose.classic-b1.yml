@@ -1,0 +1,133 @@
+# Isolated Classic gateway smoke stack.
+#
+# Project name, ports, database and Redis are dedicated so this file can run
+# beside another stack. Nothing is published except on 127.0.0.1. The recovered
+# cabinet is a read-only bind mount for this private check and is not copied
+# into an image. Do not point this file at a shared or production database.
+# The credentials in this file are public smoke values. Do not reuse them.
+name: fools-gold-classic-b1
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: classic_b1
+      POSTGRES_PASSWORD: kR7mN4pQ2vL9xC6bH3jF8sD5wA1eT0yU
+      POSTGRES_DB: classic_gateway_b1
+    ports:
+      - "127.0.0.1:55462:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U classic_b1 -d classic_gateway_b1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - internal
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "127.0.0.1:56396:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - internal
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      NODE_ENV: production
+      PORT: "3001"
+      HOST: 0.0.0.0
+      DATABASE_URL: postgresql://classic_b1:kR7mN4pQ2vL9xC6bH3jF8sD5wA1eT0yU@postgres:5432/classic_gateway_b1?schema=public
+      REDIS_URL: redis://redis:6379
+      JWT_ACCESS_SECRET: mK3vR8nQ2pL6xC9bH4jF7sD1wA5eT0yUqZ8cN3rV6
+      JWT_REFRESH_SECRET: pL9xC2bH6jF3sD8wA4eT1yU7qZ5cN0rV2mK8nQ4vR6
+      FRONTEND_URL: https://localhost:13017
+      CORS_ORIGINS: https://localhost:13017
+      COOKIE_SECURE: "true"
+      TRUST_PROXY: "true"
+      BODY_LIMIT: 1mb
+      REGISTRATION_ENABLED: "false"
+      PASSWORD_VAULT_KEY: BwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAhIiMkJSY=
+      PASSWORD_VAULT_KEY_ID: v1
+      ADMIN_MFA_REQUIRED: "true"
+      SPORTS_SETTLEMENT_ENABLED: "false"
+      CASINO_CRASH_WORKER_ENABLED: "false"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001/health/live').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:13011:3001"
+    networks:
+      - edge
+      - internal
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://127.0.0.1:13011
+        NEXT_PUBLIC_BOOK_CLASSIC_URL: http://127.0.0.1:18791
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      HOSTNAME: 0.0.0.0
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:13017:3000"
+    networks:
+      - edge
+
+  classic-gateway:
+    build:
+      context: .
+      dockerfile: games/book-of-ra-classic/gateway/Dockerfile
+    environment:
+      BOOK_CLASSIC_GATEWAY_PORT: "8791"
+      BOOK_CLASSIC_BIND_HOST: 0.0.0.0
+      BOOK_CLASSIC_GATEWAY_HOST: 127.0.0.1
+      BOOK_CLASSIC_ORIGIN: http://127.0.0.1:18791
+      PLATFORM_URL: http://backend:3001
+      BOOK_CLASSIC_LAUNCH_ORIGINS: http://localhost:13017
+      BOOK_CLASSIC_CLIENT_DIR: /client
+      BOOK_CLASSIC_ALLOW_REMOTE: "true"
+      BOOK_CLASSIC_COOKIE_SECURE: "false"
+    ports:
+      - "127.0.0.1:18791:8791"
+    volumes:
+      - ./games/book-of-ra-classic/client:/client:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - edge
+
+networks:
+  edge:
+    driver: bridge
+  internal:
+    driver: bridge
+    internal: true

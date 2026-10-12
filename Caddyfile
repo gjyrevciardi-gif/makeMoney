@@ -68,3 +68,13 @@ api.{$DOMAIN} {
 		import upstream_headers
 	}
 }
+
+# Separate hostname from the platform and the API, which is what the gateway
+# requires before it will start. The gateway is not published on the host.
+classic.{$DOMAIN} {
+	import hardened
+
+	reverse_proxy classic-gateway:8791 {
+		import upstream_headers
+	}
+}
