@@ -59,7 +59,14 @@ export default function BookOfRaClassicLauncherPage() {
   }, []);
 
   const secondsLeft = expiresAt === null ? 0 : Math.max(0, Math.ceil((expiresAt - now) / 1000));
-  const usable = launch !== null && secondsLeft > 0;
+  const usable = launch !== null && secondsLeft > 0 && !loading;
+  const launchLabel = loading
+    ? 'Loading\u2026'
+    : usable
+      ? 'Launch game'
+      : error
+        ? 'Launch unavailable'
+        : 'Launch expired';
 
   return (
     <CasinoGameShell
@@ -82,7 +89,7 @@ export default function BookOfRaClassicLauncherPage() {
           <form action={`${GAME_ORIGIN}/launch`} method="post" target="_blank" rel="noopener">
             <input type="hidden" name="token" value={launch?.token ?? ''} />
             <button className="ops-action casino-play" type="submit" disabled={!usable}>
-              {usable ? 'Launch game' : 'Loading\u2026'}
+              {launchLabel}
             </button>
           </form>
           {!loading && !usable && !error && (
