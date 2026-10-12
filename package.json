@@ -13,6 +13,7 @@
     "install:all": "npm install",
     "test": "npm run test -w backend",
     "backend:test": "npm run test -w backend",
+    "wallet:reconcile": "node backend/dist/src/operations/wallet-reconciliation.cli.js",
     "typecheck": "npm run typecheck -w backend && npm run typecheck -w frontend",
     "build": "npm run build -w backend && npm run build -w frontend",
     "build:slot-skills": "npm run build --workspace=@slot-skills/schema && npm run build --workspace=@slot-skills/math && npm run build --workspace=@slot-skills/features && npm run build --workspace=@slot-skills/runtime && npm run build --workspace=@slot-skills/host",

@@ -95,6 +95,16 @@ when safe. Database migrations are not assumed to roll back automatically;
 use a reviewed forward fix or restore a verified backup into a controlled
 recovery process.
 
+## Wallet and ledger reconciliation
+
+Besides the post-restore invariant checker, the wallet/ledger reconciliation is
+the focused operational control for virtual points. It runs read-only inside one
+repeatable-read snapshot, skips a concurrent run instead of waiting, and prints
+a versioned JSON report. `docs/WALLET-RECONCILIATION.md` documents the command,
+the schedule, the exit codes and the incident procedure. Exit code 3 means the
+run overlapped one that was already running and is not an incident; every other
+non-zero exit is an incident to investigate, not a retry loop.
+
 ## Backups and restore
 
 Run `scripts/backup-postgres.sh` with `DATABASE_URL`. It creates a
