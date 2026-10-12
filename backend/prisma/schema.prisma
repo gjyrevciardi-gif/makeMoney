@@ -176,6 +176,10 @@ model User {
   /// Account status. A disabled account's live tokens stop being accepted and
   /// privileged operations refuse it. Existing rows default to enabled.
   disabled              Boolean                   @default(false)
+  /// Session invalidation counter. Every access token (and MFA challenge) is
+  /// stamped with the version it was issued under and refused once this moves
+  /// past it. Bumped by logout-all-devices and by a password change.
+  authVersion           Int                       @default(0)
   createdAt             DateTime                  @default(now())
   wallet                Wallet?
   refreshTokens         RefreshToken[]

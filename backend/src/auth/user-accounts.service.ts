@@ -161,7 +161,9 @@ export class UserAccountsService {
     await this.prisma.$transaction(async (tx) => {
       const actor = await this.actorIn(tx, actorId);
       const target = await this.managedTargetIn(tx, actor, targetId);
-      await tx.user.update({ where: { id: target.id }, data: { passwordHash } });
+      // Bump the session version with the hash change: every access token the
+      // target holds stops working, and every refresh token is revoked below.
+      await tx.user.update({ where: { id: target.id }, data: { passwordHash, authVersion: { increment: 1 } } });
       const sealed = this.vault.encrypt(target.id, password);
       await tx.userPasswordVault.upsert({
         where: { userId: target.id },
@@ -210,7 +212,7 @@ export class UserAccountsService {
   async changeOwnPassword(userId: string, currentPassword: string, newPassword: string): Promise<void> {
     this.vault.assertConfigured();
     assertPassword(newPassword);
-    const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { id: true, passwordHash: true, disabled: true } });
+    const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { id: true, passwordHash: true, authVersion: true, disabled: true } });
     if (!user || user.disabled || !(await argon2.verify(user.passwordHash, currentPassword))) {
       throw new BadRequestException({ code: 'CURRENT_PASSWORD_INVALID', message: 'The current password is not correct.' });
     }
@@ -219,7 +221,16 @@ export class UserAccountsService {
     }
     const passwordHash = await argon2.hash(newPassword, { type: argon2.argon2id });
     await this.prisma.$transaction(async (tx) => {
-      await tx.user.update({ where: { id: userId }, data: { passwordHash } });
+      // Compare-and-set under the account row lock: if a concurrent reset,
+      // logout or status change moved the hash, version or disabled flag since
+      // the check above, this fails closed instead of overwriting the newer
+      // state from the stale proof. The version bump retires the caller's own
+      // live access token (and every other device's) at the same commit.
+      const updated = await tx.user.updateMany({
+        where: { id: userId, passwordHash: user.passwordHash, authVersion: user.authVersion, disabled: false },
+        data: { passwordHash, authVersion: { increment: 1 } },
+      });
+      if (updated.count !== 1) throw new BadRequestException({ code: 'CURRENT_PASSWORD_INVALID', message: 'The current password is not correct.' });
       const sealed = this.vault.encrypt(userId, newPassword);
       await tx.userPasswordVault.upsert({ where: { userId }, create: { userId, updatedById: userId, ...sealed }, update: { updatedById: userId, ...sealed } });
       await tx.refreshToken.updateMany({ where: { userId, revokedAt: null }, data: { revokedAt: new Date() } });

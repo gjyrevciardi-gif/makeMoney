@@ -110,8 +110,12 @@ describe('hierarchical RBAC (PostgreSQL + Redis)', () => {
     for (const mail of [playerEmail, adminEmail, superEmail]) {
       await server().post('/casino/lucky-lady/launch').set(bearer(await tokenFor(mail))).expect(201);
     }
-    // A disabled account can no longer log in, so model a token issued before it was disabled.
-    const staleToken = (await auth.issueTokenPair(await idOf(disabledEmail), Role.USER)).accessToken;
+    // A disabled account can no longer log in, so model a token issued before it
+    // was disabled: mint while enabled, then disable, then present the token.
+    const disabledId = await idOf(disabledEmail);
+    await prisma.user.update({ where: { id: disabledId }, data: { disabled: false } });
+    const staleToken = (await auth.issueTokenPair(disabledId, Role.USER)).accessToken;
+    await prisma.user.update({ where: { id: disabledId }, data: { disabled: true } });
     await server().post('/casino/lucky-lady/launch').set(bearer(staleToken)).expect(403);
   });
 

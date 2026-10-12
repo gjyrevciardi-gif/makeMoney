@@ -37,19 +37,24 @@ export class AuthController {
     catch (error) { if (error instanceof UnauthorizedException) await this.limits.consume('login', key, RATE_LIMITS.loginFailures); throw error; }
     await this.limits.reset('login', key);
     // Administrators with Google Authenticator on get a challenge instead of a session.
-    if (await this.mfa.isEnabled(user.id)) return { mfaRequired: true, mfaToken: await this.auth.issueMfaChallenge(user.id) };
-    const result = await this.auth.startSessionFor(user.id);
+    if (await this.mfa.isEnabled(user.id)) return { mfaRequired: true, mfaToken: await this.auth.issueMfaChallenge(user.id, user.authVersion) };
+    // The verified snapshot travels with the request: session issuance re-checks
+    // it under the account lock, so a password change or logout landing between
+    // the two statements cannot mint a live session from the old proof.
+    const result = await this.auth.startSessionFor(user.id, { authVersion: user.authVersion, passwordHash: user.passwordHash });
     response.cookie(COOKIE, result.pair.refreshToken, cookieOptions);
     return { accessToken: result.pair.accessToken, user: result.user };
   }
   @Post('login/2fa') async loginSecondFactor(@Body() body: MfaLoginDto, @Req() request: Request, @Res({ passthrough: true }) response: Response) {
-    const userId = await this.auth.readMfaChallenge(body.mfaToken);
+    const challenge = await this.auth.readMfaChallenge(body.mfaToken);
+    const userId = challenge.userId;
     const key = `${requestIp(request)}:${userId}`;
     await this.limits.assertAllowed('mfa', key, RATE_LIMITS.loginFailures);
     try { await this.mfa.verifyLogin(userId, body.code); }
     catch (error) { if (error instanceof UnauthorizedException) await this.limits.consume('mfa', key, RATE_LIMITS.loginFailures); throw error; }
     await this.limits.reset('mfa', key);
-    const result = await this.auth.startSessionFor(userId);
+    // The challenge version is the proof; issuance re-checks it under the lock.
+    const result = await this.auth.startSessionFor(userId, { authVersion: challenge.authVersion });
     response.cookie(COOKIE, result.pair.refreshToken, cookieOptions);
     return { accessToken: result.pair.accessToken, user: result.user };
   }
