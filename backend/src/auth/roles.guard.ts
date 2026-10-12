@@ -38,8 +38,13 @@ export class RolesGuard implements CanActivate {
 
     const allowed = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [context.getHandler(), context.getClass()]);
     if (!allowed?.length) return true;
-    if (request.actor.role === Role.SUPER_ADMIN) return true;
-    if (allowed.includes(request.actor.role)) return true;
+    // The legacy role list grants the same privileged access as a capability, so
+    // it enforces the same second-factor gate: SUPER_ADMIN clears every list, and
+    // both branches must still prove enrolment rather than skipping the check.
+    if (request.actor.role === Role.SUPER_ADMIN || allowed.includes(request.actor.role)) {
+      await this.assertMfaEnrolled(request);
+      return true;
+    }
     await this.recordDenial(request);
     throw new ForbiddenException('FORBIDDEN');
   }
@@ -61,11 +66,21 @@ export class RolesGuard implements CanActivate {
       data: {
         actorId: request.actor.id,
         targetType: 'ROUTE',
-        targetId: request.url,
+        targetId: this.routePath(request),
         action: 'PERMISSION_DENIED',
         result: 'DENIED',
         metadata: { method: request.method },
       },
     });
+  }
+
+  /**
+   * The matched route template, or the request path. `request.url` is never
+   * recorded: it carries the query string, which can hold parameters that must
+   * not end up in the audit trail.
+   */
+  private routePath(request: AuthenticatedRequest) {
+    const template = (request as { route?: { path?: string } }).route?.path;
+    return template ?? `${request.baseUrl ?? ''}${request.path ?? ''}`;
   }
 }

@@ -7,9 +7,10 @@
    `.env.production.example`. Never reuse the development `.env`.
 5. Set strong unique PostgreSQL, Redis, JWT, and provider credentials. Set
    `COOKIE_SECURE=true`, `REGISTRATION_ENABLED=false` after admin bootstrap,
-   `DOMAIN`, and `ADMIN_EMAIL`. URL-encode reserved password characters in
-   `DATABASE_URL` and `REDIS_URL`; the raw service passwords remain in
-   `POSTGRES_PASSWORD` and `REDIS_PASSWORD`.
+   `ADMIN_MFA_REQUIRED=true`, `TRUST_PROXY=true` with `TRUST_PROXY_ALLOWLIST`
+   naming only the proxy peer address(es) or subnet, `DOMAIN`, and `ADMIN_EMAIL`.
+   URL-encode reserved password characters in `DATABASE_URL` and `REDIS_URL`;
+   the raw service passwords remain in `POSTGRES_PASSWORD` and `REDIS_PASSWORD`.
 6. Build and validate:
 
    ```sh

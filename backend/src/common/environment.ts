@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isIP } from 'node:net';
 
 /**
  * The only environments this application recognises. An unrecognised NODE_ENV is
@@ -18,7 +19,15 @@ const productionEnvironment = z.object({
   CORS_ORIGINS: z.string().min(1),
   COOKIE_SECURE: z.literal('true'),
   TRUST_PROXY: z.literal('true'),
+  /**
+   * Production never trusts a hop count: the reverse proxy is named by the
+   * exact peer addresses that may be believed, so a client cannot forge
+   * `X-Forwarded-For` and escape the IP-keyed rate limits.
+   */
+  TRUST_PROXY_ALLOWLIST: z.string().min(1),
   REGISTRATION_ENABLED: z.enum(['true', 'false']),
+  /** Production always requires the second factor for privileged accounts. */
+  ADMIN_MFA_REQUIRED: z.literal('true'),
   /** AES-256-GCM key for the revealable-password vault: 32 bytes, base64. */
   PASSWORD_VAULT_KEY: z.string().min(1),
 }).passthrough();
@@ -129,9 +138,58 @@ function assertNotTestResource(name: string, value: string): void {
 }
 
 const BODY_LIMIT_PATTERN = /^\d+(?:\.\d+)?(?:b|kb|mb)$/i;
+const BASE64_PATTERN = /^[A-Za-z0-9+/]+={0,2}$/;
 
 function isBodyLimit(value: string): boolean {
   return BODY_LIMIT_PATTERN.test(value.trim());
+}
+
+/**
+ * A 32-byte AES-256 key supplied as canonical base64.
+ *
+ * `Buffer.from(value, 'base64')` silently ignores characters outside the
+ * alphabet, so length alone would accept a malformed key that only happens to
+ * decode to 32 bytes. The alphabet and padding are checked first.
+ */
+function assertBase64Key(name: string, raw: string | undefined): void {
+  if (!raw) fail(`${name} must be set`);
+  if (raw !== raw.trim()) fail(`${name} must not be padded with whitespace`);
+  if (raw.length % 4 !== 0 || !BASE64_PATTERN.test(raw)) fail(`${name} must be base64 encoded`);
+  if (Buffer.from(raw, 'base64').length !== 32) fail(`${name} must be 32 bytes, base64 encoded`);
+}
+
+/**
+ * Parses `TRUST_PROXY_ALLOWLIST` into the exact peers that may set
+ * `X-Forwarded-For`: a comma-separated list of IP addresses or CIDR ranges.
+ *
+ * A blank list, a wildcard, an anything-goes range (`0.0.0.0/0`, `::/0`) or a
+ * malformed entry all fail closed: trusting every peer would let any client
+ * pick its own rate-limit identity.
+ */
+export function parseTrustProxyAllowlist(value: string | undefined): string[] {
+  const entries = (value ?? '').split(',').map(entry => entry.trim()).filter(Boolean);
+  if (!entries.length) fail('TRUST_PROXY_ALLOWLIST must list at least one trusted proxy IP or CIDR range');
+
+  for (const entry of entries) {
+    if (entry === '*') fail('TRUST_PROXY_ALLOWLIST must not trust every address');
+    const [address, prefix, ...rest] = entry.split('/');
+    const family = isIP(address);
+    if (!family || rest.length) {
+      fail(`TRUST_PROXY_ALLOWLIST entry "${entry}" is not a valid IP address or CIDR range`);
+    }
+    if (prefix === undefined) {
+      if (address === '0.0.0.0' || address === '::') {
+        fail(`TRUST_PROXY_ALLOWLIST entry "${entry}" is the unspecified address`);
+      }
+      continue;
+    }
+    const bits = Number(prefix);
+    const width = family === 4 ? 32 : 128;
+    if (!/^\d+$/.test(prefix) || !Number.isInteger(bits) || bits < 1 || bits > width) {
+      fail(`TRUST_PROXY_ALLOWLIST entry "${entry}" has an invalid prefix length`);
+    }
+  }
+  return entries;
 }
 
 /**
@@ -157,9 +215,8 @@ export function validateProductionEnvironment(): void {
   if (process.env.JWT_ACCESS_SECRET === process.env.JWT_REFRESH_SECRET) {
     fail('JWT secrets must be unique');
   }
-  if (Buffer.from(process.env.PASSWORD_VAULT_KEY!, 'base64').length !== 32) {
-    fail('PASSWORD_VAULT_KEY must be 32 bytes, base64 encoded');
-  }
+  assertBase64Key('PASSWORD_VAULT_KEY', process.env.PASSWORD_VAULT_KEY);
+  parseTrustProxyAllowlist(process.env.TRUST_PROXY_ALLOWLIST);
 
   for (const name of ['DATABASE_URL', 'REDIS_URL'] as const) {
     const value = process.env[name]!.toLowerCase();
@@ -218,10 +275,22 @@ export function resolveBodyLimit(value: string | undefined = process.env.BODY_LI
  * Behind the reverse proxy the client IP arrives in `X-Forwarded-For`, and rate
  * limiting keys off it — so this has to be right in both directions. Trusting
  * too little rate-limits every user as if they were the proxy; trusting too much
- * lets a client forge its own address and escape the limit entirely. A hop count
- * is therefore preferred over a blanket `true`.
+ * lets a client forge its own address and escape the limit entirely.
+ *
+ * Production trusts only the validated `TRUST_PROXY_ALLOWLIST` peers: there is
+ * no blanket `true` and no bare hop count, because the app must not believe a
+ * header written by a peer that is not the proxy.
  */
-export function resolveTrustProxy(value: string | undefined = process.env.TRUST_PROXY): number | false {
+export function resolveTrustProxy(
+  value: string | undefined = process.env.TRUST_PROXY,
+  allowlist: string | undefined = process.env.TRUST_PROXY_ALLOWLIST,
+  environment: AppEnvironment = resolveEnvironment(),
+): number | false | string[] {
+  // Production only ever trusts the named proxy peers; a hop count would blindly
+  // trust the client-facing socket one step back from wherever the request
+  // entered, which is wrong as soon as the app is reachable without that proxy.
+  if (environment === 'production') return parseTrustProxyAllowlist(allowlist);
+  // Development and test keep the historical `true`/numeric-hop behaviour.
   const candidate = value?.trim().toLowerCase();
   if (!candidate || candidate === 'false' || candidate === '0') return false;
   if (candidate === 'true') return 1;

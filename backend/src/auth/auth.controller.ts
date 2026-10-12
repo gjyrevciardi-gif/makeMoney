@@ -1,6 +1,7 @@
-import { Body, Controller, ForbiddenException, Post, Req, Res, UnauthorizedException } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Post, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { IsEmail, IsOptional, IsString, Length, MaxLength, MinLength, ValidateIf } from 'class-validator';
+import { AuthOriginGuard } from './auth-origin.guard';
 import { AuthService } from './auth.service';
 import { MfaService } from './mfa.service';
 import { RateLimitService, RATE_LIMITS } from '../common/rate-limit.service';
@@ -20,6 +21,7 @@ const secureCookies = process.env.COOKIE_SECURE !== 'false';
 const cookieOptions = { httpOnly: true, secure: secureCookies, sameSite: 'strict' as const, path: '/auth', maxAge: 30 * 86400_000 };
 
 @Controller('auth')
+@UseGuards(AuthOriginGuard)
 export class AuthController {
   constructor(private readonly auth: AuthService, private readonly limits: RateLimitService, private readonly mfa: MfaService) {}
   @Post('register') async register(@Body() body: CredentialsDto, @Req() request: Request) {

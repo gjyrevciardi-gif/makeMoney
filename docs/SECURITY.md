@@ -6,8 +6,30 @@ Never commit `.env`, `.env.production`, provider keys, database passwords, JWT
 secrets, TLS private keys, or backup files. Documentation uses placeholders
 only; real secrets belong in the VPS secret-management process.
 Production startup rejects missing, placeholder, duplicated, or insecure
-secrets and requires HTTPS CORS origins, secure cookies, and trusted proxy
-settings.
+secrets and requires HTTPS CORS origins, secure cookies, `ADMIN_MFA_REQUIRED=true`
+and an explicit `TRUST_PROXY_ALLOWLIST` naming the proxy peers.
+
+## Browser origin (CSRF)
+
+The auth mutations accept a request only from an origin the API was configured
+to serve: a present `Origin` header (`null` included) must exactly match one of
+the configured CORS origins. In production a request that carries the refresh
+cookie but no `Origin` at all is refused, while cookie-less clients (native
+apps, scripts, server-to-server calls) may omit the header. A non-matching
+same-site sibling subdomain is rejected even though the browser may consider it
+"same site". API clients that send cookies must therefore send the configured
+`Origin`; clients without cookies are unaffected.
+
+## Trusted proxy and client IP
+
+Rate limits key on the client IP, so the backend believes `X-Forwarded-For` only
+from an explicitly configured proxy. In production `TRUST_PROXY=true` is
+required together with `TRUST_PROXY_ALLOWLIST` (comma-separated IPs or CIDR
+ranges, for example the Caddy container's address). A blank list, `*`,
+`0.0.0.0/0` or `::/0` fails startup. A request that reaches the backend
+directly, from a peer that is not in the list, has its forwarded address
+ignored and is limited by its real socket address, so it cannot hand itself a
+fresh rate-limit identity.
 
 PostgreSQL and Redis are internal-only. Only Caddy publishes ports 80 and
 443. The firewall must not publish PostgreSQL 5432 or Redis 6379.

@@ -107,7 +107,10 @@ There is deliberately **no automatic blocking** of administrators yet.
   lives 5 minutes and is rejected as an access token. A code works once; five wrong tries per minute locks the step.
 - The TOTP secret is stored encrypted with the same `PASSWORD_VAULT_KEY` as the vault.
 - `ADMIN_MFA_REQUIRED=true` (default in the production compose file) blocks every admin route until the
-  administrator has enrolled. Locally it defaults to off so you cannot lock yourself out while setting up.
+  administrator has enrolled. Production refuses to start with any other value; locally it defaults to off
+  so you cannot lock yourself out while setting up. Completing enrolment retires the account's existing
+  sessions (their token version is bumped and refresh tokens are revoked), so a password-only session can
+  never inherit the newly protected privileges; the next sign-in must pass the second step.
 - **Lost phone and recovery codes:** a SUPER_ADMIN resets another administrator (`POST /admin/users/:id/mfa/reset`).
   If the only SUPER_ADMIN is locked out, run on the server:
   `RESET_MFA_USER=<username or email> RESET_MFA_CONFIRM=YES npm run rbac:reset-mfa --workspace backend`.

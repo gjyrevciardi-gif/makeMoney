@@ -7,6 +7,7 @@ import { AppModule } from '../src/app.module';
 import { AuthService } from '../src/auth/auth.service';
 import { PrismaService } from '../src/prisma.service';
 import { RATE_LIMITS, RateLimitService } from '../src/common/rate-limit.service';
+import { RedisService } from '../src/common/redis.service';
 import { uniqueTestEmail } from './test-identity';
 
 describe('authentication and authorization security', () => {
@@ -14,6 +15,7 @@ describe('authentication and authorization security', () => {
   const jwt = new JwtService({ secret: process.env.JWT_ACCESS_SECRET });
   const auth = new AuthService(prisma, jwt);
   let app: INestApplication;
+  let redis: RedisService;
   const userEmail = uniqueTestEmail('user-security');
   const adminEmail = uniqueTestEmail('admin-security');
   let userId: string;
@@ -32,10 +34,11 @@ describe('authentication and authorization security', () => {
     return header[0].split(';')[0];
   };
 
-  beforeAll(async () => { await prisma.$connect(); app = await createApp(); });
+  beforeAll(async () => { await prisma.$connect(); app = await createApp(); redis = app.get(RedisService); await redis.ensureConnected(); });
   afterAll(async () => { if (app) await app.close(); await prisma.$disconnect(); });
   beforeEach(async () => {
     await prisma.$executeRawUnsafe('TRUNCATE TABLE "LedgerEntry", "BetLeg", "Bet", "AuditLog", "RefreshToken", "Wallet", "User" CASCADE');
+    await redis.client.flushdb();
     const user = await auth.register(userEmail, 'correct-horse-battery'); userId = user.id;
     const admin = await prisma.user.create({ data: { email: adminEmail, passwordHash: await import('argon2').then(a => a.hash('correct-horse-battery')), role: 'ADMIN', wallet: { create: {} } } }); adminId = admin.id;
     await prisma.user.updateMany({ where: { role: 'USER' }, data: { createdById: admin.id } });
@@ -76,10 +79,13 @@ describe('authentication and authorization security', () => {
 
   it('denies USER admin access and records permission denial', async () => {
     const token = (await auth.login(userEmail, 'correct-horse-battery')).pair.accessToken;
-    await request(app.getHttpServer()).get('/admin/users').set('Authorization', `Bearer ${token}`).expect(403);
+    await request(app.getHttpServer()).get('/admin/users?token=must-not-be-audited').set('Authorization', `Bearer ${token}`).expect(403);
     await request(app.getHttpServer()).post(`/admin/users/${userId}/coins`).set('Authorization', `Bearer ${token}`).send({ amount: 10, reason: 'forbidden', idempotencyKey: '7545247e-6c63-4231-b9a0-5e35df184abb' }).expect(403);
     expect(await prisma.auditLog.count({ where: { actorId: userId, action: 'PERMISSION_DENIED' } })).toBe(2);
     expect(await prisma.ledgerEntry.count()).toBe(0);
+    // The audit row records the route, never the query string.
+    const denials = await prisma.auditLog.findMany({ where: { actorId: userId, action: 'PERMISSION_DENIED' } });
+    expect(denials.some((row) => (row.targetId ?? '').includes('must-not-be-audited') || (row.targetId ?? '').includes('?'))).toBe(false);
   });
 
   it('rejects a demoted ADMIN using an old access token', async () => {
@@ -108,6 +114,9 @@ describe('authentication and authorization security', () => {
     for (let attempt = 0; attempt < RATE_LIMITS.bet.limit; attempt++) await limiter.consume('bet-test', userId, RATE_LIMITS.bet);
     await expect(limiter.consume('bet-test', userId, RATE_LIMITS.bet)).rejects.toMatchObject({ status: 429 });
     await expect(limiter.consume('bet-test', adminId, RATE_LIMITS.bet)).resolves.toBeUndefined();
+    // The window carries a TTL from the first increment: a counter can never be
+    // left with no expiry, which would lock the subject out permanently.
+    expect(await redis.client.ttl(`rate:bet-test:${adminId}`)).toBeGreaterThan(0);
   });
 
   it('rejects client-supplied identity and payout fields', async () => {

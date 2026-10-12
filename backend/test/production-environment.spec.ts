@@ -1,4 +1,5 @@
 import {
+  parseTrustProxyAllowlist,
   resolveBodyLimit,
   resolveCorsOrigins,
   resolveEnvironment,
@@ -19,7 +20,9 @@ const VALID_PRODUCTION = {
   CORS_ORIGINS: 'https://app.foolsgold.club',
   COOKIE_SECURE: 'true',
   TRUST_PROXY: 'true',
+  TRUST_PROXY_ALLOWLIST: '10.0.0.0/8, 127.0.0.1, 2001:db8::/32',
   REGISTRATION_ENABLED: 'false',
+  ADMIN_MFA_REQUIRED: 'true',
   PASSWORD_VAULT_KEY: 'BwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAhIiMkJSY=',
   PORT: '3001',
 } as const;
@@ -92,7 +95,9 @@ describe('production environment validation', () => {
     'CORS_ORIGINS',
     'COOKIE_SECURE',
     'TRUST_PROXY',
+    'TRUST_PROXY_ALLOWLIST',
     'REGISTRATION_ENABLED',
+    'ADMIN_MFA_REQUIRED',
     'PASSWORD_VAULT_KEY',
   ])('fails fast when %s is missing', name => {
     withEnvironment(production({ [name]: undefined }), () => {
@@ -112,6 +117,35 @@ describe('production environment validation', () => {
     });
     withEnvironment(production({ TRUST_PROXY: 'false' }), () => {
       expect(() => validateProductionEnvironment()).toThrow(/TRUST_PROXY/);
+    });
+  });
+
+  it('requires the administrator second factor in production', () => {
+    withEnvironment(production({ ADMIN_MFA_REQUIRED: 'false' }), () => {
+      expect(() => validateProductionEnvironment()).toThrow(/ADMIN_MFA_REQUIRED/);
+    });
+    withEnvironment(production({ ADMIN_MFA_REQUIRED: undefined }), () => {
+      expect(() => validateProductionEnvironment()).toThrow(/ADMIN_MFA_REQUIRED/);
+    });
+  });
+
+  it('rejects a malformed base64 vault key instead of decoding it loosely', () => {
+    withEnvironment(production({ PASSWORD_VAULT_KEY: '!!!not-base64!!!' }), () => {
+      expect(() => validateProductionEnvironment()).toThrow(/PASSWORD_VAULT_KEY/);
+    });
+  });
+
+  it('rejects trust-proxy allowlists that trust every peer', () => {
+    for (const allowlist of ['*', '0.0.0.0/0', '::/0', '0.0.0.0', '::', 'not-an-ip', '10.0.0.0/33', '2001:db8::/129', '']) {
+      withEnvironment(production({ TRUST_PROXY_ALLOWLIST: allowlist }), () => {
+        expect(() => validateProductionEnvironment()).toThrow(/TRUST_PROXY_ALLOWLIST/);
+      });
+    }
+  });
+
+  it('accepts named IPv4 and IPv6 proxy peers', () => {
+    withEnvironment(production({ TRUST_PROXY_ALLOWLIST: '10.0.0.0/8,127.0.0.1,2001:db8::1' }), () => {
+      expect(() => validateProductionEnvironment()).not.toThrow();
     });
   });
 
@@ -206,6 +240,27 @@ describe('derived runtime settings', () => {
     expect(resolveTrustProxy('2')).toBe(2);
     // A nonsense value trusts a single hop rather than trusting everything.
     expect(resolveTrustProxy('all')).toBe(1);
+  });
+
+  it('uses the validated allowlist as the express trust-proxy setting in production', () => {
+    expect(resolveTrustProxy('true', '10.0.0.0/8, 127.0.0.1', 'production')).toEqual(['10.0.0.0/8', '127.0.0.1']);
+    // A blank or missing allowlist must fail startup rather than fall back to a hop count.
+    expect(() => resolveTrustProxy('true', undefined, 'production')).toThrow(/TRUST_PROXY_ALLOWLIST/);
+    expect(() => resolveTrustProxy('true', '   ', 'production')).toThrow(/TRUST_PROXY_ALLOWLIST/);
+    // Development and test ignore the allowlist and keep the legacy hop behaviour.
+    expect(resolveTrustProxy('true', undefined, 'test')).toBe(1);
+    expect(resolveTrustProxy('3', undefined, 'development')).toBe(3);
+  });
+
+  it('parses individual addresses and CIDR ranges, rejecting wildcards', () => {
+    expect(parseTrustProxyAllowlist('127.0.0.1, 10.0.0.0/8, 2001:db8::1')).toEqual([
+      '127.0.0.1',
+      '10.0.0.0/8',
+      '2001:db8::1',
+    ]);
+    expect(() => parseTrustProxyAllowlist('*')).toThrow(/TRUST_PROXY_ALLOWLIST/);
+    expect(() => parseTrustProxyAllowlist('0.0.0.0/0')).toThrow(/TRUST_PROXY_ALLOWLIST/);
+    expect(() => parseTrustProxyAllowlist('::/0')).toThrow(/TRUST_PROXY_ALLOWLIST/);
   });
 
   it('splits configured CORS origins', () => {
