@@ -14,6 +14,7 @@ import {
   useBoard,
   useSports,
 } from '../../lib/sports';
+import { useHydrated } from '../../lib/hydrated';
 import { IconBack, IconSearch } from '../shell/icons';
 import { CompetitionBlock } from './match-list';
 import { SportIcon, sportGroupLabel } from './sport-icon';
@@ -71,6 +72,10 @@ export function SportsbookView({ mode }: { mode: 'PREMATCH' | 'LIVE' }) {
   }, [selected, sports.data]);
 
   const board = useBoard(selected, { live: mode === 'LIVE' });
+  // Until mounted, render the same loading state the server did (see useHydrated).
+  const hydrated = useHydrated();
+  const boardData = hydrated ? board.data : undefined;
+  const sportList = hydrated ? sports.data : undefined;
 
   const choose = useCallback((sportKey: string) => {
     setSelected(sportKey);
@@ -80,12 +85,12 @@ export function SportsbookView({ mode }: { mode: 'PREMATCH' | 'LIVE' }) {
     router.replace(`?${next.toString()}`, { scroll: false });
   }, [params, router]);
 
-  const stale = isStale(board.data?.staleAt);
+  const stale = isStale(boardData?.staleAt);
 
   const modeEvents = useMemo(() => {
-    const events = board.data?.events ?? [];
+    const events = boardData?.events ?? [];
     return events.filter((row) => (mode === 'LIVE' ? isLive(row.event) : !isLive(row.event)));
-  }, [board.data, mode]);
+  }, [boardData, mode]);
 
   const allGroups = useMemo(() => groupByCompetition(modeEvents), [modeEvents]);
   const groups = useMemo(
@@ -94,9 +99,9 @@ export function SportsbookView({ mode }: { mode: 'PREMATCH' | 'LIVE' }) {
     [modeEvents, search, competition],
   );
 
-  const sportsError = sports.error instanceof ApiError ? sports.error : undefined;
-  const boardError = board.error instanceof ApiError ? board.error : undefined;
-  const currentSport = sports.data?.find((sport) => sport.key === selected);
+  const sportsError = hydrated && sports.error instanceof ApiError ? sports.error : undefined;
+  const boardError = hydrated && board.error instanceof ApiError ? board.error : undefined;
+  const currentSport = sportList?.find((sport) => sport.key === selected);
   const title = mode === 'LIVE'
     ? 'In-Play'
     : sportGroupLabel(currentSport?.group ?? currentSport?.name ?? 'Sports');
@@ -139,7 +144,7 @@ export function SportsbookView({ mode }: { mode: 'PREMATCH' | 'LIVE' }) {
       </div>
       <div className="ref-rule" />
 
-      <SportTabs sports={sports.data ?? []} selected={selected} onSelect={choose} />
+      <SportTabs sports={sportList ?? []} selected={selected} onSelect={choose} />
 
       <div className="ref-section-head">
         <h2>{mode === 'LIVE' ? 'IN-PLAY' : tab === 'Competitions' ? 'COMPETITIONS' : 'UPCOMING MATCHES'}</h2>
@@ -194,10 +199,10 @@ export function SportsbookView({ mode }: { mode: 'PREMATCH' | 'LIVE' }) {
         </div>
       )}
 
-      {board.data && (
+      {boardData && (
         // Freshness is only visually prominent when it matters; otherwise it is announced, not shown.
         <p className={stale ? 'ref-fresh' : 'sr-only'} role="status">
-          {stale ? 'Prices may be out of date — refreshing.' : `Prices updated ${formatDateTime(board.data.fetchedAt)}`}
+          {stale ? 'Prices may be out of date — refreshing.' : `Prices updated ${formatDateTime(boardData.fetchedAt)}`}
         </p>
       )}
 
@@ -217,9 +222,9 @@ export function SportsbookView({ mode }: { mode: 'PREMATCH' | 'LIVE' }) {
         </div>
       )}
 
-      {!sportsError && !boardError && (board.isPending || sports.isPending) && <BoardSkeleton />}
+      {!sportsError && !boardError && (!hydrated || board.isPending || sports.isPending) && <BoardSkeleton />}
 
-      {!sportsError && !boardError && board.data && groups.length === 0 && (
+      {!sportsError && !boardError && boardData && groups.length === 0 && (
         <div className="empty-state">
           <strong>
             {search.trim() ? 'No events match your search.' : mode === 'LIVE' ? 'No live events right now.' : 'No upcoming events for this sport.'}

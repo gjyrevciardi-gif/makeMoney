@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Fool's Gold Club — My bets</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;background:#050806}
+a{color:#f2c14e}a:hover{color:#d8a32c}
+.fg-scroll{scrollbar-width:none}
+.fg-scroll::-webkit-scrollbar{display:none}
+@keyframes fgPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}
+@keyframes fgRise{from{transform:translateY(12px);opacity:0}to{transform:none;opacity:1}}
+@keyframes fgPop{0%{transform:scale(.9);opacity:0}100%{transform:scale(1);opacity:1}}
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
+</style>
+</helmet>
+<div style="width: 393px; height: 852px; position: relative; overflow: hidden; display: flex; flex-direction: column; background: #080c0a; color: #eef3ec; font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 14px; line-height: 1.45; -webkit-font-smoothing: antialiased;">
+
+  <header style="height: 56px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 8px 0 14px; background: #050806;">
+    <a href="Main.dc.html" aria-label="Fool's Gold home" style="display: flex; align-items: center; gap: 7px; text-decoration: none;">
+      <span aria-hidden="true" style="width: 20px; height: 20px; border-radius: 50%; flex: none; background: linear-gradient(145deg, #f2c14e, #d8a32c); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.45);"></span>
+      <span style="font-size: 13px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #f2c14e; white-space: nowrap;">Fool's Gold</span>
+    </a>
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 4px;">
+      <button type="button" aria-label="Search" style="width: 44px; height: 44px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 8px; background: transparent; color: #93a599; cursor: pointer;">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m16.5 16.5 4 4"></path></svg>
+      </button>
+      <a href="Account.dc.html" aria-label="Balance {{balance}}, open account" style="height: 40px; display: flex; align-items: center; gap: 7px; padding: 0 12px 0 10px; border-radius: 8px; background: #151d18; border: 1px solid #33463a; text-decoration: none;">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#93a599" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a1 1 0 0 1-1-1z"></path><path d="M4 7V6a2 2 0 0 1 2-2h10v3"></path><path d="M16 13.5h.5"></path></svg>
+        <span style="font-size: 14px; font-weight: 700; color: #f2c14e; font-variant-numeric: tabular-nums;">{{balance}}</span>
+      </a>
+    </div>
+  </header>
+
+  <nav aria-label="Sections" class="fg-scroll" style="height: 44px; flex: none; display: flex; align-items: stretch; gap: 2px; padding: 0 6px; overflow-x: auto; background: #050806; border-bottom: 1px solid #223029;">
+    <a href="Main.dc.html" style="display: flex; align-items: center; padding: 0 10px; font-size: 13px; font-weight: 650; color: #93a599; text-decoration: none; white-space: nowrap;">Sports</a>
+    <a href="Live.dc.html" style="display: flex; align-items: center; gap: 6px; padding: 0 10px; font-size: 13px; font-weight: 650; color: #93a599; text-decoration: none; white-space: nowrap;">
+      <span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 50%; background: #ff6a3d; animation: fgPulse 1.8s ease-in-out infinite;"></span>Live<span style="padding: 0 6px; border-radius: 999px; background: #331508; color: #ff6a3d; font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums;">24</span>
+    </a>
+    <a href="Casino.dc.html" style="display: flex; align-items: center; padding: 0 10px; font-size: 13px; font-weight: 650; color: #93a599; text-decoration: none; white-space: nowrap;">Casino</a>
+    <a href="Casino.dc.html"style="display: flex; align-items: center; padding: 0 10px; font-size: 13px; font-weight: 650; color: #93a599; text-decoration: none; white-space: nowrap;">Live Casino</a>
+    <a href="MyBets.dc.html" aria-current="page" style="display: flex; align-items: center; padding: 0 10px; font-size: 13px; font-weight: 700; color: #f2c14e; text-decoration: none; white-space: nowrap; box-shadow: inset 0 -2px 0 #f2c14e;">My Bets</a>
+  </nav>
+
+  <main class="fg-scroll" style="flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding: 12px 12px 20px;">
+    <div role="tablist" aria-label="Bet status" style="flex: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px; padding: 3px; border-radius: 8px; background: #151d18; border: 1px solid #223029;">
+      <button type="button" role="tab" aria-selected="{{openTab.on}}" onClick="{{openTab.pick}}" style="height: 38px; display: flex; align-items: center; justify-content: center; gap: 6px; border: 0; border-radius: 5px; background: {{openTab.bg}}; color: {{openTab.color}}; box-shadow: {{openTab.ring}}; font: inherit; font-size: 13px; font-weight: 650; cursor: pointer;">Open <span style="min-width: 18px; height: 18px; padding: 0 5px; display: grid; place-items: center; border-radius: 999px; background: #f2c14e; color: #16110a; font-size: 11px; font-weight: 800;">{{openCount}}</span></button>
+      <button type="button" role="tab" aria-selected="{{settledTab.on}}" onClick="{{settledTab.pick}}" style="height: 38px; border: 0; border-radius: 5px; background: {{settledTab.bg}}; color: {{settledTab.color}}; box-shadow: {{settledTab.ring}}; font: inherit; font-size: 13px; font-weight: 650; cursor: pointer;">Settled</button>
+    </div>
+
+    <sc-if value="{{showSettledSummary}}" hint-placeholder-val="{{false}}">
+      <div style="flex: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; border-radius: 12px; overflow: hidden; border: 1px solid #223029; background: #223029;">
+        <div style="padding: 10px 12px; background: #0f1512;"><span style="display: block; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: #93a599;">Staked</span><strong style="font-size: 15px; font-variant-numeric: tabular-nums;">€50.00</strong></div>
+        <div style="padding: 10px 12px; background: #0f1512;"><span style="display: block; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: #93a599;">Returned</span><strong style="font-size: 15px; font-variant-numeric: tabular-nums;">€69.10</strong></div>
+        <div style="padding: 10px 12px; background: #0f1512;"><span style="display: block; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: #93a599;">Net</span><strong style="font-size: 15px; color: #46c47c; font-variant-numeric: tabular-nums;">+€19.10</strong></div>
+      </div>
+    </sc-if>
+
+    <sc-for list="{{bets}}" as="b" hint-placeholder-count="3">
+      <article aria-label="{{b.aria}}" style="flex: none; border: 1px solid #223029; border-radius: 12px; background: #0f1512; overflow: hidden; animation: fgRise 340ms cubic-bezier(0.22, 1, 0.36, 1) both;">
+        <div style="display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: #151d18; border-bottom: 1px solid #223029;">
+          <strong style="font-size: 13px; font-weight: 700;">{{b.title}}</strong>
+          <span style="font-size: 13px; font-weight: 700; color: #f2c14e; font-variant-numeric: tabular-nums;">{{b.odds}}</span>
+          <span style="margin-left: auto; display: inline-flex; align-items: center; gap: 5px; padding: 2px 7px; border-radius: 999px; background: {{b.pillBg}}; color: {{b.pillColor}}; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap;">
+            <sc-if value="{{b.isLive}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 50%; background: #ff6a3d; animation: fgPulse 1.8s ease-in-out infinite;"></span></sc-if>{{b.pill}}
+          </span>
+        </div>
+
+        <sc-for list="{{b.legs}}" as="l" hint-placeholder-count="2">
+          <div style="display: flex; gap: 10px; padding: 9px 12px; border-bottom: 1px solid #223029;">
+            <span role="img" aria-label="{{l.markLabel}}" style="width: 18px; height: 18px; margin-top: 1px; flex: none; display: grid; place-items: center; border-radius: 50%; background: {{l.markBg}}; box-shadow: {{l.markRing}}; color: #16110a; font-size: 11px; font-weight: 900; line-height: 1;">{{l.mark}}</span>
+            <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px;">
+              <span style="display: flex; align-items: baseline; gap: 8px;">
+                <span style="flex: 1; min-width: 0; font-size: 13px; font-weight: 650;">{{l.selection}}</span>
+                <span style="font-size: 13px; font-weight: 700; color: #f2c14e; font-variant-numeric: tabular-nums;">{{l.odds}}</span>
+              </span>
+              <span style="font-size: 11px; color: #93a599;">{{l.market}} · {{l.event}}</span>
+              <sc-if value="{{l.hasStatus}}" hint-placeholder-val="{{false}}">
+                <span style="margin-top: 2px; display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 650; color: {{l.statusColor}}; font-variant-numeric: tabular-nums;">
+                  <sc-if value="{{l.live}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="width: 5px; height: 5px; border-radius: 50%; background: #ff6a3d; animation: fgPulse 1.8s ease-in-out infinite;"></span></sc-if>{{l.status}}
+                </span>
+              </sc-if>
+            </span>
+          </div>
+        </sc-for>
+
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: #223029;">
+          <div style="padding: 9px 12px; background: #0f1512;"><span style="display: block; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: #93a599;">Stake</span><strong style="font-size: 14px; font-variant-numeric: tabular-nums;">{{b.stake}}</strong></div>
+          <div style="padding: 9px 12px; background: #0f1512;"><span style="display: block; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: #93a599;">{{b.returnLabel}}</span><strong style="font-size: 14px; color: {{b.returnColor}}; font-variant-numeric: tabular-nums;">{{b.returns}}</strong></div>
+        </div>
+
+        <sc-if value="{{b.canCash}}" hint-placeholder-val="{{false}}">
+          <div style="padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #223029;">
+            <sc-if value="{{b.idle}}" hint-placeholder-val="{{true}}">
+              <button type="button" onClick="{{b.askCash}}" style="height: 48px; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 8px; border: 1px solid {{b.cashBorder}}; background: {{b.cashBg}}; color: #16110a; font: inherit; font-size: 15px; font-weight: 800; cursor: pointer; transition: background-color 300ms ease, border-color 300ms ease;">
+                Cash Out <span style="font-variant-numeric: tabular-nums;">{{b.cash}}</span>
+                <sc-if value="{{b.up}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="font-size: 10px; color: #0b3d22;">▲</span></sc-if>
+                <sc-if value="{{b.down}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="font-size: 10px; color: #6b1520;">▼</span></sc-if>
+              </button>
+            </sc-if>
+            <sc-if value="{{b.confirming}}" hint-placeholder-val="{{false}}">
+              <div style="display: flex; flex-direction: column; gap: 8px; animation: fgPop 200ms ease-out both;">
+                <span style="font-size: 12px; color: #93a599; text-align: center;">Cash out now for <b style="color: #eef3ec; font-variant-numeric: tabular-nums;">{{b.cash}}</b>? This closes the bet.</span>
+                <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px;">
+                  <button type="button" onClick="{{b.cancelCash}}" style="height: 46px; border-radius: 8px; border: 1px solid #33463a; background: #151d18; color: #eef3ec; font: inherit; font-size: 14px; font-weight: 650; cursor: pointer;">Keep bet</button>
+                  <button type="button" onClick="{{b.confirmCash}}" style="height: 46px; border-radius: 8px; border: 1px solid #d8a32c; background: linear-gradient(180deg, #f2c14e, #d8a32c); color: #16110a; font: inherit; font-size: 14px; font-weight: 800; cursor: pointer;">Confirm</button>
+                </div>
+              </div>
+            </sc-if>
+            <sc-if value="{{b.cashed}}" hint-placeholder-val="{{false}}">
+              <div role="status" style="height: 48px; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 8px; background: #113224; border: 1px solid #46c47c; color: #46c47c; font-size: 14px; font-weight: 750; animation: fgPop 220ms ease-out both;">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"></path></svg>
+                Cashed out <span style="font-variant-numeric: tabular-nums;">{{b.cashedValue}}</span>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <div style="display: flex; justify-content: space-between; padding: 8px 12px; font-size: 11px; color: #93a599; border-top: 1px solid #223029; font-variant-numeric: tabular-nums;">
+          <span>{{b.placed}}</span><span>{{b.ref}}</span>
+        </div>
+      </article>
+    </sc-for>
+
+    <p style="margin: 4px 0 0; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 11px; color: #93a599;">
+      <span style="display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid #93a599; font-size: 9px; font-weight: 800; color: #eef3ec;">18+</span>
+      Cash out values move with the live price.
+    </p>
+  </main>
+
+  <nav aria-label="Primary" style="height: 60px; flex: none; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); background: #050806; border-top: 1px solid #223029; position: relative; z-index: 31;">
+    <a href="Main.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 650; letter-spacing: 0.02em; color: #93a599; text-decoration: none;">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11 12 4l8 7v9h-5v-6H9v6H4z"></path></svg>Home
+    </a>
+    <a href="Live.dc.html" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 650; letter-spacing: 0.02em; color: #93a599; text-decoration: none;">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h3l2.5-6 4 13 2.5-7h6"></path></svg>Live
+      <span aria-hidden="true" style="position: absolute; top: 9px; left: calc(50% + 9px); width: 7px; height: 7px; border-radius: 50%; background: #ff6a3d; box-shadow: 0 0 0 2px #050806;"></span>
+    </a>
+    <a href="MyBets.dc.html" aria-current="page" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 650; letter-spacing: 0.02em; color: #f2c14e; text-decoration: none;">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h14v16l-3.5-2-3.5 2-3.5-2L5 20z"></path><path d="M9 9h6M9 13h4"></path></svg>My Bets
+      <span aria-hidden="true" style="position: absolute; top: 5px; left: calc(50% + 6px); min-width: 16px; height: 16px; padding: 0 4px; display: grid; place-items: center; border-radius: 999px; background: #f2c14e; color: #16110a; font-size: 10px; font-weight: 800;">{{openCount}}</span>
+    </a>
+    <a href="Casino.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 650; letter-spacing: 0.02em; color: #93a599; text-decoration: none;">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"></rect><circle cx="8.5" cy="8.5" r="1.2" fill="currentColor" stroke="none"></circle><circle cx="15.5" cy="15.5" r="1.2" fill="currentColor" stroke="none"></circle><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"></circle></svg>Casino
+    </a>
+    <a href="Account.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 650; letter-spacing: 0.02em; color: #93a599; text-decoration: none;">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5"></circle><path d="M4.5 20a7.5 7.5 0 0 1 15 0"></path></svg>Account
+    </a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":393,"height":852}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      tab: 'open',
+      cash: { t1: 11.40, s1: 38.20, s2: 27.60 },
+      moves: {},
+      phase: {},
+      balance: 1238.50,
+    };
+  }
+
+  componentDidMount() {
+    this.timers = [];
+    this.tick = setInterval(() => this.wobble(), 1900);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.tick);
+    (this.timers || []).forEach((t) => clearTimeout(t));
+  }
+
+  wobble() {
+    const ids = Object.keys(this.state.cash).filter((id) => !this.state.phase[id]);
+    if (!ids.length) return;
+    const id = ids[Math.floor(Math.random() * ids.length)];
+    const v = this.state.cash[id];
+    const up = Math.random() > 0.45;
+    const step = Math.round((0.1 + Math.random() * 0.9) * 100) / 100;
+    const next = Math.max(0.5, Math.round((up ? v + step : v - step) * 100) / 100);
+    this.setState({ cash: { ...this.state.cash, [id]: next }, moves: { ...this.state.moves, [id]: up ? 'up' : 'down' } });
+    this.timers.push(setTimeout(() => {
+      const moves = { ...this.state.moves };
+      delete moves[id];
+      this.setState({ moves });
+    }, 1000));
+  }
+
+  money(n) {
+    return '€' + n.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  leg(o) {
+    const marks = {
+      won: { mark: '✓', bg: '#46c47c', ring: 'none', label: 'Won' },
+      lost: { mark: '×', bg: '#ef5567', ring: 'none', label: 'Lost' },
+      void: { mark: '–', bg: '#f0a03c', ring: 'none', label: 'Void' },
+      cashed: { mark: '–', bg: '#f2c14e', ring: 'none', label: 'Cashed out' },
+      live: { mark: '', bg: 'transparent', ring: 'inset 0 0 0 1.5px #ff6a3d', label: 'In play' },
+      pending: { mark: '', bg: 'transparent', ring: 'inset 0 0 0 1.5px #64766b', label: 'Not started' },
+    };
+    const m = marks[o.state];
+    return {
+      selection: o.selection, odds: o.odds, market: o.market, event: o.event,
+      mark: m.mark, markBg: m.bg, markRing: m.ring, markLabel: m.label,
+      hasStatus: !!o.status, status: o.status || '', live: o.state === 'live',
+      statusColor: o.state === 'live' ? '#ff6a3d' : o.good ? '#46c47c' : '#93a599',
+    };
+  }
+
+  renderVals() {
+    const s = this.state;
+    const open = [
+      { id: 't1', title: 'Treble', odds: '15.70', pill: 'Live', live: true, stake: 10, ret: 156.98, placed: 'Placed today 17:18', ref: 'FG-48213', legs: [
+        { state: 'live', selection: 'Liverpool to win and over 3.5 goals', odds: '3.25', market: 'Boosted', event: 'Liverpool v Man City', status: "2–1 · 67' · 3 of 4 goals" },
+        { state: 'pending', selection: 'Arsenal', odds: '2.10', market: 'Match result', event: 'Arsenal v Chelsea', status: 'Kicks off 17:30' },
+        { state: 'pending', selection: 'Real Madrid', odds: '2.30', market: 'Match result', event: 'Real Madrid v Barcelona', status: 'Kicks off 21:00' },
+      ] },
+      { id: 's1', title: 'Single', odds: '1.95', pill: 'Live', live: true, stake: 25, ret: 48.75, placed: 'Placed today 15:52', ref: 'FG-48177', legs: [
+        { state: 'live', selection: 'Liverpool', odds: '1.95', market: 'Match result', event: 'Liverpool v Man City', status: "Winning 2–1 · 67'", good: true },
+      ] },
+      { id: 's2', title: 'Single', odds: '1.80', pill: 'Live', live: true, stake: 20, ret: 36.00, placed: 'Placed today 16:40', ref: 'FG-48190', legs: [
+        { state: 'live', selection: 'Boston Celtics', odds: '1.80', market: 'Winner', event: 'Lakers v Celtics', status: 'Leading 91–88 · Q4 06:12', good: true },
+      ] },
+    ];
+    const settled = [
+      { id: 'w1', title: 'Single', odds: '2.10', pill: 'Won', kind: 'won', stake: 20, ret: 42.00, placed: 'Settled today 16:58', ref: 'FG-48102', legs: [
+        { state: 'won', selection: 'Napoli', odds: '2.10', market: 'Match result', event: 'Napoli v Roma', status: 'Full time 2–0', good: true },
+      ] },
+      { id: 'c1', title: 'Double', odds: '4.40', pill: 'Cashed out', kind: 'cash', stake: 15, ret: 22.10, placed: 'Settled Sat 10 Oct', ref: 'FG-47960', legs: [
+        { state: 'won', selection: 'Bayern Munich', odds: '1.60', market: 'Match result', event: 'Bayern v Freiburg', status: 'Full time 3–1', good: true },
+        { state: 'cashed', selection: 'Over 2.5 goals', odds: '2.75', market: 'Total goals', event: 'Lyon v Nice', status: "Open when cashed out at 62'" },
+      ] },
+      { id: 'l1', title: 'Single', odds: '1.85', pill: 'Lost', kind: 'lost', stake: 10, ret: 0, placed: 'Settled Sat 10 Oct', ref: 'FG-47931', legs: [
+        { state: 'lost', selection: 'Over 2.5 goals', odds: '1.85', market: 'Total goals', event: 'Juventus v Torino', status: 'Full time 1–0' },
+      ] },
+      { id: 'v1', title: 'Single', odds: '1.70', pill: 'Void', kind: 'void', stake: 5, ret: 5.00, placed: 'Settled Fri 9 Oct', ref: 'FG-47855', legs: [
+        { state: 'void', selection: 'M. Laurent', odds: '1.70', market: 'Match winner', event: 'Laurent v Ruiz', status: 'Retired in set 1 · stake returned' },
+      ] },
+    ];
+    const pills = {
+      live: ['#331508', '#ff6a3d'], won: ['#113224', '#46c47c'], lost: ['#331419', '#ef5567'],
+      void: ['#33240f', '#f0a03c'], cash: ['#4a3a12', '#f2c14e'],
+    };
+    const isOpen = s.tab === 'open';
+    const list = isOpen ? open : settled;
+    const bets = list.map((b) => {
+      const ph = s.phase[b.id];
+      const cash = s.cash[b.id];
+      const mv = s.moves[b.id];
+      const kind = b.live ? 'live' : b.kind;
+      return {
+        title: b.title, odds: b.odds, pill: b.pill, isLive: !!b.live,
+        aria: b.title + ' at ' + b.odds + ', ' + b.pill,
+        pillBg: pills[kind][0], pillColor: pills[kind][1],
+        legs: b.legs.map((l) => this.leg(l)),
+        stake: this.money(b.stake),
+        returnLabel: isOpen ? 'Potential return' : 'Returned',
+        returns: isOpen ? this.money(b.ret) : (b.kind === 'won' ? '+' : '') + this.money(b.ret),
+        returnColor: isOpen ? '#f2c14e' : b.kind === 'won' ? '#46c47c' : b.kind === 'lost' ? '#93a599' : '#eef3ec',
+        canCash: isOpen,
+        idle: isOpen && !ph,
+        confirming: ph === 'confirm',
+        cashed: ph === 'done',
+        cash: cash ? this.money(cash) : '',
+        cashedValue: cash ? this.money(cash) : '',
+        up: mv === 'up', down: mv === 'down',
+        cashBg: mv === 'up' ? '#46c47c' : mv === 'down' ? '#ef5567' : 'linear-gradient(180deg, #f2c14e, #d8a32c)',
+        cashBorder: mv === 'up' ? '#46c47c' : mv === 'down' ? '#ef5567' : '#d8a32c',
+        askCash: () => this.setState({ phase: { ...s.phase, [b.id]: 'confirm' } }),
+        cancelCash: () => { const p = { ...s.phase }; delete p[b.id]; this.setState({ phase: p }); },
+        confirmCash: () => this.setState({ phase: { ...s.phase, [b.id]: 'done' }, balance: s.balance + cash }),
+        placed: b.placed, ref: b.ref,
+      };
+    });
+    const seg = (on, pick) => ({ on, pick, bg: on ? '#222d25' : 'transparent', color: on ? '#f2c14e' : '#93a599', ring: on ? 'inset 0 0 0 1px #33463a' : 'none' });
+    const openCount = open.filter((b) => s.phase[b.id] !== 'done').length;
+    return {
+      balance: this.money(s.balance),
+      openTab: seg(isOpen, () => this.setState({ tab: 'open' })),
+      settledTab: seg(!isOpen, () => this.setState({ tab: 'settled' })),
+      openCount,
+      showSettledSummary: !isOpen,
+      bets,
+    };
+  }
+}
+</script>
+</body>
+</html>

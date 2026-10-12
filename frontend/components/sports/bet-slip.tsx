@@ -6,7 +6,7 @@ import { combinedOdds, formatOdds, formatPoints } from '../../lib/format';
 import { pickId, useBetSlip, type ReconciledPick } from '../../lib/bet-slip';
 import { describeSportsError } from '../../lib/sports';
 import { useSession, useWallet } from '../../lib/queries';
-import { IconClose } from '../shell/icons';
+import { IconCheck, IconChevron, IconClose } from '../shell/icons';
 
 const QUICK_STAKES = [100, 500, 1000, 5000];
 
@@ -241,10 +241,36 @@ export function BetSlipSheet() {
   return (
     <>
       {!slip.sheetOpen && (
-        <button type="button" className="slip-bar" onClick={() => slip.setSheetOpen(true)}>
-          <span key={slip.picks.length} className="slip-bar-label">{slip.picks.length > 0 ? `Bet Slip (${slip.picks.length})` : 'Bet placed'}</span>
-          <span className="slip-bar-figure">
-            {stakeValue > 0 ? `${formatPoints(stakeValue)} PTS` : slip.picks.length > 0 ? 'Add stake' : 'View'}
+        <button
+          type="button"
+          className="slip-bar"
+          aria-label={slip.picks.length > 0 ? `Open bet slip, ${slip.picks.length} ${slip.picks.length === 1 ? 'selection' : 'selections'}` : 'Open bet receipt'}
+          onClick={() => slip.setSheetOpen(true)}
+        >
+          <span className="desk-only slip-bar-desk">
+            <span key={slip.picks.length} className="slip-bar-label">{slip.picks.length > 0 ? `Bet Slip (${slip.picks.length})` : 'Bet placed'}</span>
+            <span className="slip-bar-figure">
+              {stakeValue > 0 ? `${formatPoints(stakeValue)} PTS` : slip.picks.length > 0 ? 'Add stake' : 'View'}
+            </span>
+          </span>
+          {/* Phone: count, label, total odds, chevron. The odds are the slip's own estimate. */}
+          <span className="m-only slip-bar-phone">
+            {slip.picks.length > 0 ? (
+              <>
+                <span key={slip.picks.length} className="slip-bar-count">{slip.picks.length}</span>
+                <span className="slip-bar-title">Bet Slip</span>
+                <span className="slip-bar-odds">
+                  <small>Total odds</small>
+                  <b>{formatOdds(combinedOdds(slip.picks.map((pick) => pick.displayedOdds)))}</b>
+                </span>
+              </>
+            ) : (
+              <>
+                <IconCheck className="slip-bar-tick" />
+                <span className="slip-bar-title">Bet placed</span>
+              </>
+            )}
+            <IconChevron className="slip-bar-chevron" />
           </span>
         </button>
       )}

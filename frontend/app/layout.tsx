@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { Providers } from './providers';
 import './styles.css';
 import './reference.css';
+import './mobile.css';
 
 export const metadata: Metadata = {
   title: "Fool's Gold Club",

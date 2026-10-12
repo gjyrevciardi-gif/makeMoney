@@ -69,6 +69,10 @@ export function useSession() {
   return useQuery({
     queryKey: qk.session,
     queryFn: async () => {
+      if (process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_DEV_FIXTURES === '1'
+        && process.env.NEXT_PUBLIC_DEV_FIXTURE_SESSION === '1') {
+        return (await import('./dev-fixtures')).fixtureSession();
+      }
       try {
         return await getJson<Session>('/users/me');
       } catch (error) {
@@ -88,6 +92,10 @@ export function useWallet() {
     queryKey: qk.wallet,
     enabled: Boolean(session.data),
     queryFn: async () => {
+      if (process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_DEV_FIXTURES === '1'
+        && process.env.NEXT_PUBLIC_DEV_FIXTURE_SESSION === '1') {
+        return (await import('./dev-fixtures')).fixtureWallet();
+      }
       try {
         return await getJson<Wallet>('/wallet/me');
       } catch (error) {

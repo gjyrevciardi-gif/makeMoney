@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Fool's Gold Club — Bet slip</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;background:#050806}
+a{color:#f2c14e}a:hover{color:#d8a32c}
+.fg-scroll{scrollbar-width:none}
+.fg-scroll::-webkit-scrollbar{display:none}
+input::placeholder{color:#64766b}
+@keyframes fgSheet{from{transform:translateY(24%);opacity:.4}to{transform:none;opacity:1}}
+@keyframes fgUpFlash{0%,70%{background:#113224;border-color:#46c47c}100%{background:#151d18;border-color:#223029}}
+@keyframes fgBump{0%{transform:scale(1)}40%{transform:scale(1.08)}100%{transform:scale(1)}}
+@keyframes fgSpin{to{transform:rotate(360deg)}}
+@keyframes fgCircle{from{stroke-dashoffset:176}to{stroke-dashoffset:0}}
+@keyframes fgTick{from{stroke-dashoffset:40}to{stroke-dashoffset:0}}
+@keyframes fgPop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.06);opacity:1}100%{transform:scale(1)}}
+@keyframes fgFall{0%{transform:translate3d(0,-40px,0) rotate(0deg);opacity:1}85%{opacity:1}100%{transform:translate3d(var(--dx,0),700px,0) rotate(var(--rot,540deg));opacity:0}}
+@keyframes fgFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes fgPulse{0%,100%{opacity:1}50%{opacity:.35}}
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
+</style>
+</helmet>
+<div style="width: 393px; height: 852px; position: relative; overflow: hidden; background: #080c0a; color: #eef3ec; font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 14px; line-height: 1.45; -webkit-font-smoothing: antialiased;">
+
+  <div aria-hidden="true" style="position: absolute; inset: 0; display: flex; flex-direction: column;">
+    <div style="height: 56px; display: flex; align-items: center; gap: 7px; padding: 0 14px; background: #050806;">
+      <span style="width: 20px; height: 20px; border-radius: 50%; background: linear-gradient(145deg, #f2c14e, #d8a32c);"></span>
+      <span style="font-size: 13px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #f2c14e;">Fool's Gold</span>
+      <span style="margin-left: auto; height: 40px; display: flex; align-items: center; padding: 0 12px; border-radius: 8px; background: #151d18; border: 1px solid #33463a; font-size: 14px; font-weight: 700; color: #f2c14e;">€1,248.50</span>
+    </div>
+    <div style="height: 44px; display: flex; gap: 22px; align-items: center; padding: 0 16px; background: #050806; border-bottom: 1px solid #223029; font-size: 13px; font-weight: 650; color: #93a599;"><span style="color: #f2c14e;">Sports</span><span>Live</span><span>Casino</span><span>Live Casino</span><span>My Bets</span></div>
+    <div style="display: flex; flex-direction: column; gap: 12px; padding: 12px;">
+      <div style="height: 76px; display: flex; gap: 18px;"><span style="width: 48px; height: 48px; border-radius: 50%; background: #1c261f; box-shadow: inset 0 0 0 1.5px #f2c14e;"></span><span style="width: 48px; height: 48px; border-radius: 50%; background: #151d18;"></span><span style="width: 48px; height: 48px; border-radius: 50%; background: #151d18;"></span><span style="width: 48px; height: 48px; border-radius: 50%; background: #151d18;"></span><span style="width: 48px; height: 48px; border-radius: 50%; background: #151d18;"></span></div>
+      <div style="height: 196px; border-radius: 12px; border: 1px solid #223029; background: linear-gradient(150deg, #151d18, #0f1512);"></div>
+      <div style="height: 240px; border-radius: 12px; border: 1px solid #223029; background: #0f1512;"></div>
+    </div>
+  </div>
+  <a href="Main.dc.html" aria-label="Close bet slip" style="position: absolute; inset: 0; background: rgba(0, 0, 0, 0.62); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);"></a>
+
+  <section role="dialog" aria-modal="true" aria-label="Bet slip" style="position: absolute; left: 0; right: 0; bottom: 0; height: 772px; display: flex; flex-direction: column; background: #0f1512; border-top: 1px solid #33463a; border-radius: 18px 18px 0 0; box-shadow: 0 -18px 48px -16px rgba(0, 0, 0, 0.85); overflow: hidden; animation: fgSheet 260ms cubic-bezier(0.22, 1, 0.36, 1) both;">
+    <span aria-hidden="true" style="align-self: center; width: 36px; height: 4px; margin-top: 8px; border-radius: 999px; background: #33463a; flex: none;"></span>
+
+    <sc-if value="{{notPlaced}}" hint-placeholder-val="{{true}}">
+      <div style="flex: 1; min-height: 0; display: flex; flex-direction: column;">
+        <div style="height: 52px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 4px 0 16px;">
+          <h2 style="margin: 0; font-size: 16px; font-weight: 700;">Bet Slip</h2>
+          <span style="min-width: 22px; height: 22px; padding: 0 7px; display: grid; place-items: center; border-radius: 999px; background: #f2c14e; color: #16110a; font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums;">{{count}}</span>
+          <button type="button" onClick="{{clearAll}}" style="margin-left: auto; height: 44px; padding: 0 10px; border: 0; background: transparent; color: #93a599; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;">Clear all</button>
+          <a href="Main.dc.html" aria-label="Close bet slip" style="width: 44px; height: 44px; display: grid; place-items: center; color: #eef3ec;">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+          </a>
+        </div>
+
+        <sc-if value="{{hasPicks}}" hint-placeholder-val="{{true}}">
+          <div style="flex: none; padding: 0 16px 10px;">
+            <div role="tablist" aria-label="Bet type" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px; padding: 3px; border-radius: 8px; background: #151d18; border: 1px solid #223029;">
+              <button type="button" role="tab" aria-selected="{{singles.on}}" onClick="{{singles.pick}}" style="height: 38px; border: 0; border-radius: 5px; background: {{singles.bg}}; color: {{singles.color}}; box-shadow: {{singles.ring}}; font: inherit; font-size: 13px; font-weight: 650; cursor: pointer;">Singles</button>
+              <button type="button" role="tab" aria-selected="{{multi.on}}" onClick="{{multi.pick}}" style="height: 38px; border: 0; border-radius: 5px; background: {{multi.bg}}; color: {{multi.color}}; box-shadow: {{multi.ring}}; font: inherit; font-size: 13px; font-weight: 650; cursor: pointer;">{{multiLabel}}</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <div class="fg-scroll" style="flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 2px 16px 12px;">
+          <sc-for list="{{picks}}" as="p" hint-placeholder-count="3">
+            <div style="flex: none; position: relative; display: flex; flex-direction: column; gap: 2px; padding: 10px 44px 10px 12px; border-radius: 12px; background: #151d18; border: 1px solid #223029; animation: {{p.anim}};">
+              <div style="display: flex; align-items: baseline; gap: 8px;">
+                <sc-if value="{{p.boosted}}" hint-placeholder-val="{{false}}">
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="#f2c14e" aria-label="Boosted" role="img" style="flex: none;"><path d="M13.2 2.5 4.8 13.6h6.1l-1.1 7.9 8.4-11.1h-6.1z"></path></svg>
+                </sc-if>
+                <strong style="flex: 1; min-width: 0; font-size: 13px; font-weight: 700;">{{p.name}}</strong>
+                <span style="display: flex; align-items: baseline; gap: 6px; flex: none;">
+                  <sc-if value="{{p.hasWas}}" hint-placeholder-val="{{false}}"><s style="font-size: 12px; color: #93a599; font-variant-numeric: tabular-nums;">{{p.was}}</s></sc-if>
+                  <span style="font-size: 15px; font-weight: 800; color: #f2c14e; font-variant-numeric: tabular-nums;">{{p.odds}}</span>
+                </span>
+              </div>
+              <span style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: #93a599;">
+                <sc-if value="{{p.live}}" hint-placeholder-val="{{false}}"><span style="display: inline-flex; align-items: center; gap: 4px; color: #ff6a3d; font-weight: 800; letter-spacing: 0.04em;"><span aria-hidden="true" style="width: 5px; height: 5px; border-radius: 50%; background: #ff6a3d; animation: fgPulse 1.8s ease-in-out infinite;"></span>LIVE</span></sc-if>
+                {{p.event}}
+              </span>
+              <sc-if value="{{p.moved}}" hint-placeholder-val="{{false}}">
+                <span style="margin-top: 4px; font-size: 11px; font-weight: 650; color: #46c47c;">▲ Price went up from {{p.from}}</span>
+              </sc-if>
+              <sc-if value="{{p.single}}" hint-placeholder-val="{{false}}">
+                <span style="margin-top: 6px; display: flex; justify-content: space-between; font-size: 11px; color: #93a599; font-variant-numeric: tabular-nums;"><span>Stake {{stakeLabel}}</span><span>Returns <b style="color: #eef3ec;">{{p.ret}}</b></span></span>
+              </sc-if>
+              <button type="button" aria-label="Remove {{p.name}}" onClick="{{p.remove}}" style="position: absolute; top: 0; right: 0; width: 44px; height: 44px; display: grid; place-items: center; padding: 0; border: 0; background: transparent; color: #93a599; cursor: pointer;">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+              </button>
+            </div>
+          </sc-for>
+
+          <sc-if value="{{empty}}" hint-placeholder-val="{{false}}">
+            <div style="margin-top: 40px; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 34px 20px; border: 1px dashed #33463a; border-radius: 12px; text-align: center; color: #93a599;">
+              <strong style="font-size: 15px; color: #eef3ec;">Your slip is empty</strong>
+              <span style="font-size: 13px;">Tap any price to add a selection.</span>
+              <a href="Main.dc.html" style="margin-top: 8px; height: 44px; display: inline-flex; align-items: center; padding: 0 16px; border-radius: 8px; border: 1px solid #33463a; background: #151d18; color: #eef3ec; font-size: 13px; font-weight: 650; text-decoration: none;">Browse sports</a>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{hasPicks}}" hint-placeholder-val="{{true}}">
+            <button type="button" role="switch" aria-checked="{{acceptAll}}" onClick="{{toggleAccept}}" style="flex: none; min-height: 48px; display: flex; align-items: center; gap: 12px; padding: 0 2px; border: 0; background: transparent; color: #eef3ec; font: inherit; text-align: left; cursor: pointer;">
+              <span style="flex: 1; display: flex; flex-direction: column;">
+                <span style="font-size: 13px; font-weight: 600;">Accept any price changes</span>
+                <span style="font-size: 11px; color: #93a599;">When off, you confirm a moved price first.</span>
+              </span>
+              <span aria-hidden="true" style="width: 44px; height: 26px; flex: none; padding: 3px; border-radius: 999px; background: {{switchBg}}; transition: background 160ms ease;">
+                <span style="display: block; width: 20px; height: 20px; border-radius: 50%; background: {{knobBg}}; transform: {{knobX}}; transition: transform 160ms ease;"></span>
+              </span>
+            </button>
+          </sc-if>
+        </div>
+
+        <sc-if value="{{hasPicks}}" hint-placeholder-val="{{true}}">
+          <div style="flex: none; display: flex; flex-direction: column; gap: 10px; padding: 12px 16px 18px; background: #151d18; border-top: 1px solid #223029;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <label for="slip-stake" style="font-size: 13px; font-weight: 650; color: #93a599; white-space: nowrap;">{{stakeTitle}}</label>
+              <span style="flex: 1; min-width: 0; height: 48px; display: flex; align-items: center; gap: 4px; padding: 0 12px; border-radius: 8px; background: #080c0a; border: 1px solid {{inputBorder}};">
+                <span style="font-size: 16px; font-weight: 700; color: #93a599;">€</span>
+                <input id="slip-stake" inputmode="decimal" placeholder="0.00" value="{{stakeText}}" onChange="{{onStake}}" style="flex: 1; min-width: 0; height: 100%; border: 0; outline: none; background: transparent; color: #eef3ec; font: inherit; font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums;">
+                <button type="button" aria-label="Clear stake" onClick="{{clearStake}}" style="width: 32px; height: 32px; margin-right: -6px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: transparent; color: #93a599; cursor: pointer;">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+                </button>
+              </span>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px;">
+              <sc-for list="{{chips}}" as="c" hint-placeholder-count="4">
+                <button type="button" onClick="{{c.add}}" style="height: 44px; border-radius: 8px; border: 1px solid #33463a; background: #0f1512; color: #eef3ec; font: inherit; font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; cursor: pointer;">{{c.label}}</button>
+              </sc-for>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <div style="display: flex; justify-content: space-between; font-size: 12px; color: #93a599;"><span>{{oddsTitle}}</span><span style="font-weight: 700; color: #eef3ec; font-variant-numeric: tabular-nums;">{{oddsValue}}</span></div>
+              <div style="display: flex; justify-content: space-between; font-size: 12px; color: #93a599;"><span>Total stake</span><span style="font-weight: 700; color: #eef3ec; font-variant-numeric: tabular-nums;">{{totalStake}}</span></div>
+              <div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 2px;">
+                <span style="font-size: 13px; font-weight: 650; color: #eef3ec;">Potential return</span>
+                <span key="{{bumpKey}}" style="display: inline-block; font-size: 22px; font-weight: 800; color: #f2c14e; font-variant-numeric: tabular-nums; animation: fgBump 260ms ease-out;">{{potential}}</span>
+              </div>
+            </div>
+            <sc-if value="{{tooMuch}}" hint-placeholder-val="{{false}}">
+              <span style="font-size: 12px; font-weight: 650; color: #ef5567;">That's more than your balance of €1,248.50.</span>
+            </sc-if>
+            <button type="button" onClick="{{place}}" disabled="{{cantPlace}}" style="height: 54px; display: flex; align-items: center; justify-content: center; gap: 10px; border-radius: 12px; border: 1px solid #d8a32c; background: linear-gradient(180deg, #f2c14e, #d8a32c); color: #16110a; font: inherit; font-size: 16px; font-weight: 800; cursor: pointer; opacity: {{placeOpacity}}; box-shadow: 0 10px 24px -12px rgba(242, 193, 78, 0.7);">
+              <sc-if value="{{placing}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="width: 18px; height: 18px; border-radius: 50%; border: 2.5px solid rgba(22, 17, 10, 0.25); border-top-color: #16110a; animation: fgSpin 700ms linear infinite;"></span></sc-if>
+              {{placeLabel}}
+            </button>
+            <p style="margin: 0; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 11px; color: #93a599; text-align: center;">
+              <span style="padding: 0 4px; border: 1px solid #93a599; border-radius: 4px; font-size: 9px; font-weight: 800; color: #eef3ec;">18+</span>
+              Prices are confirmed when your bet is accepted.
+            </p>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{placed}}" hint-placeholder-val="{{false}}">
+      <div style="flex: 1; min-height: 0; position: relative; display: flex; flex-direction: column; align-items: center; padding: 40px 20px 20px; text-align: center; overflow: hidden;">
+        <div aria-hidden="true" style="position: absolute; inset: 0; z-index: 5; pointer-events: none;">
+          <sc-for list="{{confetti}}" as="cf" hint-placeholder-count="0">
+            <span style="position: absolute; top: 0; left: {{cf.x}}; width: {{cf.w}}; height: {{cf.h}}; border-radius: {{cf.r}}; background: {{cf.c}}; --dx: {{cf.dx}}; --rot: {{cf.rot}}; animation: fgFall {{cf.d}} cubic-bezier(0.25, 0.6, 0.4, 1) {{cf.delay}} both;"></span>
+          </sc-for>
+        </div>
+        <svg viewBox="0 0 64 64" width="88" height="88" aria-hidden="true" style="animation: fgPop 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both;">
+          <circle cx="32" cy="32" r="28" fill="#113224"></circle>
+          <circle cx="32" cy="32" r="28" fill="none" stroke="#46c47c" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="176" style="animation: fgCircle 520ms 120ms ease-out both;" transform="rotate(-90 32 32)"></circle>
+          <path d="M20 33.5 28.5 42 45 24" fill="none" stroke="#46c47c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="40" style="animation: fgTick 360ms 560ms ease-out both;"></path>
+        </svg>
+        <h2 style="margin: 18px 0 4px; font-size: 22px; font-weight: 800; letter-spacing: -0.011em; animation: fgFade 360ms 400ms ease-out both;">Bet placed</h2>
+        <p style="margin: 0; font-size: 13px; color: #93a599; animation: fgFade 360ms 480ms ease-out both;">Good luck. You'll find it in My Bets.</p>
+
+        <div style="width: 100%; margin-top: 22px; display: flex; flex-direction: column; border-radius: 12px; border: 1px solid #223029; background: #151d18; text-align: left; animation: fgFade 360ms 560ms ease-out both;">
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #223029;">
+            <strong style="font-size: 13px; font-weight: 700;">{{receiptTitle}}</strong>
+            <span style="font-size: 11px; color: #93a599; font-variant-numeric: tabular-nums;">Ticket FG-48213</span>
+          </div>
+          <sc-for list="{{receiptLegs}}" as="r" hint-placeholder-count="3">
+            <div style="display: flex; justify-content: space-between; gap: 10px; padding: 8px 12px; font-size: 12px;">
+              <span style="min-width: 0; display: flex; flex-direction: column;"><span style="font-weight: 650; color: #eef3ec;">{{r.name}}</span><span style="color: #93a599;">{{r.event}}</span></span>
+              <span style="font-weight: 700; color: #f2c14e; font-variant-numeric: tabular-nums;">{{r.odds}}</span>
+            </div>
+          </sc-for>
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; margin-top: 4px; background: #223029; border-top: 1px solid #223029; border-radius: 0 0 12px 12px; overflow: hidden;">
+            <div style="padding: 10px 12px; background: #0f1512;"><span style="display: block; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: #93a599;">Stake</span><strong style="font-size: 15px; font-variant-numeric: tabular-nums;">{{totalStake}}</strong></div>
+            <div style="padding: 10px 12px; background: #0f1512;"><span style="display: block; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: #93a599;">Potential return</span><strong style="font-size: 15px; color: #f2c14e; font-variant-numeric: tabular-nums;">{{potential}}</strong></div>
+          </div>
+        </div>
+
+        <div style="width: 100%; margin-top: auto; display: flex; flex-direction: column; gap: 8px; animation: fgFade 360ms 640ms ease-out both;">
+          <a href="MyBets.dc.html" style="height: 52px; display: flex; align-items: center; justify-content: center; border-radius: 12px; background: linear-gradient(180deg, #f2c14e, #d8a32c); border: 1px solid #d8a32c; color: #16110a; font-size: 15px; font-weight: 800; text-decoration: none;">View in My Bets</a>
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px;">
+            <button type="button" onClick="{{reuse}}" style="height: 48px; border-radius: 12px; border: 1px solid #33463a; background: #151d18; color: #eef3ec; font: inherit; font-size: 14px; font-weight: 650; cursor: pointer;">Keep selections</button>
+            <a href="Main.dc.html" style="height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 12px; border: 1px solid #33463a; background: #151d18; color: #eef3ec; font-size: 14px; font-weight: 650; text-decoration: none;">Done</a>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":393,"height":852}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.ALL = [
+      { id: 'ars', name: 'Arsenal', market: 'Match result', event: 'Match result · Arsenal v Chelsea · 17:30', short: 'Arsenal v Chelsea · Today 17:30', odds: 2.10 },
+      { id: 'rma', name: 'Real Madrid', market: 'Match result', event: 'Match result · Real Madrid v Barcelona · 21:00', short: 'Real Madrid v Barcelona · Today 21:00', odds: 2.30, from: '2.25' },
+      { id: 'liv', name: 'Liverpool to win and over 3.5 goals', market: 'Boosted price', event: "Liverpool v Manchester City · 67'", short: "Liverpool v Manchester City · 67'", odds: 3.25, was: '2.75', boosted: true, live: true },
+    ];
+    this.state = { ids: ['ars', 'rma', 'liv'], mode: 'multi', stake: '10.00', bump: 0, acceptAll: true, phase: 'slip' };
+  }
+
+  componentWillUnmount() { clearTimeout(this.placeT); }
+
+  num(v) {
+    const n = parseFloat(String(v).replace(',', '.'));
+    return isFinite(n) && n > 0 ? n : 0;
+  }
+
+  money(n) {
+    return '€' + n.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  confetti() {
+    const colors = ['#f2c14e', '#d8a32c', '#a8dc57', '#46c47c', '#eef3ec', '#f2c14e'];
+    const out = [];
+    for (let i = 0; i < 44; i++) {
+      const r = (n) => { const x = Math.sin(i * 12.9898 + n * 78.233) * 43758.5453; return x - Math.floor(x); };
+      const strip = r(1) > 0.45;
+      out.push({
+        x: Math.round(r(2) * 100) + '%',
+        w: strip ? '6px' : '8px',
+        h: strip ? '14px' : '8px',
+        r: strip ? '2px' : '50%',
+        c: colors[i % colors.length],
+        dx: Math.round((r(3) - 0.5) * 160) + 'px',
+        rot: Math.round(360 + r(4) * 540) + 'deg',
+        d: (1.6 + r(5) * 1.2).toFixed(2) + 's',
+        delay: (r(6) * 0.45).toFixed(2) + 's',
+      });
+    }
+    return out;
+  }
+
+  renderVals() {
+    const s = this.state;
+    const picks = this.ALL.filter((p) => s.ids.indexOf(p.id) >= 0);
+    const n = picks.length;
+    const multi = s.mode === 'multi' && n > 1;
+    const stake = this.num(s.stake);
+    const comb = picks.reduce((a, p) => a * p.odds, 1);
+    const totalStake = multi ? stake : stake * n;
+    const potential = multi ? stake * comb : picks.reduce((a, p) => a + stake * p.odds, 0);
+    const tooMuch = totalStake > 1248.5;
+    const seg = (on, pick) => ({
+      on, pick,
+      bg: on ? '#222d25' : 'transparent',
+      color: on ? '#f2c14e' : '#93a599',
+      ring: on ? 'inset 0 0 0 1px #33463a' : 'none',
+    });
+    const placing = s.phase === 'placing';
+    const cantPlace = n === 0 || stake <= 0 || tooMuch || placing;
+    const chips = [5, 10, 25, 50].map((v) => ({
+      label: '+€' + v,
+      add: () => this.setState({ stake: (stake + v).toFixed(2), bump: s.bump + 1 }),
+    }));
+    const foldNames = { 2: 'Double', 3: 'Treble', 4: '4-fold', 5: '5-fold' };
+    return {
+      notPlaced: s.phase !== 'placed',
+      placed: s.phase === 'placed',
+      count: n,
+      hasPicks: n > 0,
+      empty: n === 0,
+      clearAll: () => this.setState({ ids: [] }),
+      singles: seg(!multi, () => this.setState({ mode: 'singles' })),
+      multi: seg(multi, () => this.setState({ mode: 'multi' })),
+      multiLabel: n > 1 ? 'Multiple · ' + (foldNames[n] || n + '-fold') : 'Multiple',
+      picks: picks.map((p) => ({
+        name: p.name, market: p.market, event: p.event, odds: p.odds.toFixed(2),
+        boosted: !!p.boosted, live: !!p.live,
+        hasWas: !!p.was, was: p.was || '',
+        moved: !!p.from, from: p.from || '',
+        anim: p.from ? 'fgUpFlash 2.4s ease-out 1' : 'none',
+        single: !multi,
+        ret: this.money(stake * p.odds),
+        remove: () => this.setState({ ids: s.ids.filter((x) => x !== p.id) }),
+      })),
+      acceptAll: s.acceptAll,
+      toggleAccept: () => this.setState({ acceptAll: !s.acceptAll }),
+      switchBg: s.acceptAll ? '#f2c14e' : '#33463a',
+      knobBg: s.acceptAll ? '#16110a' : '#93a599',
+      knobX: s.acceptAll ? 'translateX(18px)' : 'none',
+      stakeTitle: multi ? 'Stake' : 'Each',
+      stakeLabel: this.money(stake),
+      stakeText: s.stake,
+      onStake: (e) => this.setState({ stake: e.target.value.replace(/[^0-9.,]/g, ''), bump: s.bump + 1 }),
+      clearStake: () => this.setState({ stake: '' }),
+      inputBorder: tooMuch ? '#ef5567' : '#f2c14e',
+      chips,
+      oddsTitle: multi ? 'Total odds' : 'Bets',
+      oddsValue: multi ? comb.toFixed(2) : n + ' × ' + this.money(stake),
+      totalStake: this.money(totalStake),
+      potential: this.money(potential),
+      bumpKey: 'b' + s.bump,
+      tooMuch,
+      cantPlace,
+      placeOpacity: cantPlace && !placing ? 0.45 : 1,
+      placing,
+      placeLabel: placing ? 'Placing bet…' : 'Place bet · ' + this.money(totalStake),
+      place: () => {
+        if (cantPlace) return;
+        this.setState({ phase: 'placing' });
+        this.placeT = setTimeout(() => this.setState({ phase: 'placed' }), 900);
+      },
+      receiptTitle: multi ? (foldNames[n] || n + '-fold') + ' · ' + comb.toFixed(2) : n + ' singles',
+      receiptLegs: picks.map((p) => ({ name: p.name, event: p.short, odds: p.odds.toFixed(2) })),
+      confetti: s.phase === 'placed' ? this.confetti() : [],
+      reuse: () => this.setState({ phase: 'slip' }),
+    };
+  }
+}
+</script>
+</body>
+</html>

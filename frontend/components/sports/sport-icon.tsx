@@ -6,6 +6,29 @@ import type { ReactElement } from 'react';
  * disc rather than a wrong picture.
  */
 const ICONS: [RegExp, ReactElement][] = [
+  // Horse Racing and Esports use the app's own colour variables, so they add no new colour.
+  [/horse|racing/, (
+    <g>
+      <path
+        d="M6.3 3.8C4.5 6.1 3.6 8.6 3.6 11.2c0 5 3.6 8.6 8.4 8.6s8.4-3.6 8.4-8.6c0-2.6-.9-5.1-2.7-7.4l-2.9 1.6c1.2 1.7 1.9 3.6 1.9 5.8 0 3.1-2 5.3-4.7 5.3s-4.7-2.2-4.7-5.3c0-2.2.7-4.1 1.9-5.8z"
+        style={{ fill: 'var(--ref-odds)' }}
+      />
+      {[[6.4, 9.6], [6.9, 13.4], [17.6, 9.6], [17.1, 13.4]].map(([cx, cy]) => (
+        <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r=".8" style={{ fill: 'var(--ref-cell)' }} />
+      ))}
+    </g>
+  )],
+  [/esport|dota|csgo|counterstrike|valorant|leagueoflegends/, (
+    <g>
+      <path
+        d="M7 7.5h10a4 4 0 0 1 3.9 3.2l.9 4.3a2.4 2.4 0 0 1-4.1 2.1l-2.1-2.4H8.4l-2.1 2.4a2.4 2.4 0 0 1-4.1-2.1l.9-4.3A4 4 0 0 1 7 7.5z"
+        style={{ fill: 'var(--ref-muted)' }}
+      />
+      <path d="M7.6 9.9v3.2M6 11.5h3.2" strokeWidth="1.3" strokeLinecap="round" style={{ stroke: 'var(--ref-cell)' }} />
+      <circle cx="16" cy="10.6" r=".95" style={{ fill: 'var(--ref-cell)' }} />
+      <circle cx="17.7" cy="12.4" r=".95" style={{ fill: 'var(--ref-cell)' }} />
+    </g>
+  )],
   [/americanfootball|nfl|ncaaf/, (
     <g>
       <ellipse cx="12" cy="12" rx="9" ry="5.5" transform="rotate(-35 12 12)" fill="#8a4b24" />

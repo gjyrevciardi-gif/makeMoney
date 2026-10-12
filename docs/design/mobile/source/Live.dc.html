@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Fool's Gold Club — Live</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;background:#050806}
+a{color:#f2c14e}a:hover{color:#d8a32c}
+.fg-scroll{scrollbar-width:none}
+.fg-scroll::-webkit-scrollbar{display:none}
+@keyframes fgPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}
+@keyframes fgRing{0%{transform:scale(1);opacity:.6}100%{transform:scale(2.8);opacity:0}}
+@keyframes fgRise{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
+@keyframes fgGoal{0%,100%{background:#331508}50%{background:#5a230f}}
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
+</style>
+</helmet>
+<div style="width: 393px; height: 852px; position: relative; overflow: hidden; display: flex; flex-direction: column; background: #080c0a; color: #eef3ec; font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 14px; line-height: 1.45; -webkit-font-smoothing: antialiased;">
+
+  <header style="height: 56px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 8px 0 14px; background: #050806;">
+    <a href="Main.dc.html" aria-label="Fool's Gold home" style="display: flex; align-items: center; gap: 7px; text-decoration: none;">
+      <span aria-hidden="true" style="width: 20px; height: 20px; border-radius: 50%; flex: none; background: linear-gradient(145deg, #f2c14e, #d8a32c); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.45);"></span>
+      <span style="font-size: 13px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #f2c14e; white-space: nowrap;">Fool's Gold</span>
+    </a>
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 4px;">
+      <button type="button" aria-label="Search" style="width: 44px; height: 44px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 8px; background: transparent; color: #93a599; cursor: pointer;">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m16.5 16.5 4 4"></path></svg>
+      </button>
+      <a href="Account.dc.html" aria-label="Balance €1,248.50, open account" style="height: 40px; display: flex; align-items: center; gap: 7px; padding: 0 12px 0 10px; border-radius: 8px; background: #151d18; border: 1px solid #33463a; text-decoration: none;">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#93a599" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a1 1 0 0 1-1-1z"></path><path d="M4 7V6a2 2 0 0 1 2-2h10v3"></path><path d="M16 13.5h.5"></path></svg>
+        <span style="font-size: 14px; font-weight: 700; color: #f2c14e; font-variant-numeric: tabular-nums;">€1,248.50</span>
+      </a>
+    </div>
+  </header>
+
+  <nav aria-label="Sections" class="fg-scroll" style="height: 44px; flex: none; display: flex; align-items: stretch; gap: 2px; padding: 0 6px; overflow-x: auto; background: #050806; border-bottom: 1px solid #223029;">
+    <a href="Main.dc.html" style="display: flex; align-items: center; padding: 0 10px; font-size: 13px; font-weight: 650; color: #93a599; text-decoration: none; white-space: nowrap;">Sports</a>
+    <a href="Live.dc.html" aria-current="page" style="display: flex; align-items: center; gap: 6px; padding: 0 10px; font-size: 13px; font-weight: 700; color: #f2c14e; text-decoration: none; white-space: nowrap; box-shadow: inset 0 -2px 0 #f2c14e;">
+      <span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 50%; background: #ff6a3d; animation: fgPulse 1.8s ease-in-out infinite;"></span>Live<span style="padding: 0 6px; border-radius: 999px; background: #331508; color: #ff6a3d; font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums;">24</span>
+    </a>
+    <a href="Casino.dc.html" style="display: flex; align-items: center; padding: 0 10px; font-size: 13px; font-weight: 650; color: #93a599; text-decoration: none; white-space: nowrap;">Casino</a>
+    <a href="Casino.dc.html"style="display: flex; align-items: center; padding: 0 10px; font-size: 13px; font-weight: 650; color: #93a599; text-decoration: none; white-space: nowrap;">Live Casino</a>
+    <a href="MyBets.dc.html" style="display: flex; align-items: center; padding: 0 10px; font-size: 13px; font-weight: 650; color: #93a599; text-decoration: none; white-space: nowrap;">My Bets</a>
+  </nav>
+
+  <main class="fg-scroll" style="flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; padding: 12px 0 84px;">
+
+    <div role="tablist" aria-label="Filter live events" class="fg-scroll" style="display: flex; gap: 6px; padding: 0 12px; overflow-x: auto; flex: none;">
+      <sc-for list="{{filters}}" as="fl" hint-placeholder-count="5">
+        <button type="button" role="tab" aria-selected="{{fl.on}}" onClick="{{fl.pick}}" style="flex: none; height: 36px; display: flex; align-items: center; gap: 6px; padding: 0 13px; border-radius: 999px; border: 1px solid {{fl.border}}; background: {{fl.bg}}; color: {{fl.color}}; font: inherit; font-size: 13px; font-weight: 650; cursor: pointer; white-space: nowrap;">
+          {{fl.label}}<span style="font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; opacity: 0.8;">{{fl.count}}</span>
+        </button>
+      </sc-for>
+    </div>
+
+    <sc-for list="{{groups}}" as="g" hint-placeholder-count="3">
+      <section aria-label="{{g.name}}" style="flex: none; margin: 0 12px; border: 1px solid #223029; border-radius: 12px; background: #0f1512; overflow: hidden; animation: fgRise 360ms cubic-bezier(0.22, 1, 0.36, 1) both;">
+        <div style="height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 12px; background: #151d18;">
+          <span style="font-size: 13px; font-weight: 700;">{{g.name}}</span>
+          <span style="font-size: 11px; color: #93a599;">{{g.region}}</span>
+          <span style="margin-left: auto; font-size: 11px; color: #93a599; font-variant-numeric: tabular-nums;">{{g.count}}</span>
+        </div>
+
+        <sc-for list="{{g.events}}" as="e" hint-placeholder-count="2">
+          <div style="display: flex; flex-direction: column; gap: 6px; padding: 8px 12px 10px; border-top: 1px solid #223029;">
+            <div style="height: 28px; display: flex; align-items: center; gap: 8px;">
+              <span style="position: relative; width: 8px; height: 8px; flex: none;">
+                <span aria-hidden="true" style="position: absolute; inset: 0; border-radius: 50%; background: #ff6a3d; animation: fgRing 1.6s ease-out infinite;"></span>
+                <span aria-hidden="true" style="position: absolute; inset: 0; border-radius: 50%; background: #ff6a3d;"></span>
+              </span>
+              <span style="font-size: 11px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #ff6a3d;">Live</span>
+              <span style="font-size: 12px; font-weight: 700; color: #eef3ec; font-variant-numeric: tabular-nums;">{{e.clock}}</span>
+              <sc-if value="{{e.flash}}" hint-placeholder-val="{{false}}">
+                <span style="padding: 1px 8px; border-radius: 999px; color: #ff6a3d; font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; animation: fgGoal 1s ease-in-out infinite;">{{e.flashText}}</span>
+              </sc-if>
+              <span style="margin-left: auto; display: flex; align-items: center;">
+                <button type="button" aria-label="{{e.tvLabel}}" style="width: 44px; height: 44px; margin: -8px 0; display: grid; place-items: center; padding: 0; border: 0; background: transparent; color: {{e.tvColor}}; cursor: pointer;">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="12" rx="2"></rect><path d="M8 21h8M12 17v4"></path><path d="m10.5 8.8 3.5 2.2-3.5 2.2z" fill="currentColor"></path></svg>
+                </button>
+                <a href="Match.dc.html" aria-label="{{e.statsLabel}}" style="width: 44px; height: 44px; margin: -8px -12px -8px 0; display: grid; place-items: center; color: #93a599;">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V11M12 20V5M19 20v-7"></path></svg>
+                </a>
+              </span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <a href="Match.dc.html" style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; text-decoration: none; color: #eef3ec;">
+                <span style="display: flex; align-items: center; gap: 6px; min-width: 0;">
+                  <span aria-hidden="true" style="width: 6px; height: 6px; flex: none; border-radius: 50%; background: {{e.serveHome}};"></span>
+                  <span style="flex: 1; min-width: 0; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{e.home}}</span>
+                  <sc-for list="{{e.homeScore}}" as="sc" hint-placeholder-count="1"><span style="width: {{sc.w}}; text-align: right; font-size: 13px; font-weight: {{sc.weight}}; color: {{sc.color}}; font-variant-numeric: tabular-nums;">{{sc.v}}</span></sc-for>
+                </span>
+                <span style="display: flex; align-items: center; gap: 6px; min-width: 0;">
+                  <span aria-hidden="true" style="width: 6px; height: 6px; flex: none; border-radius: 50%; background: {{e.serveAway}};"></span>
+                  <span style="flex: 1; min-width: 0; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{e.away}}</span>
+                  <sc-for list="{{e.awayScore}}" as="sc" hint-placeholder-count="1"><span style="width: {{sc.w}}; text-align: right; font-size: 13px; font-weight: {{sc.weight}}; color: {{sc.color}}; font-variant-numeric: tabular-nums;">{{sc.v}}</span></sc-for>
+                </span>
+              </a>
+              <div role="group" aria-label="{{e.aria}}" style="flex: none; display: flex; gap: 4px;">
+                <sc-for list="{{e.odds}}" as="o" hint-placeholder-count="3">
+                  <button type="button" aria-pressed="{{o.pressed}}" aria-label="{{o.aria}}" disabled="{{o.locked}}" onClick="{{o.toggle}}" style="position: relative; width: 54px; height: 48px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0; border-radius: 8px; border: 1px solid {{o.border}}; background: {{o.bg}}; box-shadow: {{o.glow}}; cursor: pointer; font: inherit; transition: background-color 300ms ease, border-color 300ms ease, box-shadow 200ms ease;">
+                    <sc-if value="{{o.open}}" hint-placeholder-val="{{true}}">
+                      <span style="font-size: 10px; font-weight: 600; color: {{o.labelColor}};">{{o.label}}</span>
+                      <span style="font-size: 13px; font-weight: 700; color: {{o.priceColor}}; font-variant-numeric: tabular-nums;">{{o.price}}</span>
+                    </sc-if>
+                    <sc-if value="{{o.locked}}" hint-placeholder-val="{{false}}">
+                      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#93a599" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+                    </sc-if>
+                    <sc-if value="{{o.up}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="position: absolute; top: 4px; left: 5px; font-size: 8px; line-height: 1; color: #46c47c;">▲</span></sc-if>
+                    <sc-if value="{{o.down}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="position: absolute; top: 4px; left: 5px; font-size: 8px; line-height: 1; color: #ef5567;">▼</span></sc-if>
+                    <sc-if value="{{o.pressed}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="position: absolute; top: 3px; right: 5px; font-size: 9px; font-weight: 900; line-height: 1; color: #16110a;">✓</span></sc-if>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      </section>
+    </sc-for>
+  </main>
+
+  <sc-if value="{{hasSel}}" hint-placeholder-val="{{true}}">
+    <a href="BetSlip.dc.html" aria-label="Open bet slip, {{selCount}} selections" style="position: absolute; left: 8px; right: 8px; bottom: 68px; z-index: 30; height: 50px; display: flex; align-items: center; gap: 10px; padding: 0 14px 0 10px; border-radius: 12px; background: linear-gradient(180deg, #f2c14e, #d8a32c); color: #16110a; text-decoration: none; box-shadow: 0 18px 48px -16px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(0, 0, 0, 0.25);">
+      <span style="min-width: 28px; height: 28px; padding: 0 7px; display: grid; place-items: center; border-radius: 999px; background: #16110a; color: #f2c14e; font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums;">{{selCount}}</span>
+      <span style="font-size: 14px; font-weight: 750;">Bet Slip</span>
+      <span style="margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; line-height: 1.15;">
+        <span style="font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.75;">Total odds</span>
+        <span style="font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums;">{{totalOdds}}</span>
+      </span>
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"></path></svg>
+    </a>
+  </sc-if>
+
+  <nav aria-label="Primary" style="height: 60px; flex: none; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); background: #050806; border-top: 1px solid #223029; position: relative; z-index: 31;">
+    <a href="Main.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 650; letter-spacing: 0.02em; color: #93a599; text-decoration: none;">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11 12 4l8 7v9h-5v-6H9v6H4z"></path></svg>Home
+    </a>
+    <a href="Live.dc.html" aria-current="page" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 650; letter-spacing: 0.02em; color: #f2c14e; text-decoration: none;">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h3l2.5-6 4 13 2.5-7h6"></path></svg>Live
+      <span aria-hidden="true" style="position: absolute; top: 9px; left: calc(50% + 9px); width: 7px; height: 7px; border-radius: 50%; background: #ff6a3d; box-shadow: 0 0 0 2px #050806;"></span>
+    </a>
+    <a href="MyBets.dc.html" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 650; letter-spacing: 0.02em; color: #93a599; text-decoration: none;">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h14v16l-3.5-2-3.5 2-3.5-2L5 20z"></path><path d="M9 9h6M9 13h4"></path></svg>My Bets
+      <span aria-hidden="true" style="position: absolute; top: 5px; left: calc(50% + 6px); min-width: 16px; height: 16px; padding: 0 4px; display: grid; place-items: center; border-radius: 999px; background: #f2c14e; color: #16110a; font-size: 10px; font-weight: 800;">3</span>
+    </a>
+    <a href="Casino.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 650; letter-spacing: 0.02em; color: #93a599; text-decoration: none;">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"></rect><circle cx="8.5" cy="8.5" r="1.2" fill="currentColor" stroke="none"></circle><circle cx="15.5" cy="15.5" r="1.2" fill="currentColor" stroke="none"></circle><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"></circle></svg>Casino
+    </a>
+    <a href="Account.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 650; letter-spacing: 0.02em; color: #93a599; text-decoration: none;">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5"></circle><path d="M4.5 20a7.5 7.5 0 0 1 15 0"></path></svg>Account
+    </a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":393,"height":852}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.E = {
+      livmci: { sport: 'football', home: 'Liverpool', away: 'Manchester City', hs: [2], as: [1], min: 67, sec: 12, odds: [1.36, 4.80, 9.50], labels: ['1', 'X', '2'], tv: true },
+      intjuv: { sport: 'football', home: 'Inter', away: 'Juventus', hs: [0], as: [0], min: 23, sec: 40, odds: [2.40, 2.90, 3.60], labels: ['1', 'X', '2'], tv: true },
+      ajapsv: { sport: 'football', home: 'Ajax', away: 'PSV', hs: [1], as: [2], min: 81, sec: 5, odds: [9.00, 4.10, 1.40], labels: ['1', 'X', '2'], tv: false, goal: 'Goal · PSV' },
+      lauKov: { sport: 'tennis', home: 'M. Laurent', away: 'D. Kovač', hs: [1, 4, '40'], as: [0, 5, '30'], serve: 'home', clock: 'Set 2', odds: [1.62, 2.25], labels: ['1', '2'], tv: true },
+      reiOka: { sport: 'tennis', home: 'S. Reinholt', away: 'T. Okafor', hs: [0, 2, '15'], as: [1, 1, '0'], serve: 'away', clock: 'Set 2', odds: [3.10, 1.36], labels: ['1', '2'], tv: false },
+      lakbos: { sport: 'basketball', home: 'Los Angeles Lakers', away: 'Boston Celtics', hs: [88], as: [91], clock: 'Q4 06:12', odds: [2.40, 1.57], labels: ['1', '2'], tv: true },
+      nwiwol: { sport: 'esports', home: 'Northwind', away: 'Iron Wolves', hs: [1, 9], as: [0, 7], clock: 'Map 2', odds: [1.85, 1.95], labels: ['1', '2'], tv: true },
+    };
+    const prices = {};
+    Object.keys(this.E).forEach((id) => this.E[id].odds.forEach((p, i) => { prices[id + '-' + i] = p; }));
+    this.base = { ...prices };
+    this.state = { prices, moves: {}, sel: { 'livmci-0': false }, filter: 'all', t: 0 };
+  }
+
+  componentDidMount() {
+    this.timers = [];
+    this.clock = setInterval(() => this.setState({ t: this.state.t + 1 }), 1000);
+    this.flick = setInterval(() => this.flicker(), 1500);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.clock);
+    clearInterval(this.flick);
+    (this.timers || []).forEach((t) => clearTimeout(t));
+  }
+
+  flicker() {
+    const keys = Object.keys(this.state.prices).filter((k) => !this.state.sel[k] && !this.state.moves[k] && k.indexOf('ajapsv') !== 0);
+    if (!keys.length) return;
+    const k = keys[Math.floor(Math.random() * keys.length)];
+    const p = this.state.prices[k];
+    const step = p > 4 ? [0.1, 0.25, 0.5][Math.floor(Math.random() * 3)] : [0.02, 0.04, 0.05, 0.08][Math.floor(Math.random() * 4)];
+    let up = Math.random() > 0.5;
+    if (p - this.base[k] > 0.3) up = false;
+    if (this.base[k] - p > 0.3) up = true;
+    const next = Math.max(1.01, Math.round((up ? p + step : p - step) * 100) / 100);
+    this.setState({ prices: { ...this.state.prices, [k]: next }, moves: { ...this.state.moves, [k]: up ? 'up' : 'down' } });
+    this.timers.push(setTimeout(() => {
+      const moves = { ...this.state.moves };
+      delete moves[k];
+      this.setState({ moves });
+    }, 1600));
+  }
+
+  toggle(key) {
+    const id = key.split('-')[0];
+    const sel = { ...this.state.sel };
+    const was = !!sel[key];
+    [0, 1, 2].forEach((i) => { delete sel[id + '-' + i]; });
+    if (!was) sel[key] = true;
+    this.setState({ sel });
+  }
+
+  cell(id, i) {
+    const s = this.state;
+    const e = this.E[id];
+    const key = id + '-' + i;
+    const locked = !!e.goal;
+    const on = !!s.sel[key];
+    const mv = on || locked ? null : s.moves[key];
+    const names = e.labels.length === 3 ? [e.home + ' to win', 'Draw', e.away + ' to win'] : [e.home + ' to win', e.away + ' to win'];
+    return {
+      label: e.labels[i],
+      price: s.prices[key].toFixed(2),
+      aria: locked ? 'Suspended' : names[i] + ' at ' + s.prices[key].toFixed(2),
+      open: !locked,
+      locked,
+      pressed: on,
+      up: mv === 'up',
+      down: mv === 'down',
+      bg: on ? 'linear-gradient(180deg, #f2c14e, #d8a32c)' : locked ? 'repeating-linear-gradient(135deg, #0f1512 0 5px, #141b17 5px 10px)' : mv === 'up' ? '#113224' : mv === 'down' ? '#331419' : '#151d18',
+      border: on ? '#f2c14e' : locked ? '#223029' : mv === 'up' ? '#46c47c' : mv === 'down' ? '#ef5567' : '#33463a',
+      glow: on ? '0 0 0 1px #f2c14e, 0 0 18px rgba(242, 193, 78, 0.45)' : 'none',
+      labelColor: on ? '#16110a' : '#93a599',
+      priceColor: on ? '#16110a' : '#f2c14e',
+      toggle: () => { if (!locked) this.toggle(key); },
+    };
+  }
+
+  scoreCells(arr, other, sport) {
+    return arr.map((v, i) => {
+      const last = i === arr.length - 1;
+      const lead = Number(v) > Number(other[i]);
+      const wide = sport === 'tennis' && last;
+      return {
+        v: String(v),
+        w: wide ? '26px' : sport === 'basketball' ? '30px' : '18px',
+        weight: last || sport !== 'tennis' ? 700 : 600,
+        color: sport === 'tennis' && !last ? '#93a599' : (lead || sport === 'football' ? '#f2c14e' : '#eef3ec'),
+      };
+    });
+  }
+
+  renderVals() {
+    const s = this.state;
+    const E = this.E;
+    const eventVals = (id) => {
+      const e = E[id];
+      let clock = e.clock;
+      if (e.min !== undefined) {
+        const total = e.min * 60 + e.sec + s.t;
+        clock = Math.floor(total / 60) + "'";
+      }
+      return {
+        home: e.home, away: e.away, clock,
+        flash: !!e.goal, flashText: e.goal || '',
+        tvLabel: e.tv ? 'Watch ' + e.home + ' v ' + e.away + ' live' : 'No stream for this event',
+        tvColor: e.tv ? '#f2c14e' : '#64766b',
+        statsLabel: 'Stats for ' + e.home + ' v ' + e.away,
+        serveHome: e.serve === 'home' ? '#f2c14e' : 'transparent',
+        serveAway: e.serve === 'away' ? '#f2c14e' : 'transparent',
+        homeScore: this.scoreCells(e.hs, e.as, e.sport),
+        awayScore: this.scoreCells(e.as, e.hs, e.sport),
+        aria: e.home + ' v ' + e.away + ' prices',
+        odds: e.odds.map((p, i) => this.cell(id, i)),
+      };
+    };
+    const allGroups = [
+      { sport: 'football', name: 'Premier League', region: 'England', cols: ['1', 'X', '2'], ids: ['livmci'] },
+      { sport: 'football', name: 'Serie A', region: 'Italy', cols: ['1', 'X', '2'], ids: ['intjuv'] },
+      { sport: 'football', name: 'Eredivisie', region: 'Netherlands', cols: ['1', 'X', '2'], ids: ['ajapsv'] },
+      { sport: 'tennis', name: 'Vienna Indoor', region: 'Tennis · ATP', cols: ['1', '2'], ids: ['lauKov', 'reiOka'] },
+      { sport: 'basketball', name: 'NBA Preseason', region: 'Basketball', cols: ['1', '2'], ids: ['lakbos'] },
+      { sport: 'esports', name: 'Masters League', region: 'Esports', cols: ['1', '2'], ids: ['nwiwol'] },
+    ];
+    const groups = allGroups
+      .filter((g) => s.filter === 'all' || g.sport === s.filter)
+      .map((g) => ({ name: g.name, region: g.region, count: g.ids.length + ' live', events: g.ids.map(eventVals) }));
+    const filterDefs = [
+      { key: 'all', label: 'All', count: 24 },
+      { key: 'football', label: 'Football', count: 11 },
+      { key: 'tennis', label: 'Tennis', count: 6 },
+      { key: 'basketball', label: 'Basketball', count: 4 },
+      { key: 'esports', label: 'Esports', count: 3 },
+    ];
+    const filters = filterDefs.map((f) => {
+      const on = s.filter === f.key;
+      return {
+        label: f.label, count: f.count, on,
+        bg: on ? '#f2c14e' : '#151d18',
+        border: on ? '#f2c14e' : '#223029',
+        color: on ? '#16110a' : '#93a599',
+        pick: () => this.setState({ filter: f.key }),
+      };
+    });
+    const picked = Object.keys(s.sel).filter((k) => s.sel[k]);
+    const total = picked.reduce((acc, k) => acc * s.prices[k], 4.73);
+    const selCount = 2 + picked.length;
+    return { filters, groups, hasSel: selCount > 0, selCount, totalOdds: total.toFixed(2) };
+  }
+}
+</script>
+</body>
+</html>

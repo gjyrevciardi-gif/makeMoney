@@ -6,7 +6,7 @@ import { EventDetail } from './event-detail';
 export default async function EventPage({ params }: { params: Promise<{ eventId: string }> }) {
   const { eventId } = await params;
   return (
-    <AppShell sidebar>
+    <AppShell sidebar bare>
       <Suspense fallback={<div className="page"><span className="skeleton" style={{ height: 320 }} /></div>}>
         <EventDetail eventId={decodeURIComponent(eventId)} />
       </Suspense>

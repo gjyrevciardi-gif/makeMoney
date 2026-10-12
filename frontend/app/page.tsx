@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
+import { MobileHome } from '../components/home/mobile-home';
 import { AppShell } from '../components/shell/app-shell';
 import { IconPlusCircle, IconSearch } from '../components/shell/icons';
 import { SportIcon, sportGroupLabel } from '../components/sports/sport-icon';
@@ -105,7 +106,8 @@ export default function Home() {
 
   return (
     <AppShell sidebar>
-      <div className="ref-page">
+      <div className="m-only"><MobileHome /></div>
+      <div className="ref-page desk-only">
         <label className="ref-search">
           <IconSearch />
           <span className="sr-only">Search teams, leagues, or sports</span>

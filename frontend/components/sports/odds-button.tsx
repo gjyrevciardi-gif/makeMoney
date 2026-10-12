@@ -2,6 +2,7 @@
 
 import { memo, useEffect, useRef, useState } from 'react';
 import { formatOdds } from '../../lib/format';
+import { IconLock } from '../shell/icons';
 
 export type OddsButtonState = 'DEFAULT' | 'SELECTED' | 'SUSPENDED' | 'STALE' | 'DISABLED';
 
@@ -74,6 +75,8 @@ function OddsButtonBase({
       )}
       <span className="odds-label">{label}</span>
       <span className="odds-price">{formatOdds(price)}</span>
+      {/* Hidden everywhere except the phone layout, where a suspended price shows a lock. */}
+      {suspended && <IconLock className="odds-lock" />}
       <span className="sr-only">
         {describe ? `${describe}. ` : ''}
         {suspended ? 'Suspended. ' : ''}

@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Fool's Gold Club — Account</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;background:#050806}
+a{color:#f2c14e}a:hover{color:#d8a32c}
+.fg-scroll{scrollbar-width:none}
+.fg-scroll::-webkit-scrollbar{display:none}
+@keyframes fgOpen{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@keyframes fgToast{0%{opacity:0;transform:translateY(8px)}12%,85%{opacity:1;transform:none}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
+</style>
+</helmet>
+<div style="width: 393px; height: 852px; position: relative; overflow: hidden; display: flex; flex-direction: column; background: #080c0a; color: #eef3ec; font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 14px; line-height: 1.45; -webkit-font-smoothing: antialiased;">
+
+  <header style="height: 56px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 4px 0 14px; background: #050806; border-bottom: 1px solid #223029;">
+    <a href="Main.dc.html" aria-label="Fool's Gold home" style="display: flex; align-items: center; gap: 7px; text-decoration: none;">
+      <span aria-hidden="true" style="width: 20px; height: 20px; border-radius: 50%; flex: none; background: linear-gradient(145deg, #f2c14e, #d8a32c); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.45);"></span>
+      <span style="font-size: 13px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #f2c14e; white-space: nowrap;">Fool's Gold</span>
+    </a>
+    <a href="#help" aria-label="Help and support" style="margin-left: auto; width: 44px; height: 44px; display: grid; place-items: center; color: #93a599;">
+      <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M9.6 9.5a2.5 2.5 0 0 1 4.8.8c0 1.7-2.4 2.2-2.4 3.7M12 17.2v.1"></path></svg>
+    </a>
+  </header>
+
+  <main class="fg-scroll" style="flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; padding: 16px 12px 24px;">
+
+    <section aria-label="Profile" style="flex: none; display: flex; align-items: center; gap: 12px;">
+      <span aria-hidden="true" style="width: 56px; height: 56px; flex: none; display: grid; place-items: center; border-radius: 50%; background: linear-gradient(145deg, #f2c14e, #d8a32c); color: #16110a; font-size: 22px; font-weight: 800;">J</span>
+      <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+        <h1 style="margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.011em;">jordan_k</h1>
+        <span style="font-size: 12px; color: #93a599;">Member since March 2024</span>
+      </div>
+      <span aria-label="Age verified, 18 plus" role="img" style="flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 4px; border-radius: 999px; background: #113224; border: 1px solid #46c47c; color: #46c47c; font-size: 11px; font-weight: 750;">
+        <span style="width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; background: #46c47c; color: #16110a; font-size: 9px; font-weight: 900;">18+</span>Verified
+      </span>
+    </section>
+
+    <section aria-label="Balance" style="flex: none; display: flex; flex-direction: column; gap: 12px; padding: 14px; border-radius: 12px; border: 1px solid #223029; background: radial-gradient(360px 160px at 100% -20%, rgba(242, 193, 78, 0.14), transparent 70%), linear-gradient(150deg, #151d18, #0f1512);">
+      <div style="display: flex; flex-direction: column;">
+        <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #93a599;">Balance</span>
+        <strong style="font-size: 30px; font-weight: 800; letter-spacing: -0.02em; color: #f2c14e; font-variant-numeric: tabular-nums; line-height: 1.15;">€1,238.50</strong>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; border-radius: 8px; overflow: hidden; background: #223029; border: 1px solid #223029;">
+        <div style="padding: 8px 10px; background: #0f1512;"><span style="display: block; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: #93a599;">Available</span><strong style="font-size: 14px; font-variant-numeric: tabular-nums;">€1,238.50</strong></div>
+        <div style="padding: 8px 10px; background: #0f1512;"><span style="display: block; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: #93a599;">In open bets</span><strong style="font-size: 14px; font-variant-numeric: tabular-nums;">€55.00</strong></div>
+      </div>
+      <a href="#transactions" style="height: 44px; display: flex; align-items: center; gap: 10px; padding: 0 12px; border-radius: 8px; border: 1px solid #33463a; background: #151d18; color: #eef3ec; font-size: 13px; font-weight: 650; text-decoration: none;">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#93a599" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h14v16l-3.5-2-3.5 2-3.5-2L5 20z"></path><path d="M9 9h6M9 13h4"></path></svg>
+        Transaction history
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#93a599" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-left: auto;"><path d="m9 6 6 6-6 6"></path></svg>
+      </a>
+    </section>
+
+    <section aria-labelledby="rg-title" style="flex: none; display: flex; flex-direction: column; border-radius: 12px; border: 1px solid #4a3a12; background: #0f1512; overflow: hidden;">
+      <div style="display: flex; align-items: center; gap: 10px; padding: 12px; background: #151d18; border-bottom: 1px solid #223029;">
+        <span aria-hidden="true" style="width: 32px; height: 32px; flex: none; display: grid; place-items: center; border-radius: 8px; background: #4a3a12; color: #f2c14e;">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2 5 6v5.5c0 4 2.9 7.6 7 9.3 4.1-1.7 7-5.3 7-9.3V6z"></path><path d="m9 12 2.2 2.2L15.5 10"></path></svg>
+        </span>
+        <div style="flex: 1; display: flex; flex-direction: column;">
+          <h2 id="rg-title" style="margin: 0; font-size: 15px; font-weight: 700;">Stay in control</h2>
+          <span style="font-size: 12px; color: #93a599;">Limits apply to sports and casino.</span>
+        </div>
+      </div>
+
+      <button type="button" aria-expanded="{{limitsOpen}}" onClick="{{toggleLimits}}" style="min-height: 60px; display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 0; background: transparent; color: #eef3ec; font: inherit; text-align: left; cursor: pointer;">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#f2c14e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 17a8 8 0 1 1 16 0"></path><path d="m12 17 4-5"></path></svg>
+        <span style="flex: 1; display: flex; flex-direction: column;">
+          <span style="font-size: 14px; font-weight: 700;">Set limits</span>
+          <span style="font-size: 12px; color: #93a599; font-variant-numeric: tabular-nums;">{{limitSummary}}</span>
+        </span>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#93a599" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transform: {{limitsChevron}}; transition: transform 140ms ease;"><path d="m9 6 6 6-6 6"></path></svg>
+      </button>
+      <div style="padding: 0 12px 12px; display: flex; flex-direction: column; gap: 6px;">
+        <div style="display: flex; justify-content: space-between; font-size: 11px; color: #93a599; font-variant-numeric: tabular-nums;"><span>{{periodLabel}} stake limit</span><span><b style="color: #eef3ec;">€42.50</b> of {{limitValue}} used</span></div>
+        <div style="height: 6px; border-radius: 999px; background: #080c0a; overflow: hidden;"><span style="display: block; height: 100%; width: {{usedPct}}; border-radius: 999px; background: #f2c14e; transition: width 300ms ease;"></span></div>
+      </div>
+
+      <sc-if value="{{limitsOpen}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; flex-direction: column; gap: 10px; padding: 12px; border-top: 1px solid #223029; background: #0b100d; animation: fgOpen 200ms ease-out both;">
+          <div role="tablist" aria-label="Limit period" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px; padding: 3px; border-radius: 8px; background: #151d18; border: 1px solid #223029;">
+            <sc-for list="{{periods}}" as="p" hint-placeholder-count="3">
+              <button type="button" role="tab" aria-selected="{{p.on}}" onClick="{{p.pick}}" style="height: 36px; border: 0; border-radius: 5px; background: {{p.bg}}; color: {{p.color}}; box-shadow: {{p.ring}}; font: inherit; font-size: 13px; font-weight: 650; cursor: pointer;">{{p.label}}</button>
+            </sc-for>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px;">
+            <sc-for list="{{amounts}}" as="a" hint-placeholder-count="4">
+              <button type="button" aria-pressed="{{a.on}}" onClick="{{a.pick}}" style="height: 44px; border-radius: 8px; border: 1px solid {{a.border}}; background: {{a.bg}}; color: {{a.color}}; font: inherit; font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; cursor: pointer;">{{a.label}}</button>
+            </sc-for>
+          </div>
+          <p style="margin: 0; font-size: 11px; color: #93a599;">A lower limit applies at once. A higher one takes effect after 24 hours.</p>
+          <button type="button" onClick="{{saveLimit}}" style="height: 48px; border-radius: 8px; border: 1px solid #d8a32c; background: linear-gradient(180deg, #f2c14e, #d8a32c); color: #16110a; font: inherit; font-size: 15px; font-weight: 800; cursor: pointer;">Save limit</button>
+        </div>
+      </sc-if>
+
+      <a href="#break" style="min-height: 56px; display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-top: 1px solid #223029; color: #eef3ec; text-decoration: none;">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#93a599" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M10 9v6M14 9v6"></path></svg>
+        <span style="flex: 1; display: flex; flex-direction: column;"><span style="font-size: 14px; font-weight: 600;">Take a break</span><span style="font-size: 12px; color: #93a599;">Pause your account from 24 hours to 6 weeks</span></span>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#93a599" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"></path></svg>
+      </a>
+      <button type="button" role="switch" aria-checked="{{reality}}" onClick="{{toggleReality}}" style="min-height: 56px; display: flex; align-items: center; gap: 12px; padding: 8px 12px; border: 0; border-top: 1px solid #223029; background: transparent; color: #eef3ec; font: inherit; text-align: left; cursor: pointer;">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#93a599" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+        <span style="flex: 1; display: flex; flex-direction: column;"><span style="font-size: 14px; font-weight: 600;">Reality check</span><span style="font-size: 12px; color: #93a599;">{{realityNote}}</span></span>
+        <span aria-hidden="true" style="width: 44px; height: 26px; flex: none; padding: 3px; box-sizing: border-box; border-radius: 999px; background: {{switchBg}}; transition: background 160ms ease;"><span style="display: block; width: 20px; height: 20px; border-radius: 50%; background: {{knobBg}}; transform: {{knobX}}; transition: transform 160ms ease;"></span></span>
+      </button>
+      <a href="#exclusion" style="min-height: 56px; display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-top: 1px solid #223029; color: #eef3ec; text-decoration: none;">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#93a599" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="m6 6 12 12"></path></svg>
+        <span style="flex: 1; display: flex; flex-direction: column;"><span style="font-size: 14px; font-weight: 600;">Self-exclusion</span><span style="font-size: 12px; color: #93a599;">Close your account for 6 months or more</span></span>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#93a599" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"></path></svg>
+      </a>
+      <a href="#responsible" style="height: 48px; display: flex; align-items: center; justify-content: center; gap: 8px; border-top: 1px solid #223029; background: #151d18; color: #f2c14e; font-size: 13px; font-weight: 700; text-decoration: none;">
+        Play responsibly
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 5h5v5M19 5l-8 8M18 14v4a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h4"></path></svg>
+      </a>
+    </section>
+
+    <nav aria-label="Account settings" style="flex: none; display: flex; flex-direction: column; border-radius: 12px; border: 1px solid #223029; background: #0f1512; overflow: hidden;">
+      <a href="#details" style="min-height: 52px; display: flex; align-items: center; gap: 12px; padding: 0 12px; color: #eef3ec; text-decoration: none; font-size: 14px; font-weight: 600;">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#93a599" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><circle cx="9" cy="11" r="2.2"></circle><path d="M5.8 16.5a3.4 3.4 0 0 1 6.4 0M14 10h4M14 13.5h3"></path></svg>Personal details
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#93a599" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-left: auto;"><path d="m9 6 6 6-6 6"></path></svg>
+      </a>
+      <a href="#notifications" style="min-height: 52px; display: flex; align-items: center; gap: 12px; padding: 0 12px; border-top: 1px solid #223029; color: #eef3ec; text-decoration: none; font-size: 14px; font-weight: 600;">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#93a599" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"></path><path d="M10 20a2 2 0 0 0 4 0"></path></svg>Notifications
+        <span style="margin-left: auto; font-size: 12px; color: #93a599;">Wins, odds, cash out</span>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#93a599" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"></path></svg>
+      </a>
+      <a href="#security" style="min-height: 52px; display: flex; align-items: center; gap: 12px; padding: 0 12px; border-top: 1px solid #223029; color: #eef3ec; text-decoration: none; font-size: 14px; font-weight: 600;">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#93a599" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>Password and security
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#93a599" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-left: auto;"><path d="m9 6 6 6-6 6"></path></svg>
+      </a>
+      <a href="#help" style="min-height: 52px; display: flex; align-items: center; gap: 12px; padding: 0 12px; border-top: 1px solid #223029; color: #eef3ec; text-decoration: none; font-size: 14px; font-weight: 600;">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#93a599" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M9.6 9.5a2.5 2.5 0 0 1 4.8.8c0 1.7-2.4 2.2-2.4 3.7M12 17.2v.1"></path></svg>Help and support
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#93a599" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-left: auto;"><path d="m9 6 6 6-6 6"></path></svg>
+      </a>
+    </nav>
+
+    <button type="button" style="flex: none; height: 48px; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 12px; border: 1px solid #ef5567; background: #331419; color: #ef5567; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer;">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 16l4-4-4-4M14 12H4"></path></svg>
+      Log out
+    </button>
+
+    <footer style="flex: none; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 6px 12px 0; text-align: center;">
+      <span aria-label="18 plus only" role="img" style="width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; border: 2px solid #ef5567; color: #eef3ec; font-size: 13px; font-weight: 900;">18+</span>
+      <p style="margin: 0; font-size: 12px; color: #93a599; max-width: 30ch;">Gambling can be addictive. Only bet what you can afford to lose. <a href="#responsible" style="color: #f2c14e; font-weight: 650; text-decoration: none;">Play responsibly</a></p>
+      <span style="font-size: 11px; color: #93a599;">Fool's Gold Club · version 2.4.0</span>
+    </footer>
+  </main>
+
+  <sc-if value="{{saved}}" hint-placeholder-val="{{false}}">
+    <div role="status" style="position: absolute; left: 12px; right: 12px; bottom: 72px; z-index: 40; display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 12px; background: #113224; border: 1px solid #46c47c; color: #cdf3de; font-size: 13px; font-weight: 650; box-shadow: 0 18px 48px -16px rgba(0, 0, 0, 0.85); animation: fgToast 2.6s ease-out both;">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#46c47c" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"></path></svg>
+      {{savedText}}
+    </div>
+  </sc-if>
+
+  <nav aria-label="Primary" style="height: 60px; flex: none; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); background: #050806; border-top: 1px solid #223029; position: relative; z-index: 31;">
+    <a href="Main.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 650; letter-spacing: 0.02em; color: #93a599; text-decoration: none;">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11 12 4l8 7v9h-5v-6H9v6H4z"></path></svg>Home
+    </a>
+    <a href="Live.dc.html" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 650; letter-spacing: 0.02em; color: #93a599; text-decoration: none;">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h3l2.5-6 4 13 2.5-7h6"></path></svg>Live
+      <span aria-hidden="true" style="position: absolute; top: 9px; left: calc(50% + 9px); width: 7px; height: 7px; border-radius: 50%; background: #ff6a3d; box-shadow: 0 0 0 2px #050806;"></span>
+    </a>
+    <a href="MyBets.dc.html" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 650; letter-spacing: 0.02em; color: #93a599; text-decoration: none;">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h14v16l-3.5-2-3.5 2-3.5-2L5 20z"></path><path d="M9 9h6M9 13h4"></path></svg>My Bets
+      <span aria-hidden="true" style="position: absolute; top: 5px; left: calc(50% + 6px); min-width: 16px; height: 16px; padding: 0 4px; display: grid; place-items: center; border-radius: 999px; background: #f2c14e; color: #16110a; font-size: 10px; font-weight: 800;">3</span>
+    </a>
+    <a href="Casino.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 650; letter-spacing: 0.02em; color: #93a599; text-decoration: none;">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"></rect><circle cx="8.5" cy="8.5" r="1.2" fill="currentColor" stroke="none"></circle><circle cx="15.5" cy="15.5" r="1.2" fill="currentColor" stroke="none"></circle><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"></circle></svg>Casino
+    </a>
+    <a href="Account.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 650; letter-spacing: 0.02em; color: #f2c14e; text-decoration: none;">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5"></circle><path d="M4.5 20a7.5 7.5 0 0 1 15 0"></path></svg>Account
+    </a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":393,"height":852}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { limitsOpen: false, period: 'daily', amount: 100, savedPeriod: 'daily', savedAmount: 100, reality: true, saved: 0 };
+  }
+
+  componentWillUnmount() { clearTimeout(this.toastT); }
+
+  renderVals() {
+    const s = this.state;
+    const periodNames = { daily: 'Daily', weekly: 'Weekly', monthly: 'Monthly' };
+    const seg = (on, pick) => ({ on, pick, bg: on ? '#222d25' : 'transparent', color: on ? '#f2c14e' : '#93a599', ring: on ? 'inset 0 0 0 1px #33463a' : 'none' });
+    const periods = ['daily', 'weekly', 'monthly'].map((p) => ({ label: periodNames[p], ...seg(s.period === p, () => this.setState({ period: p })) }));
+    const amounts = [50, 100, 250, 500].map((v) => {
+      const on = s.amount === v;
+      return {
+        label: '€' + v, on,
+        bg: on ? '#4a3a12' : '#151d18',
+        border: on ? '#f2c14e' : '#33463a',
+        color: on ? '#f2c14e' : '#eef3ec',
+        pick: () => this.setState({ amount: v }),
+      };
+    });
+    const used = 42.5;
+    return {
+      limitsOpen: s.limitsOpen,
+      toggleLimits: () => this.setState({ limitsOpen: !s.limitsOpen }),
+      limitsChevron: s.limitsOpen ? 'rotate(90deg)' : 'none',
+      limitSummary: periodNames[s.savedPeriod] + ' stake €' + s.savedAmount + ' · loss and time limits',
+      periodLabel: periodNames[s.savedPeriod],
+      limitValue: '€' + s.savedAmount.toFixed(2),
+      usedPct: Math.min(100, (used / s.savedAmount) * 100).toFixed(1) + '%',
+      periods,
+      amounts,
+      saveLimit: () => {
+        clearTimeout(this.toastT);
+        this.setState({ savedPeriod: s.period, savedAmount: s.amount, limitsOpen: false, saved: s.saved + 1 });
+        this.toastT = setTimeout(() => this.setState({ saved: 0 }), 2600);
+      },
+      saved: s.saved > 0,
+      savedText: periodNames[s.period] + ' stake limit set to €' + s.amount + '.',
+      reality: s.reality,
+      realityNote: s.reality ? 'Reminder every 60 minutes of play' : 'Off',
+      toggleReality: () => this.setState({ reality: !s.reality }),
+      switchBg: s.reality ? '#f2c14e' : '#33463a',
+      knobBg: s.reality ? '#16110a' : '#93a599',
+      knobX: s.reality ? 'translateX(18px)' : 'none',
+    };
+  }
+}
+</script>
+</body>
+</html>
