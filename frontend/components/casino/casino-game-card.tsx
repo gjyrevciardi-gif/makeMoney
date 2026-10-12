@@ -89,6 +89,14 @@ const ART: Record<string, ReactElement> = {
       <path className="accent-fill" d="M35 18l-9 16h6l-4 12 12-18h-6z" />
     </g>
   ),
+  'book-of-ra-classic': (
+    <g>
+      {/* An open book with the expanding sun symbol above it. */}
+      <path className="accent-stroke" d="M10 22c8-4 14-4 22 0 8-4 14-4 22 0v26c-8-4-14-4-22 0-8-4-14-4-22 0z" />
+      <path className="accent-stroke" d="M32 22v26" />
+      <circle className="accent-fill" cx="32" cy="12" r="4" />
+    </g>
+  ),
 };
 
 type CardProps = {

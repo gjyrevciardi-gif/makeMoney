@@ -26,6 +26,7 @@ export const CASINO_GAME_IDS = [
   'fools-gold-rush',
   'titans-tempest',
   'lucky-lady',
+  'book-of-ra-classic',
 ] as const;
 export type CasinoGameId = (typeof CASINO_GAME_IDS)[number];
 
@@ -81,6 +82,7 @@ const standardConfig = (key: StandardConfigKey) => () => {
  * availability used by both the API and the lobby.
  */
 const DEFINITIONS: GameDefinition[] = [
+  {id:'book-of-ra-classic',slug:'book-of-ra-classic',gameType:'SLOTS',name:'Book of Ra Classic',category:'SLOTS',description:'Nine paylines, Book scatters and expanding-symbol free games.',route:'/casino/slots/book-of-ra-classic',featured:false,keywords:['book','ra','classic','slots'],stateful:true,supportsFairness:false,thumbnailKey:'book-of-ra-classic',envKey:'CASINO_GAME_BOOK_CLASSIC_ENABLED',config:()=>({minStake:'1',maxStake:'180',gameVersion:'book-of-ra-classic.v1'})},
   {
     id: 'dice',
     slug: 'dice',

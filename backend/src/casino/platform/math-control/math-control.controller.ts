@@ -5,7 +5,13 @@ import { AccessGuard, AuthenticatedRequest } from '../../../auth/access.guard';
 import { Capabilities } from '../../../auth/capabilities.decorator';
 import { RolesGuard } from '../../../auth/roles.guard';
 import { RATE_LIMITS, RateLimitService } from '../../../common/rate-limit.service';
-import { ActivateMathDto, MathPolicyDto, ValidationOptionsDto } from './math-control.dto';
+import {
+  ActivateMathDto,
+  MathPolicyDto,
+  ResetMathDto,
+  RollbackMathDto,
+  ValidationOptionsDto,
+} from './math-control.dto';
 import { MathControlService } from './math-control.service';
 import { MathControlJobs } from './math-control.jobs';
 
@@ -22,6 +28,10 @@ class ValidationQuery {
   @IsOptional() @Type(() => Number) @IsInt() @Min(1_000) @Max(200_000) monteCarloRounds?: number;
   @IsOptional() @Type(() => Number) @IsInt() @Min(10) @Max(2_000) bankrollSessions?: number;
   @IsOptional() @Type(() => Number) @IsInt() @Min(100) @Max(200_000) bankrollHorizonPaidSpins?: number;
+}
+
+class HistoryQuery {
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(200) limit?: number;
 }
 
 /**
@@ -123,6 +133,65 @@ export class MathControlController {
   ) {
     await this.throttle(request.actor.id);
     return this.math.activate(request.actor.id, params.gameId, params.profileId, body.expectedVersion);
+  }
+
+  /**
+   * Reset this game to its accepted default mathematics for NEW paid rounds.
+   *
+   * Additive and game-agnostic. It moves this game's own pointer to the explicit
+   * DEFAULT state; a game whose default is owned by its own admin panel is
+   * delegated to that panel's existing transition so its history stays coherent.
+   * An unregistered game is the established GAME_MATH_NOT_INTEGRATED 404.
+   */
+  @Post(':gameId/default')
+  async restoreDefault(
+    @Req() request: AuthenticatedRequest,
+    @Param() params: GameParams,
+    @Body() body: ResetMathDto,
+  ) {
+    await this.throttle(request.actor.id);
+    return this.math.resetToDefault(request.actor.id, params.gameId, {
+      actionId: body.actionId,
+      expectedVersion: body.expectedVersion,
+    });
+  }
+
+  /**
+   * This game's own immutable lifecycle history, newest first.
+   *
+   * Additive and game-agnostic: activation, DEFAULT and rollback transitions of
+   * exactly this game, never another game's rows and never a profile list
+   * dressed up as history. An unregistered game is the established
+   * GAME_MATH_NOT_INTEGRATED 404.
+   */
+  @Get(':gameId/history')
+  async history(
+    @Req() request: AuthenticatedRequest,
+    @Param() params: GameParams,
+    @Query() query: HistoryQuery,
+  ) {
+    await this.throttle(request.actor.id);
+    return this.math.history(request.actor.id, params.gameId, query.limit);
+  }
+
+  /**
+   * Roll this game back to the state the most recent transition replaced.
+   *
+   * Additive and game-agnostic. The target is read from this game's own recorded
+   * history, is re-validated through the same gate activation uses, and the
+   * pointer move, the history row and the audit entry commit in one transaction.
+   */
+  @Post(':gameId/rollback')
+  async rollback(
+    @Req() request: AuthenticatedRequest,
+    @Param() params: GameParams,
+    @Body() body: RollbackMathDto,
+  ) {
+    await this.throttle(request.actor.id);
+    return this.math.rollback(request.actor.id, params.gameId, {
+      actionId: body.actionId,
+      expectedVersion: body.expectedVersion,
+    });
   }
 }
 

@@ -160,7 +160,7 @@ describe('slots security and platform integration (PostgreSQL + Redis)', () => {
   });
 
   describe('registry and public configuration', () => {
-    it('lists every playable game including the three slot families', async () => {
+    it('lists every playable game including all four slot families', async () => {
       const accessToken = await token(userEmail);
       const response = await request(server())
         .get('/casino/games')
@@ -170,9 +170,9 @@ describe('slots security and platform integration (PostgreSQL + Redis)', () => {
         response.body.games;
       const playable = games.filter((game) => game.enabled).map((game) => game.gameType).sort();
       expect(playable).toEqual(
-        ['BLACKJACK', 'CRASH', 'DICE', 'MINES', 'PLINKO', 'ROULETTE', 'SLOTS', 'SLOTS', 'SLOTS'],
+        ['BLACKJACK', 'CRASH', 'DICE', 'MINES', 'PLINKO', 'ROULETTE', 'SLOTS', 'SLOTS', 'SLOTS', 'SLOTS'],
       );
-      const slot = games.find((game) => game.gameType === 'SLOTS');
+      const slot = games.find((game) => game.route === '/casino/slots/fools-gold-rush');
       expect(slot?.name).toBe("Fool's Gold Rush");
       expect(slot?.route).toBe('/casino/slots/fools-gold-rush');
     });
