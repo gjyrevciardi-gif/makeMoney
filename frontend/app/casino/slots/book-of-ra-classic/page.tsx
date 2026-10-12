@@ -11,7 +11,10 @@ import { casinoPost, describeError, fetchBalance, formatPoints } from '../../../
  * origin, cookie or credential with the platform application. Only the API base
  * URL and this gateway URL are read from the `NEXT_PUBLIC_` namespace.
  */
-const GAME_ORIGIN = process.env.NEXT_PUBLIC_BOOK_CLASSIC_URL ?? 'http://127.0.0.1:8791';
+const configuredOrigin = process.env.NEXT_PUBLIC_BOOK_CLASSIC_URL;
+const GAME_ORIGIN = configuredOrigin && configuredOrigin.length > 0
+  ? configuredOrigin
+  : 'http://127.0.0.1:8791';
 
 type LaunchCapability = { token: string; expiresAt: string; path: string; gamePath: string };
 

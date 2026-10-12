@@ -53,3 +53,7 @@ Caddyfile
 docs
 *.md
 !README.md
+
+# Recovered commercial cabinet. Local Compose may bind-mount it for a private
+# smoke test. It must never enter an image build context or a published image.
+games/book-of-ra-classic/client

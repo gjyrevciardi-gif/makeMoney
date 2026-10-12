@@ -115,6 +115,7 @@ services:
       dockerfile: frontend/Dockerfile
       args:
         NEXT_PUBLIC_API_URL: https://api.${DOMAIN:?DOMAIN is required}
+        NEXT_PUBLIC_BOOK_CLASSIC_URL: https://classic.${DOMAIN}
     restart: unless-stopped
     init: true
     security_opt:
@@ -138,6 +139,37 @@ services:
     networks:
       - edge
     stop_grace_period: 20s
+    logging: *logging
+
+  # First-party gateway only. No host ports: Caddy is still the only publisher.
+  # The recovered cabinet is intentionally not mounted. See
+  # docs/classic-gateway.md before pointing BOOK_CLASSIC_CLIENT_DIR at those files.
+  classic-gateway:
+    build:
+      context: .
+      dockerfile: games/book-of-ra-classic/gateway/Dockerfile
+    restart: unless-stopped
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      BOOK_CLASSIC_GATEWAY_PORT: "8791"
+      BOOK_CLASSIC_BIND_HOST: 0.0.0.0
+      BOOK_CLASSIC_GATEWAY_HOST: 127.0.0.1
+      BOOK_CLASSIC_ORIGIN: https://classic.${DOMAIN:?DOMAIN is required}
+      PLATFORM_URL: http://backend:3001
+      BOOK_CLASSIC_LAUNCH_ORIGINS: https://${DOMAIN}
+      BOOK_CLASSIC_ALLOW_REMOTE: "true"
+      BOOK_CLASSIC_COOKIE_SECURE: "true"
+      BOOK_CLASSIC_CLIENT_DIR: ${BOOK_CLASSIC_CLIENT_DIR:-}
+    expose:
+      - "8791"
+    networks:
+      - edge
+    depends_on:
+      backend:
+        condition: service_healthy
+    stop_grace_period: 15s
     logging: *logging
 
   caddy:
@@ -168,6 +200,8 @@ services:
       frontend:
         condition: service_healthy
       backend:
+        condition: service_healthy
+      classic-gateway:
         condition: service_healthy
     networks:
       - edge

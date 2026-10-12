@@ -19,3 +19,10 @@ backend/src/casino/games/lucky-lady/math/** text eol=lf
 # Book of Ra Classic verifies its frozen profile and rules by hash at runtime, so a
 # CRLF checkout on Windows would break the check. Pin them to LF like Lucky Lady's.
 backend/src/casino/games/book-of-ra-classic/math/** text eol=lf
+
+# The Classic engine file is its own identity anchor: `classicIdentity()` hashes
+# this file's bytes as `engineSha256`, `assertClassicArtifact` refuses any artifact
+# whose hash differs, and `backend/nest-cli.json` copies the same file byte-for-byte
+# into the build output. A CRLF checkout would therefore hash to a different engine
+# identity than the accepted profiles and reject them, so pin it to LF as well.
+backend/src/casino/games/book-of-ra-classic/classic.engine.ts text eol=lf
