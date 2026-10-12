@@ -55,7 +55,6 @@ export default function AdminUsersPage() {
   const [created, setCreated] = useState<{ username: string; role: string; generatedPassword?: string } | null>(null);
   const [renameTo, setRenameTo] = useState('');
   const [passwordTo, setPasswordTo] = useState('');
-  const [revealed, setRevealed] = useState<string | null>(null);
   const [ownerTo, setOwnerTo] = useState('');
 
   const load = useCallback(async (term: string) => {
@@ -77,8 +76,6 @@ export default function AdminUsersPage() {
     setNotice('');
     const detail = await adminGet<UserDetail>(`/admin/users/${id}/detail`);
     setSelected(detail);
-    // A revealed password never follows you to another user.
-    setRevealed(null);
     setPasswordTo('');
     setRenameTo('');
     setOwnerTo('');
@@ -114,16 +111,11 @@ export default function AdminUsersPage() {
 
   const setUserPassword = () => run(async () => {
     if (!selected) return;
-    await adminSend(`/admin/users/${selected.user.id}/password`, 'POST', { password: passwordTo });
+    // The reset endpoint confirms the change and does not return the password.
+    // The value the operator typed stays in this field only until the request succeeds.
+    await adminSend<{ id: string }>(`/admin/users/${selected.user.id}/password`, 'POST', { password: passwordTo });
     setNotice('Password set. Their active sessions were signed out.');
     setPasswordTo('');
-    setRevealed(null);
-  });
-
-  const revealPassword = () => run(async () => {
-    if (!selected) return;
-    const result = await adminSend<{ password: string }>(`/admin/users/${selected.user.id}/password/reveal`, 'POST');
-    setRevealed(result.password);
   });
 
   const assignOwner = () => run(async () => {
@@ -245,8 +237,10 @@ export default function AdminUsersPage() {
             <p className="ops-alert ops-alert-action" role="status">
               Created <strong>{created.username}</strong> ({created.role}).
               {created.generatedPassword && (
-                <> Generated password: <code>{created.generatedPassword}</code>. You can show it again later from the user panel.</>
+                <> Generated password: <code>{created.generatedPassword}</code>. This is shown only once. Save it now. It cannot be retrieved later.</>
               )}
+              {' '}
+              <button type="button" className="ops-link" onClick={() => setCreated(null)}>Dismiss</button>
             </p>
           )}
         </section>
@@ -355,16 +349,7 @@ export default function AdminUsersPage() {
                     <button className="ops-action" disabled={busy || passwordTo.length < 8} onClick={() => void setUserPassword()}>
                       Set password
                     </button>
-                    <button className="casino-secondary" disabled={busy} onClick={() => void revealPassword()}>
-                      Show password
-                    </button>
                   </div>
-                  {revealed !== null && (
-                    <p className="ops-alert ops-alert-action" role="status">
-                      Password: <code>{revealed}</code>{' '}
-                      <button type="button" className="ops-link" onClick={() => setRevealed(null)}>Hide</button>
-                    </p>
-                  )}
 
                   {(canMint || (canTransfer && selected.user.role === 'USER')) && <h3>{canMint ? 'Adjust balance' : 'Give or take back points'}</h3>}
                   <label className="casino-field">
