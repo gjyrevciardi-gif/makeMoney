@@ -128,7 +128,7 @@ const MESSAGES: Record<string, string> = {
   USERNAME_TAKEN: 'That username is already in use.',
   USERNAME_INVALID: 'A username is 3-32 characters: letters, digits, dot, underscore or hyphen.',
   PASSWORD_INVALID: 'A password is 8-128 characters.',
-  PASSWORD_NOT_AVAILABLE: 'This password was set before the vault existed. Set a new password to make it viewable.',
+  // MFA enrollment still encrypts the TOTP secret with this key. Account passwords are not stored reversibly.
   PASSWORD_VAULT_NOT_CONFIGURED: 'The password vault is not configured on the server.',
   ROLE_GRANT_FORBIDDEN: 'Only a super administrator can create an administrator.',
   ROLE_NOT_CREATABLE: 'That role cannot be created here.',
