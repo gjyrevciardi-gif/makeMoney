@@ -5,6 +5,7 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { AppShell } from '../../components/shell/app-shell';
 import { IconSearch } from '../../components/shell/icons';
 import { LobbyCard } from '../../components/casino/lobby-card';
+import { MobileCasino } from '../../components/casino/mobile-casino';
 import { describeError, type CasinoCategory, type CasinoGame } from '../../lib/casino';
 import {
   useCasinoFavorites,
@@ -117,7 +118,8 @@ export default function CasinoLobby() {
         </p>
       ) : undefined}
     >
-      <div className="ref-casino">
+      <div className="m-only"><MobileCasino /></div>
+      <div className="ref-casino desk-only">
         <label className="ref-search">
           <IconSearch />
           <span className="sr-only">Search for game or by provider</span>

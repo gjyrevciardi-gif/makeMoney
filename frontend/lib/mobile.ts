@@ -83,11 +83,12 @@ export function useOpenBetsCount() {
  * `undefined` in production; the dev fixtures simulate one so the phone flow
  * can be previewed.
  */
-export function useCashOutAction() {
-  const enabled = process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_DEV_FIXTURES === '1';
-  return enabled
-    ? async (betId: string) => { await (await import('./dev-fixtures')).fixtureCashOut(betId); }
-    : undefined;
+export function useCashOutAction(): ((betId: string) => Promise<void>) | undefined {
+  // The guard is written inline, as dev-fixtures.ts requires, so a production build drops this branch.
+  if (process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_DEV_FIXTURES === '1') {
+    return async (betId: string) => { await (await import('./dev-fixtures')).fixtureCashOut(betId); };
+  }
+  return undefined;
 }
 
 /** The current time, re-read every `everyMs`. Used for the "Starts in mm:ss" countdowns. */

@@ -166,14 +166,14 @@ const game = (
 export const fixtureCasino = (): CasinoGamesResponse => ({
   platform: { casinoMaintenance: false },
   games: [
-    game('lucky-lady', "Lucky Lady's Charm Deluxe", 'SLOTS', '/casino/slots/lucky-lady', 'lucky-lady', true, 'Classic five-reel free-play slot.'),
-    game('fools-gold-rush', "Fool's Gold Rush", 'SLOTS', '/casino/slots/fools-gold-rush', 'fools-gold-rush', true, 'Gold-rush themed slot.'),
+    { ...game('lucky-lady', "Lucky Lady's Charm Deluxe", 'SLOTS', '/casino/slots/lucky-lady', 'lucky-lady', true, 'Classic five-reel free-play slot.'), isNew: true, playersNow: 918 },
+    { ...game('fools-gold-rush', "Fool's Gold Rush", 'SLOTS', '/casino/slots/fools-gold-rush', 'fools-gold-rush', true, 'Gold-rush themed slot.'), hot: true, playersNow: 2184 },
     game('blackjack', 'Blackjack', 'TABLE_GAMES', '/casino/blackjack', 'blackjack', true, 'Beat the dealer to 21.'),
     game('roulette', 'Roulette', 'TABLE_GAMES', '/casino/roulette', 'roulette', false, 'Single-zero wheel.'),
-    game('dice', 'Dice', 'ORIGINALS', '/casino/dice', 'dice', true, 'Roll over or under.'),
-    game('mines', 'Mines', 'ORIGINALS', '/casino/mines', 'mines', true, 'Avoid the mines.'),
-    game('crash', 'Crash', 'ORIGINALS', '/casino/crash', 'crash', false, 'Cash out before the crash.'),
-    game('plinko', 'Plinko', 'ORIGINALS', '/casino/plinko', 'plinko', false, 'Drop and bounce.'),
+    { ...game('dice', 'Dice', 'ORIGINALS', '/casino/dice', 'dice', true, 'Roll over or under.'), playersNow: 1560 },
+    { ...game('mines', 'Mines', 'ORIGINALS', '/casino/mines', 'mines', true, 'Avoid the mines.'), playersNow: 1207 },
+    { ...game('crash', 'Crash', 'ORIGINALS', '/casino/crash', 'crash', false, 'Cash out before the crash.'), hot: true, playersNow: 3402 },
+    { ...game('plinko', 'Plinko', 'ORIGINALS', '/casino/plinko', 'plinko', false, 'Drop and bounce.'), isNew: true, playersNow: 744 },
   ],
 });
 
@@ -243,6 +243,12 @@ const fixtureLeg = (
 });
 
 const hoursAgo = (hours: number) => new Date(Date.now() - hours * 3_600_000).toISOString();
+
+export const fixtureLedger = () => [
+  { id: 'led-1', type: 'ADMIN_GRANT', amount: '100000', reason: 'Starting balance', createdAt: hoursAgo(300) },
+  { id: 'led-2', type: 'BET_STAKE', amount: '-2000', reason: 'Single, Napoli v Roma', createdAt: hoursAgo(5) },
+  { id: 'led-3', type: 'BET_PAYOUT', amount: '4200', reason: 'Bet won', createdAt: hoursAgo(1) },
+];
 
 const cashed = new Set<string>();
 
