@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
+import { MobileAccount } from '../../components/account/mobile-account';
 import { AppShell } from '../../components/shell/app-shell';
 import { getJson } from '../../lib/api';
 import { formatDateTime, formatPoints, humanize } from '../../lib/format';
@@ -47,7 +48,8 @@ export default function AccountPage() {
 
   return (
     <AppShell>
-      <div className="page">
+      <div className="m-only"><MobileAccount /></div>
+      <div className="page desk-only">
         <div className="page-head">
           <div>
             <p className="kicker">Account</p>

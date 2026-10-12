@@ -15,6 +15,7 @@ import {
   type Market,
   type Selection,
 } from '../../../../lib/sports';
+import { MobileMatch } from '../../../../components/match/mobile-match';
 import { OddsButton } from '../../../../components/sports/odds-button';
 
 /**
@@ -76,7 +77,18 @@ function MarketBlock({ odds, market, suspended, stale }: {
   );
 }
 
+/** Phones get their own page; desktop keeps this layout unchanged. */
 export function EventDetail({ eventId }: { eventId: string }) {
+  const sportKey = useSearchParams().get('sport') ?? undefined;
+  return (
+    <>
+      <div className="m-only"><MobileMatch eventId={eventId} sportKey={sportKey} /></div>
+      <div className="desk-only"><DesktopEventDetail eventId={eventId} /></div>
+    </>
+  );
+}
+
+function DesktopEventDetail({ eventId }: { eventId: string }) {
   const params = useSearchParams();
   const sportKey = params.get('sport') ?? undefined;
   const query = useEventOdds(sportKey, eventId);

@@ -57,6 +57,11 @@ export type CasinoGame = {
   thumbnailKey: string;
   stateful: boolean;
   lastPlayedAt?: string;
+  /** Optional lobby hints. The registry sends none today, so the phone lobby shows no badge for them. */
+  hot?: boolean;
+  isNew?: boolean;
+  /** Players in the game right now, when the platform reports it. */
+  playersNow?: number;
 };
 
 export type CasinoGamesResponse = {

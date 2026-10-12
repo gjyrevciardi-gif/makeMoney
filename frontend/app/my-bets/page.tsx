@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { MobileMyBets } from '../../components/bets/mobile-my-bets';
 import { AppShell } from '../../components/shell/app-shell';
 import { getJson } from '../../lib/api';
 import { humanize } from '../../lib/format';
@@ -33,7 +34,8 @@ export default function MyBetsPage() {
 
   return (
     <AppShell>
-      <div className="page">
+      <div className="m-only"><MobileMyBets /></div>
+      <div className="page desk-only">
         <div className="page-head">
           <div>
             <p className="kicker">Your activity</p>

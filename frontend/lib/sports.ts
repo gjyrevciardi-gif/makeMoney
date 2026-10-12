@@ -155,16 +155,18 @@ export function useSports() {
  * upstream call, so rendering a full page of prices costs one request rather
  * than one per fixture.
  */
+export async function fetchBoard(sportKey: string): Promise<SportsBoard> {
+  if (process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_DEV_FIXTURES === '1') {
+    return (await import('./dev-fixtures')).fixtureBoard(sportKey);
+  }
+  return getJson<SportsBoard>(`/sports/${encodeURIComponent(sportKey)}/board`, { public: true });
+}
+
 export function useBoard(sportKey: string | undefined, options: { live?: boolean } = {}) {
   return useQuery({
     queryKey: qk.board(sportKey ?? ''),
     enabled: Boolean(sportKey),
-    queryFn: async () => {
-      if (process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_DEV_FIXTURES === '1') {
-        return (await import('./dev-fixtures')).fixtureBoard(sportKey!);
-      }
-      return getJson<SportsBoard>(`/sports/${encodeURIComponent(sportKey!)}/board`, { public: true });
-    },
+    queryFn: () => fetchBoard(sportKey!),
     refetchInterval: options.live ? CADENCE.liveOddsMs : CADENCE.prematchOddsMs,
     refetchOnWindowFocus: true,
     staleTime: 10_000,

@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Fool's Gold Club — Loading</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;background:#050806}
+a{color:#f2c14e}a:hover{color:#d8a32c}
+.fg-sk{display:block;border-radius:8px;background:linear-gradient(90deg,#151d18 25%,#1c261f 37%,#151d18 63%);background-size:400% 100%;animation:fgShimmer 1.4s ease-in-out infinite}
+@keyframes fgShimmer{0%{background-position:100% 0}100%{background-position:0 0}}
+@keyframes fgPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
+</style>
+</helmet>
+<div aria-busy="true" style="width: 393px; height: 852px; position: relative; overflow: hidden; display: flex; flex-direction: column; background: #080c0a; color: #eef3ec; font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 14px; line-height: 1.45; -webkit-font-smoothing: antialiased;">
+
+  <header style="height: 56px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 8px 0 14px; background: #050806;">
+    <a href="Main.dc.html" aria-label="Fool's Gold home" style="display: flex; align-items: center; gap: 7px; text-decoration: none;">
+      <span aria-hidden="true" style="width: 20px; height: 20px; border-radius: 50%; flex: none; background: linear-gradient(145deg, #f2c14e, #d8a32c); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.45);"></span>
+      <span style="font-size: 13px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #f2c14e; white-space: nowrap;">Fool's Gold</span>
+    </a>
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 4px;">
+      <span style="width: 44px; height: 44px; display: grid; place-items: center; color: #93a599;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m16.5 16.5 4 4"></path></svg></span>
+      <span class="fg-sk" style="width: 112px; height: 40px;"></span>
+    </div>
+  </header>
+
+  <nav aria-label="Sections" style="height: 44px; flex: none; display: flex; align-items: stretch; gap: 2px; padding: 0 6px; background: #050806; border-bottom: 1px solid #223029;">
+    <span style="display: flex; align-items: center; padding: 0 10px; font-size: 13px; font-weight: 700; color: #f2c14e; box-shadow: inset 0 -2px 0 #f2c14e;">Sports</span>
+    <span style="display: flex; align-items: center; gap: 6px; padding: 0 10px; font-size: 13px; font-weight: 650; color: #93a599;"><span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 50%; background: #ff6a3d; animation: fgPulse 1.8s ease-in-out infinite;"></span>Live</span>
+    <span style="display: flex; align-items: center; padding: 0 10px; font-size: 13px; font-weight: 650; color: #93a599;">Casino</span>
+    <span style="display: flex; align-items: center; padding: 0 10px; font-size: 13px; font-weight: 650; color: #93a599; white-space: nowrap;">Live Casino</span>
+    <span style="display: flex; align-items: center; padding: 0 10px; font-size: 13px; font-weight: 650; color: #93a599; white-space: nowrap;">My Bets</span>
+  </nav>
+
+  <main style="flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 16px; padding: 12px 0;">
+    <p role="status" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Loading today's prices</p>
+
+    <div aria-hidden="true" style="flex: none; display: flex; gap: 4px; padding: 0 8px; overflow: hidden;">
+      <sc-for list="{{chips}}" as="c" hint-placeholder-count="6">
+        <span style="flex: none; width: 68px; display: flex; flex-direction: column; align-items: center; gap: 7px;">
+          <span class="fg-sk" style="width: 48px; height: 48px; border-radius: 50%; animation-delay: {{c.delay}};"></span>
+          <span class="fg-sk" style="width: {{c.w}}; height: 10px; border-radius: 4px; animation-delay: {{c.delay}};"></span>
+        </span>
+      </sc-for>
+    </div>
+
+    <div aria-hidden="true" style="flex: none; display: flex; flex-direction: column; gap: 10px;">
+      <div style="display: flex; justify-content: space-between; padding: 0 12px;"><span class="fg-sk" style="width: 84px; height: 18px; border-radius: 4px;"></span><span class="fg-sk" style="width: 48px; height: 14px; border-radius: 4px;"></span></div>
+      <div style="display: flex; gap: 10px; padding: 0 12px; overflow: hidden;">
+        <sc-for list="{{cards}}" as="k" hint-placeholder-count="2">
+          <div style="flex: none; width: 300px; display: flex; flex-direction: column; gap: 14px; padding: 12px; box-sizing: border-box; border-radius: 12px; border: 1px solid #223029; background: #0f1512;">
+            <div style="display: flex; justify-content: space-between;"><span class="fg-sk" style="width: 96px; height: 12px; border-radius: 4px; animation-delay: {{k.delay}};"></span><span class="fg-sk" style="width: 70px; height: 12px; border-radius: 4px; animation-delay: {{k.delay}};"></span></div>
+            <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: center; justify-items: center; gap: 8px;">
+              <span style="display: flex; flex-direction: column; align-items: center; gap: 8px;"><span class="fg-sk" style="width: 34px; height: 38px; border-radius: 10px 10px 17px 17px; animation-delay: {{k.delay}};"></span><span class="fg-sk" style="width: 70px; height: 12px; border-radius: 4px; animation-delay: {{k.delay}};"></span></span>
+              <span class="fg-sk" style="width: 12px; height: 12px; border-radius: 4px; animation-delay: {{k.delay}};"></span>
+              <span style="display: flex; flex-direction: column; align-items: center; gap: 8px;"><span class="fg-sk" style="width: 34px; height: 38px; border-radius: 10px 10px 17px 17px; animation-delay: {{k.delay}};"></span><span class="fg-sk" style="width: 64px; height: 12px; border-radius: 4px; animation-delay: {{k.delay}};"></span></span>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px;"><span class="fg-sk" style="height: 52px; animation-delay: {{k.delay}};"></span><span class="fg-sk" style="height: 52px; animation-delay: {{k.delay}};"></span><span class="fg-sk" style="height: 52px; animation-delay: {{k.delay}};"></span></div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div aria-hidden="true" style="flex: none; display: flex; flex-direction: column; gap: 10px; padding: 0 12px;">
+      <div style="display: flex; justify-content: space-between;"><span class="fg-sk" style="width: 104px; height: 18px; border-radius: 4px;"></span><span class="fg-sk" style="width: 80px; height: 14px; border-radius: 4px;"></span></div>
+      <div style="border: 1px solid #223029; border-radius: 12px; background: #0f1512; overflow: hidden;">
+        <div style="height: 44px; display: flex; align-items: center; gap: 10px; padding: 0 12px; background: #151d18;"><span class="fg-sk" style="width: 14px; height: 14px; border-radius: 4px;"></span><span class="fg-sk" style="width: 120px; height: 13px; border-radius: 4px;"></span><span class="fg-sk" style="width: 52px; height: 11px; border-radius: 4px;"></span></div>
+        <sc-for list="{{rows}}" as="r" hint-placeholder-count="4">
+          <div style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-top: 1px solid #223029;">
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
+              <span class="fg-sk" style="width: 92px; height: 10px; border-radius: 4px; animation-delay: {{r.delay}};"></span>
+              <span class="fg-sk" style="width: {{r.w1}}; height: 13px; border-radius: 4px; animation-delay: {{r.delay}};"></span>
+              <span class="fg-sk" style="width: {{r.w2}}; height: 13px; border-radius: 4px; animation-delay: {{r.delay}};"></span>
+            </div>
+            <div style="width: 174px; flex: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px;"><span class="fg-sk" style="height: 48px; animation-delay: {{r.delay}};"></span><span class="fg-sk" style="height: 48px; animation-delay: {{r.delay}};"></span><span class="fg-sk" style="height: 48px; animation-delay: {{r.delay}};"></span></div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </main>
+
+  <nav aria-label="Primary" style="height: 60px; flex: none; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); background: #050806; border-top: 1px solid #223029; position: relative; z-index: 31;">
+    <a href="Main.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 650; letter-spacing: 0.02em; color: #f2c14e; text-decoration: none;">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11 12 4l8 7v9h-5v-6H9v6H4z"></path></svg>Home
+    </a>
+    <a href="Live.dc.html" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 650; letter-spacing: 0.02em; color: #93a599; text-decoration: none;">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h3l2.5-6 4 13 2.5-7h6"></path></svg>Live
+    </a>
+    <a href="MyBets.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 650; letter-spacing: 0.02em; color: #93a599; text-decoration: none;">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h14v16l-3.5-2-3.5 2-3.5-2L5 20z"></path><path d="M9 9h6M9 13h4"></path></svg>My Bets
+    </a>
+    <a href="Casino.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 650; letter-spacing: 0.02em; color: #93a599; text-decoration: none;">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"></rect><circle cx="8.5" cy="8.5" r="1.2" fill="currentColor" stroke="none"></circle><circle cx="15.5" cy="15.5" r="1.2" fill="currentColor" stroke="none"></circle><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"></circle></svg>Casino
+    </a>
+    <a href="Account.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 650; letter-spacing: 0.02em; color: #93a599; text-decoration: none;">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5"></circle><path d="M4.5 20a7.5 7.5 0 0 1 15 0"></path></svg>Account
+    </a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":393,"height":852}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const chips = [44, 56, 40, 60, 46, 54].map((w, i) => ({ w: w + 'px', delay: (i * 0.06).toFixed(2) + 's' }));
+    const cards = [0, 1].map((i) => ({ delay: (i * 0.12).toFixed(2) + 's' }));
+    const rows = [[96, 82], [130, 112], [88, 104], [110, 94]].map((w, i) => ({ w1: w[0] + 'px', w2: w[1] + 'px', delay: (0.1 + i * 0.08).toFixed(2) + 's' }));
+    return { chips, cards, rows };
+  }
+}
+</script>
+</body>
+</html>

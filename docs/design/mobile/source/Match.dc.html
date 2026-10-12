@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Fool's Gold Club — Liverpool v Manchester City</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;background:#050806}
+a{color:#f2c14e}a:hover{color:#d8a32c}
+.fg-scroll{scrollbar-width:none}
+.fg-scroll::-webkit-scrollbar{display:none}
+@keyframes fgPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}
+@keyframes fgBall{0%{left:50%;top:50%}14%{left:58%;top:36%}28%{left:66%;top:58%}42%{left:74%;top:44%}56%{left:83%;top:55%}64%{left:87%;top:47%}74%{left:79%;top:30%}86%{left:64%;top:42%}100%{left:50%;top:50%}}
+@keyframes fgZone{0%,100%{opacity:.55}50%{opacity:1}}
+@keyframes fgRise{from{transform:translateY(10px);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
+</style>
+</helmet>
+<div style="width: 393px; height: 852px; position: relative; overflow: hidden; display: flex; flex-direction: column; background: #080c0a; color: #eef3ec; font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 14px; line-height: 1.45; -webkit-font-smoothing: antialiased;">
+
+  <header style="height: 56px; flex: none; display: flex; align-items: center; gap: 4px; padding: 0 4px; background: #050806; border-bottom: 1px solid #223029;">
+    <a href="Live.dc.html" aria-label="Back to live" style="width: 44px; height: 44px; flex: none; display: grid; place-items: center; color: #eef3ec;">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>
+    </a>
+    <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; line-height: 1.25;">
+      <span style="font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">Liverpool v Manchester City</span>
+      <span style="font-size: 11px; color: #93a599;">Premier League · Matchday 8</span>
+    </div>
+    <button type="button" aria-label="{{favLabel}}" aria-pressed="{{fav}}" onClick="{{toggleFav}}" style="width: 44px; height: 44px; flex: none; display: grid; place-items: center; padding: 0; border: 0; background: transparent; color: {{favColor}}; cursor: pointer;">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="{{favFill}}" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3.6 2.6 5.4 5.9.8-4.3 4.1 1 5.9-5.2-2.8-5.2 2.8 1-5.9-4.3-4.1 5.9-.8z"></path></svg>
+    </button>
+  </header>
+
+  <main class="fg-scroll" style="flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; padding: 0 0 84px;">
+
+    <section aria-label="Live score and match tracker" style="flex: none; display: flex; flex-direction: column; gap: 12px; padding: 14px 12px 12px; background: radial-gradient(420px 200px at 50% -40%, #1b2a1f, transparent 70%), #080c0a;">
+      <div style="display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 8px;">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0;">
+          <span aria-hidden="true" style="position: relative; width: 38px; height: 42px; display: grid; place-items: center;">
+            <svg viewBox="0 0 32 36" width="38" height="42" style="position: absolute; inset: 0;"><path d="M16 1.5 3 5.5v10.2c0 8.6 5.5 14.8 13 18.8 7.5-4 13-10.2 13-18.8V5.5z" fill="#c8102e"></path><path d="M16 1.5v33c7.5-4 13-10.2 13-18.8V5.5z" fill="#a10d25"></path><path d="M16 1.5 3 5.5v10.2c0 8.6 5.5 14.8 13 18.8 7.5-4 13-10.2 13-18.8V5.5z" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="1"></path></svg>
+            <span style="position: relative; margin-top: -3px; font-size: 10px; font-weight: 800; color: #ffffff;">LIV</span>
+          </span>
+          <span style="font-size: 13px; font-weight: 650; white-space: nowrap;">Liverpool</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+          <span style="font-size: 30px; font-weight: 800; letter-spacing: -0.02em; color: #f2c14e; font-variant-numeric: tabular-nums; line-height: 1;">2 – 1</span>
+          <span style="display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 999px; background: #331508; color: #ff6a3d; font-size: 11px; font-weight: 800; letter-spacing: 0.04em; font-variant-numeric: tabular-nums;">
+            <span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 50%; background: #ff6a3d; animation: fgPulse 1.8s ease-in-out infinite;"></span>LIVE {{clock}}
+          </span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0;">
+          <span aria-hidden="true" style="position: relative; width: 38px; height: 42px; display: grid; place-items: center;">
+            <svg viewBox="0 0 32 36" width="38" height="42" style="position: absolute; inset: 0;"><path d="M16 1.5 3 5.5v10.2c0 8.6 5.5 14.8 13 18.8 7.5-4 13-10.2 13-18.8V5.5z" fill="#6cabdd"></path><path d="M16 1.5v33c7.5-4 13-10.2 13-18.8V5.5z" fill="#4f8fc4"></path><path d="M16 1.5 3 5.5v10.2c0 8.6 5.5 14.8 13 18.8 7.5-4 13-10.2 13-18.8V5.5z" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="1"></path></svg>
+            <span style="position: relative; margin-top: -3px; font-size: 10px; font-weight: 800; color: #0b2340;">MCI</span>
+          </span>
+          <span style="font-size: 13px; font-weight: 650; white-space: nowrap;">Manchester City</span>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: center; gap: 14px; font-size: 11px; color: #93a599; font-variant-numeric: tabular-nums;">
+        <span>12' 38' Liverpool</span>
+        <span aria-hidden="true" style="color: #33463a;">|</span>
+        <span>54' Man City</span>
+      </div>
+
+      <div style="position: relative; height: 136px; border-radius: 12px; overflow: hidden; border: 1px solid #223029; background: repeating-linear-gradient(90deg, #111a14 0 36px, #0f1712 36px 72px);">
+        <svg viewBox="0 0 368 136" width="100%" height="100%" preserveAspectRatio="none" aria-hidden="true" style="position: absolute; inset: 0;">
+          <rect x="8" y="8" width="352" height="120" fill="none" stroke="#33463a" stroke-width="1.5"></rect>
+          <path d="M184 8v120" stroke="#33463a" stroke-width="1.5"></path>
+          <circle cx="184" cy="68" r="20" fill="none" stroke="#33463a" stroke-width="1.5"></circle>
+          <circle cx="184" cy="68" r="2" fill="#33463a"></circle>
+          <rect x="8" y="34" width="44" height="68" fill="none" stroke="#33463a" stroke-width="1.5"></rect>
+          <rect x="8" y="52" width="16" height="32" fill="none" stroke="#33463a" stroke-width="1.5"></rect>
+          <rect x="316" y="34" width="44" height="68" fill="none" stroke="#33463a" stroke-width="1.5"></rect>
+          <rect x="344" y="52" width="16" height="32" fill="none" stroke="#33463a" stroke-width="1.5"></rect>
+        </svg>
+        <span aria-hidden="true" style="position: absolute; top: 0; bottom: 0; right: 0; width: 34%; background: linear-gradient(90deg, rgba(242, 193, 78, 0), rgba(242, 193, 78, 0.16)); animation: fgZone 2.4s ease-in-out infinite;"></span>
+        <span aria-hidden="true" style="position: absolute; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%; background: rgba(242, 193, 78, 0.18); animation: fgBall 9s ease-in-out infinite; animation-delay: -0.25s;"></span>
+        <span aria-hidden="true" style="position: absolute; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: #f2c14e; box-shadow: 0 0 0 3px rgba(242, 193, 78, 0.25), 0 0 14px rgba(242, 193, 78, 0.8); animation: fgBall 9s ease-in-out infinite;"></span>
+        <span style="position: absolute; top: 8px; left: 50%; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; background: rgba(5, 8, 6, 0.86); border: 1px solid #33463a; font-size: 11px; font-weight: 700; white-space: nowrap;">
+          <span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 50%; background: #f2c14e; animation: fgPulse 1.2s ease-in-out infinite;"></span>{{tracker}}
+        </span>
+        <span style="position: absolute; bottom: 7px; left: 12px; font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #93a599;">LIV →</span>
+        <span style="position: absolute; bottom: 7px; right: 12px; font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #93a599;">← MCI</span>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 5px;">
+        <div style="display: flex; justify-content: space-between; font-size: 11px; color: #93a599;"><span style="font-weight: 700; color: #f2c14e; font-variant-numeric: tabular-nums;">58%</span><span>Possession</span><span style="font-weight: 700; color: #eef3ec; font-variant-numeric: tabular-nums;">42%</span></div>
+        <div style="display: flex; gap: 3px; height: 4px;">
+          <span style="flex: 58; border-radius: 999px; background: #f2c14e;"></span>
+          <span style="flex: 42; border-radius: 999px; background: #93a599;"></span>
+        </div>
+      </div>
+    </section>
+
+    <nav role="tablist" aria-label="Markets" class="fg-scroll" style="flex: none; height: 44px; display: flex; gap: 2px; padding: 0 6px; overflow-x: auto; background: #050806; border-top: 1px solid #223029; border-bottom: 1px solid #223029;">
+      <sc-for list="{{tabs}}" as="t" hint-placeholder-count="5">
+        <button type="button" role="tab" aria-selected="{{t.on}}" onClick="{{t.pick}}" style="flex: none; display: flex; align-items: center; gap: 6px; padding: 0 11px; border: 0; background: transparent; font: inherit; font-size: 13px; font-weight: {{t.weight}}; color: {{t.color}}; box-shadow: {{t.line}}; cursor: pointer; white-space: nowrap;">{{t.label}}<sc-if value="{{t.isNew}}" hint-placeholder-val="{{false}}"><span style="padding: 0 5px; border-radius: 4px; background: #4a3a12; color: #f2c14e; font-size: 9px; font-weight: 800; letter-spacing: 0.06em;">NEW</span></sc-if></button>
+      </sc-for>
+    </nav>
+
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 12px;">
+
+      <sc-if value="{{showBoost}}" hint-placeholder-val="{{true}}">
+        <section aria-label="Boosted price" style="flex: none; display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; border: 1px solid #4a3a12; background: radial-gradient(260px 120px at 100% 0%, rgba(242, 193, 78, 0.16), transparent 70%), linear-gradient(150deg, #151d18, #0f1512);">
+          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px;">
+            <span style="align-self: flex-start; display: inline-flex; align-items: center; gap: 4px; padding: 1px 7px 1px 5px; border-radius: 999px; background: #f2c14e; color: #16110a; font-size: 10px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase;">
+              <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor" aria-hidden="true"><path d="M13.2 2.5 4.8 13.6h6.1l-1.1 7.9 8.4-11.1h-6.1z"></path></svg>Boosted
+            </span>
+            <strong style="font-size: 13px; font-weight: 700;">Liverpool to win and over 3.5 goals</strong>
+            <span style="font-size: 11px; color: #93a599;">Was <s style="font-variant-numeric: tabular-nums;">2.75</s></span>
+          </div>
+          <button type="button" aria-pressed="{{boost.pressed}}" aria-label="Add boosted price 3.25" onClick="{{boost.toggle}}" style="position: relative; width: 86px; height: 52px; flex: none; display: flex; align-items: center; justify-content: center; gap: 5px; padding: 0; border-radius: 8px; border: 1px solid {{boost.border}}; background: {{boost.bg}}; box-shadow: {{boost.glow}}; cursor: pointer; font: inherit;">
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="{{boost.priceColor}}" aria-hidden="true"><path d="M13.2 2.5 4.8 13.6h6.1l-1.1 7.9 8.4-11.1h-6.1z"></path></svg>
+            <span style="font-size: 17px; font-weight: 800; color: {{boost.priceColor}}; font-variant-numeric: tabular-nums;">3.25</span>
+            <sc-if value="{{boost.pressed}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="position: absolute; top: 3px; right: 6px; font-size: 10px; font-weight: 900; line-height: 1; color: #16110a;">✓</span></sc-if>
+          </button>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{showMarkets}}" hint-placeholder-val="{{true}}">
+        <sc-for list="{{markets}}" as="mk" hint-placeholder-count="4">
+          <section aria-label="{{mk.name}}" style="flex: none; border: 1px solid #223029; border-radius: 12px; background: #0f1512; overflow: hidden; animation: fgRise 300ms cubic-bezier(0.22, 1, 0.36, 1) both;">
+            <button type="button" aria-expanded="{{mk.open}}" onClick="{{mk.toggle}}" style="width: 100%; height: 44px; display: flex; align-items: center; gap: 8px; padding: 0 12px; border: 0; background: #151d18; color: #eef3ec; font: inherit; cursor: pointer; text-align: left;">
+              <span style="font-size: 13px; font-weight: 700;">{{mk.name}}</span>
+              <span style="font-size: 11px; color: #93a599;">{{mk.note}}</span>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#93a599" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-left: auto; transform: {{mk.chevron}}; transition: transform 140ms ease;"><path d="m6 9 6 6 6-6"></path></svg>
+            </button>
+            <sc-if value="{{mk.open}}" hint-placeholder-val="{{true}}">
+              <div style="display: grid; grid-template-columns: repeat({{mk.cols}}, minmax(0, 1fr)); gap: 6px; padding: 10px 12px 12px;">
+                <sc-for list="{{mk.cells}}" as="o" hint-placeholder-count="3">
+                  <button type="button" aria-pressed="{{o.pressed}}" aria-label="{{o.aria}}" onClick="{{o.toggle}}" style="position: relative; min-width: 0; height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; padding: 0 6px; border-radius: 8px; border: 1px solid {{o.border}}; background: {{o.bg}}; box-shadow: {{o.glow}}; cursor: pointer; font: inherit; transition: background-color 300ms ease, border-color 300ms ease, box-shadow 200ms ease;">
+                    <span style="max-width: 100%; font-size: 11px; font-weight: 600; color: {{o.labelColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{o.label}}</span>
+                    <span style="font-size: 15px; font-weight: 700; color: {{o.priceColor}}; font-variant-numeric: tabular-nums;">{{o.price}}</span>
+                    <sc-if value="{{o.up}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="position: absolute; top: 4px; left: 6px; font-size: 9px; line-height: 1; color: #46c47c;">▲</span></sc-if>
+                    <sc-if value="{{o.down}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="position: absolute; top: 4px; left: 6px; font-size: 9px; line-height: 1; color: #ef5567;">▼</span></sc-if>
+                    <sc-if value="{{o.pressed}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="position: absolute; top: 3px; right: 6px; font-size: 10px; font-weight: 900; line-height: 1; color: #16110a;">✓</span></sc-if>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+          </section>
+        </sc-for>
+      </sc-if>
+
+      <sc-if value="{{showBuilder}}" hint-placeholder-val="{{false}}">
+        <section aria-label="Bet Builder" style="flex: none; display: flex; flex-direction: column; border: 1px solid #223029; border-radius: 12px; background: #0f1512; overflow: hidden;">
+          <div style="display: flex; flex-direction: column; gap: 2px; padding: 12px; background: #151d18;">
+            <strong style="font-size: 13px; font-weight: 700;">Build your own bet</strong>
+            <span style="font-size: 12px; color: #93a599;">Combine picks from this match into one price.</span>
+          </div>
+          <sc-for list="{{legs}}" as="l" hint-placeholder-count="4">
+            <button type="button" role="checkbox" aria-checked="{{l.on}}" onClick="{{l.toggle}}" style="min-height: 52px; display: flex; align-items: center; gap: 12px; padding: 8px 12px; border: 0; border-top: 1px solid #223029; background: transparent; color: #eef3ec; font: inherit; text-align: left; cursor: pointer;">
+              <span aria-hidden="true" style="width: 22px; height: 22px; flex: none; display: grid; place-items: center; border-radius: 6px; border: 1.5px solid {{l.boxBorder}}; background: {{l.boxBg}}; color: #16110a; font-size: 13px; font-weight: 900;">{{l.tick}}</span>
+              <span style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
+                <span style="font-size: 13px; font-weight: 650;">{{l.name}}</span>
+                <span style="font-size: 11px; color: #93a599;">{{l.note}}</span>
+              </span>
+              <span style="font-size: 14px; font-weight: 700; color: #f2c14e; font-variant-numeric: tabular-nums;">{{l.price}}</span>
+            </button>
+          </sc-for>
+          <div style="display: flex; align-items: center; gap: 12px; padding: 12px; border-top: 1px solid #223029; background: #151d18;">
+            <div style="display: flex; flex-direction: column; line-height: 1.2;">
+              <span style="font-size: 11px; color: #93a599;">{{builderCount}} picks</span>
+              <span style="font-size: 20px; font-weight: 800; color: #f2c14e; font-variant-numeric: tabular-nums;">{{builderOdds}}</span>
+            </div>
+            <button type="button" onClick="{{addBuilder}}" disabled="{{builderDisabled}}" style="margin-left: auto; height: 44px; padding: 0 18px; border-radius: 8px; border: 1px solid #d8a32c; background: linear-gradient(180deg, #f2c14e, #d8a32c); color: #16110a; font: inherit; font-size: 14px; font-weight: 750; cursor: pointer; opacity: {{builderOpacity}};">{{builderCta}}</button>
+          </div>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{showStats}}" hint-placeholder-val="{{false}}">
+        <section aria-label="Match stats" style="flex: none; display: flex; flex-direction: column; gap: 14px; padding: 14px 12px; border: 1px solid #223029; border-radius: 12px; background: #0f1512;">
+          <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #93a599;"><span style="color: #f2c14e;">Liverpool</span><span>Man City</span></div>
+          <sc-for list="{{stats}}" as="st" hint-placeholder-count="6">
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+              <div style="display: flex; justify-content: space-between; align-items: baseline; font-size: 12px;">
+                <span style="font-weight: 700; color: #f2c14e; font-variant-numeric: tabular-nums;">{{st.home}}</span>
+                <span style="color: #93a599;">{{st.name}}</span>
+                <span style="font-weight: 700; color: #eef3ec; font-variant-numeric: tabular-nums;">{{st.away}}</span>
+              </div>
+              <div style="display: flex; gap: 3px; height: 4px;">
+                <span style="flex: {{st.hf}}; border-radius: 999px; background: #f2c14e;"></span>
+                <span style="flex: {{st.af}}; border-radius: 999px; background: #93a599;"></span>
+              </div>
+            </div>
+          </sc-for>
+        </section>
+      </sc-if>
+    </div>
+  </main>
+
+  <sc-if value="{{hasSel}}" hint-placeholder-val="{{true}}">
+    <a href="BetSlip.dc.html" aria-label="Open bet slip, {{selCount}} selections" style="position: absolute; left: 8px; right: 8px; bottom: 68px; z-index: 30; height: 50px; display: flex; align-items: center; gap: 10px; padding: 0 14px 0 10px; border-radius: 12px; background: linear-gradient(180deg, #f2c14e, #d8a32c); color: #16110a; text-decoration: none; box-shadow: 0 18px 48px -16px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(0, 0, 0, 0.25);">
+      <span style="min-width: 28px; height: 28px; padding: 0 7px; display: grid; place-items: center; border-radius: 999px; background: #16110a; color: #f2c14e; font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums;">{{selCount}}</span>
+      <span style="font-size: 14px; font-weight: 750;">Bet Slip</span>
+      <span style="margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; line-height: 1.15;">
+        <span style="font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.75;">Total odds</span>
+        <span style="font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums;">{{totalOdds}}</span>
+      </span>
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"></path></svg>
+    </a>
+  </sc-if>
+
+  <nav aria-label="Primary" style="height: 60px; flex: none; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); background: #050806; border-top: 1px solid #223029; position: relative; z-index: 31;">
+    <a href="Main.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 650; letter-spacing: 0.02em; color: #93a599; text-decoration: none;">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11 12 4l8 7v9h-5v-6H9v6H4z"></path></svg>Home
+    </a>
+    <a href="Live.dc.html" aria-current="page" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 650; letter-spacing: 0.02em; color: #f2c14e; text-decoration: none;">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h3l2.5-6 4 13 2.5-7h6"></path></svg>Live
+      <span aria-hidden="true" style="position: absolute; top: 9px; left: calc(50% + 9px); width: 7px; height: 7px; border-radius: 50%; background: #ff6a3d; box-shadow: 0 0 0 2px #050806;"></span>
+    </a>
+    <a href="MyBets.dc.html" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 650; letter-spacing: 0.02em; color: #93a599; text-decoration: none;">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h14v16l-3.5-2-3.5 2-3.5-2L5 20z"></path><path d="M9 9h6M9 13h4"></path></svg>My Bets
+      <span aria-hidden="true" style="position: absolute; top: 5px; left: calc(50% + 6px); min-width: 16px; height: 16px; padding: 0 4px; display: grid; place-items: center; border-radius: 999px; background: #f2c14e; color: #16110a; font-size: 10px; font-weight: 800;">3</span>
+    </a>
+    <a href="Casino.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 650; letter-spacing: 0.02em; color: #93a599; text-decoration: none;">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"></rect><circle cx="8.5" cy="8.5" r="1.2" fill="currentColor" stroke="none"></circle><circle cx="15.5" cy="15.5" r="1.2" fill="currentColor" stroke="none"></circle><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"></circle></svg>Casino
+    </a>
+    <a href="Account.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 650; letter-spacing: 0.02em; color: #93a599; text-decoration: none;">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5"></circle><path d="M4.5 20a7.5 7.5 0 0 1 15 0"></path></svg>Account
+    </a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":393,"height":852}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.MK = {
+      popular: [
+        { key: 'res', name: 'Match result', note: 'Full time', cols: 3, cells: [['Liverpool', 1.36], ['Draw', 4.80], ['Man City', 9.50]] },
+        { key: 'next', name: 'Next goal', note: '4th goal', cols: 3, cells: [['Liverpool', 1.85], ['No goal', 6.50], ['Man City', 2.60]] },
+        { key: 'tot', name: 'Total goals', note: '3 scored', cols: 2, cells: [['Over 3.5', 1.90], ['Under 3.5', 1.90], ['Over 4.5', 4.20], ['Under 4.5', 1.20]] },
+        { key: 'dc', name: 'Double chance', note: 'Full time', cols: 3, cells: [['LIV or draw', 1.08], ['LIV or MCI', 1.30], ['Draw or MCI', 3.10]] },
+        { key: 'cs', name: 'Correct score', note: 'Full time', cols: 3, cells: [['2–1', 3.20], ['3–1', 4.50], ['2–2', 6.00], ['4–1', 11.00], ['3–2', 15.00], ['2–3', 41.00]] },
+      ],
+      goals: [
+        { key: 'gl1', name: 'Total goals', note: '3 scored', cols: 2, cells: [['Over 3.5', 1.90], ['Under 3.5', 1.90], ['Over 4.5', 4.20], ['Under 4.5', 1.20], ['Over 5.5', 11.00], ['Under 5.5', 1.03]] },
+        { key: 'gl2', name: 'Goal in the next 10 minutes', note: "67'–77'", cols: 2, cells: [['Yes', 2.70], ['No', 1.42]] },
+        { key: 'gl3', name: 'Liverpool total goals', note: '2 scored', cols: 2, cells: [['Over 2.5', 2.10], ['Under 2.5', 1.66]] },
+        { key: 'gl4', name: 'Man City total goals', note: '1 scored', cols: 2, cells: [['Over 1.5', 2.55], ['Under 1.5', 1.48]] },
+      ],
+      corners: [
+        { key: 'co1', name: 'Total corners', note: '10 so far', cols: 2, cells: [['Over 11.5', 1.66], ['Under 11.5', 2.10], ['Over 12.5', 2.45], ['Under 12.5', 1.50]] },
+        { key: 'co2', name: 'Next corner', note: '11th corner', cols: 3, cells: [['Liverpool', 1.53], ['None', 9.00], ['Man City', 2.35]] },
+        { key: 'co3', name: 'Corner handicap', note: 'Remaining', cols: 2, cells: [['LIV -1.5', 2.30], ['MCI +1.5', 1.57]] },
+      ],
+    };
+    const prices = {};
+    Object.keys(this.MK).forEach((tab) => this.MK[tab].forEach((m) => m.cells.forEach((c, i) => { prices[tab + '.' + m.key + '.' + i] = c[1]; })));
+    this.base = { ...prices };
+    this.state = {
+      tab: 'popular',
+      prices,
+      moves: {},
+      sel: {},
+      closed: {},
+      boost: false,
+      fav: true,
+      t: 0,
+      legs: { win: true, over: true, corners: false, cards: false },
+      added: false,
+      trackerIx: 0,
+    };
+  }
+
+  componentDidMount() {
+    this.timers = [];
+    this.clock = setInterval(() => this.setState({ t: this.state.t + 1, trackerIx: Math.floor((this.state.t + 1) / 3) % 3 }), 1000);
+    this.flick = setInterval(() => this.flicker(), 1700);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.clock);
+    clearInterval(this.flick);
+    (this.timers || []).forEach((t) => clearTimeout(t));
+  }
+
+  flicker() {
+    const visible = Object.keys(this.state.prices).filter((k) => k.indexOf(this.state.tab + '.') === 0 && !this.state.sel[k] && !this.state.moves[k] && this.base[k] < 12);
+    if (!visible.length) return;
+    const k = visible[Math.floor(Math.random() * visible.length)];
+    const p = this.state.prices[k];
+    const step = p > 4 ? 0.25 : [0.02, 0.05, 0.1][Math.floor(Math.random() * 3)];
+    let up = Math.random() > 0.5;
+    if (p - this.base[k] > 0.3) up = false;
+    if (this.base[k] - p > 0.3) up = true;
+    const next = Math.max(1.01, Math.round((up ? p + step : p - step) * 100) / 100);
+    this.setState({ prices: { ...this.state.prices, [k]: next }, moves: { ...this.state.moves, [k]: up ? 'up' : 'down' } });
+    this.timers.push(setTimeout(() => {
+      const moves = { ...this.state.moves };
+      delete moves[k];
+      this.setState({ moves });
+    }, 1600));
+  }
+
+  toggle(key, siblings) {
+    const sel = { ...this.state.sel };
+    const was = !!sel[key];
+    siblings.forEach((k) => { delete sel[k]; });
+    if (!was) sel[key] = true;
+    this.setState({ sel });
+  }
+
+  cell(key, label, siblings, marketName) {
+    const s = this.state;
+    const on = !!s.sel[key];
+    const mv = on ? null : s.moves[key];
+    return {
+      label,
+      price: s.prices[key].toFixed(2),
+      aria: marketName + ': ' + label + ' at ' + s.prices[key].toFixed(2),
+      pressed: on,
+      up: mv === 'up',
+      down: mv === 'down',
+      bg: on ? 'linear-gradient(180deg, #f2c14e, #d8a32c)' : mv === 'up' ? '#113224' : mv === 'down' ? '#331419' : '#151d18',
+      border: on ? '#f2c14e' : mv === 'up' ? '#46c47c' : mv === 'down' ? '#ef5567' : '#33463a',
+      glow: on ? '0 0 0 1px #f2c14e, 0 0 18px rgba(242, 193, 78, 0.45)' : 'none',
+      labelColor: on ? '#16110a' : '#93a599',
+      priceColor: on ? '#16110a' : '#f2c14e',
+      toggle: () => this.toggle(key, siblings),
+    };
+  }
+
+  renderVals() {
+    const s = this.state;
+    const tabDefs = [
+      { key: 'popular', label: 'Popular' },
+      { key: 'builder', label: 'Bet Builder', isNew: true },
+      { key: 'goals', label: 'Goals' },
+      { key: 'corners', label: 'Corners' },
+      { key: 'stats', label: 'Stats' },
+    ];
+    const tabs = tabDefs.map((t) => {
+      const on = s.tab === t.key;
+      return {
+        label: t.label, on, isNew: !!t.isNew,
+        weight: on ? 700 : 650,
+        color: on ? '#f2c14e' : '#93a599',
+        line: on ? 'inset 0 -2px 0 #f2c14e' : 'none',
+        pick: () => this.setState({ tab: t.key }),
+      };
+    });
+    const list = this.MK[s.tab] || [];
+    const markets = list.map((m) => {
+      const id = s.tab + '.' + m.key;
+      const keys = m.cells.map((c, i) => id + '.' + i);
+      const open = !s.closed[id];
+      return {
+        name: m.name, note: m.note, cols: m.cols, open,
+        chevron: open ? 'none' : 'rotate(-90deg)',
+        toggle: () => this.setState({ closed: { ...s.closed, [id]: open } }),
+        cells: m.cells.map((c, i) => this.cell(keys[i], c[0], keys, m.name)),
+      };
+    });
+
+    const legDefs = [
+      { key: 'win', name: 'Liverpool to win', note: 'Match result', price: 1.36 },
+      { key: 'over', name: 'Over 3.5 goals', note: 'Total goals · 3 so far', price: 1.90 },
+      { key: 'corners', name: 'Over 11.5 corners', note: 'Total corners · 10 so far', price: 1.66 },
+      { key: 'cards', name: 'Both teams 2+ cards', note: 'Bookings · 1 and 2 so far', price: 1.55 },
+    ];
+    const legs = legDefs.map((l) => {
+      const on = !!s.legs[l.key];
+      return {
+        name: l.name, note: l.note, price: l.price.toFixed(2), on,
+        tick: on ? '✓' : '',
+        boxBorder: on ? '#f2c14e' : '#33463a',
+        boxBg: on ? '#f2c14e' : 'transparent',
+        toggle: () => this.setState({ legs: { ...s.legs, [l.key]: !on }, added: false }),
+      };
+    });
+    const onLegs = legDefs.filter((l) => s.legs[l.key]);
+    const builderOdds = onLegs.length ? (onLegs.reduce((a, l) => a * l.price, 1) * 0.92).toFixed(2) : '—';
+
+    const stats = [
+      ['Shots', 14, 9], ['On target', 6, 4], ['Corners', 7, 3], ['Fouls', 8, 11], ['Yellow cards', 1, 2], ['Big chances', 3, 1],
+    ].map((r) => ({ name: r[0], home: r[1], away: r[2], hf: r[1] || 0.2, af: r[2] || 0.2 }));
+
+    const picked = Object.keys(s.sel).filter((k) => s.sel[k]);
+    let total = picked.reduce((acc, k) => acc * s.prices[k], 4.73);
+    let count = 2 + picked.length;
+    if (s.boost) { total *= 3.25; count += 1; }
+    if (s.added && onLegs.length) { total *= Number(builderOdds); count += 1; }
+    const minute = Math.floor((67 * 60 + 12 + s.t) / 60);
+    const tracker = ['Dangerous attack · Liverpool', 'Attack · Liverpool', 'Corner · Liverpool'][s.trackerIx];
+    const bon = s.boost;
+    return {
+      clock: minute + "'",
+      tracker,
+      fav: s.fav,
+      favFill: s.fav ? 'currentColor' : 'none',
+      favColor: s.fav ? '#f2c14e' : '#93a599',
+      favLabel: s.fav ? 'Remove match from favourites' : 'Add match to favourites',
+      toggleFav: () => this.setState({ fav: !s.fav }),
+      tabs,
+      showBoost: s.tab === 'popular',
+      showMarkets: s.tab === 'popular' || s.tab === 'goals' || s.tab === 'corners',
+      showBuilder: s.tab === 'builder',
+      showStats: s.tab === 'stats',
+      markets,
+      legs,
+      builderCount: onLegs.length,
+      builderOdds,
+      builderDisabled: onLegs.length < 2,
+      builderOpacity: onLegs.length < 2 ? 0.45 : 1,
+      builderCta: s.added ? 'Added ✓' : 'Add to slip',
+      addBuilder: () => this.setState({ added: true }),
+      stats,
+      boost: {
+        pressed: bon,
+        bg: bon ? 'linear-gradient(180deg, #f2c14e, #d8a32c)' : '#151d18',
+        border: bon ? '#f2c14e' : '#d8a32c',
+        glow: bon ? '0 0 0 1px #f2c14e, 0 0 18px rgba(242, 193, 78, 0.45)' : 'none',
+        priceColor: bon ? '#16110a' : '#f2c14e',
+        toggle: () => this.setState({ boost: !bon }),
+      },
+      hasSel: count > 0,
+      selCount: count,
+      totalOdds: total.toFixed(2),
+    };
+  }
+}
+</script>
+</body>
+</html>
