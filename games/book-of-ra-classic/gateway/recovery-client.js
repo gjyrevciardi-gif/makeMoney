@@ -292,6 +292,17 @@
         if (ackEntry) await awaitAck();
         const response = await send({slotEvent: entering ? 'recoveryGamble' : 'recoveryCollect'});
         if (response.responseEvent === 'error') throw new Error('Native request rejected');
+        // AddWin finishes by assigning credit = credit_new. Restore left that
+        // target at the post-debit wallet, so a finished collect painted the
+        // balance before the payout. The collect snapshot balance is the wallet
+        // after the single credit. Point only the snap target at it. credit
+        // stays at the pre-collect figure so the count-up does not add the win twice.
+        if (collecting && response.recovery && Number.isFinite(Number(response.recovery.balance))) {
+          const settledBalance = Number(response.recovery.balance);
+          slotStateData.credit_new = settledBalance;
+          slotSettings.Balance = settledBalance;
+          if (slotSpinResult) slotSpinResult.afterBalance = settledBalance;
+        }
         originalButtons(event);
         acknowledge(response);
       } catch (error) { handleFailure(error); return; }
