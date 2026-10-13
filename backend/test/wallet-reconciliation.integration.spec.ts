@@ -29,6 +29,35 @@ function deferred<T = void>() {
 const checkOf = (report: WalletReconciliationReport, code: string) =>
   report.checks.find((check) => check.code === code);
 
+/**
+ * The A5 acceptance contract for how each failure must be read: findings proven
+ * by stored records alone, versus findings that also depend on the current
+ * model's coverage. Asserted in full so a later edit cannot relabel a check by
+ * accident.
+ */
+const FINDING_BASIS_BY_CODE: Record<string, string> = {
+  'wallet.balance-mismatch': 'CURRENT_MODEL_INVARIANT',
+  'wallet.balance-negative': 'STORED_RECORD_CONTRADICTION',
+  'ledger.amount-sign': 'STORED_RECORD_CONTRADICTION',
+  'ledger.balance-provenance': 'STORED_RECORD_CONTRADICTION',
+  'ledger.balance-provenance-incomplete': 'CURRENT_MODEL_INVARIANT',
+  'ledger.attribution': 'CURRENT_MODEL_INVARIANT',
+  'ledger.transfer-pairing': 'CURRENT_MODEL_INVARIANT',
+  'casino.ledger-without-transaction': 'CURRENT_MODEL_INVARIANT',
+  'casino.transaction-without-ledger': 'CURRENT_MODEL_INVARIANT',
+  'casino.round-missing-stake': 'CURRENT_MODEL_INVARIANT',
+  'casino.round-missing-win': 'CURRENT_MODEL_INVARIANT',
+  'casino.round-ownership': 'STORED_RECORD_CONTRADICTION',
+  'casino.transaction-ownership': 'STORED_RECORD_CONTRADICTION',
+  'ledger.sports-bet-reference-missing': 'CURRENT_MODEL_INVARIANT',
+  'sports.stake-linkage': 'STORED_RECORD_CONTRADICTION',
+  'sports.stake-count': 'CURRENT_MODEL_INVARIANT',
+  'sports.settlement-linkage': 'STORED_RECORD_CONTRADICTION',
+  'sports.settlement-linkage-legacy': 'CURRENT_MODEL_INVARIANT',
+  'sports.settlement-count': 'CURRENT_MODEL_INVARIANT',
+  'sports.settlement-presence': 'CURRENT_MODEL_INVARIANT',
+};
+
 describe('read-only wallet/ledger reconciliation (PostgreSQL integration)', () => {
   const prisma = new PrismaService();
   const points = new PointsService(prisma);
@@ -151,12 +180,26 @@ describe('read-only wallet/ledger reconciliation (PostgreSQL integration)', () =
     expect(report.readOnly).toBe(true);
     expect(report.isolationLevel).toBe('REPEATABLE READ');
     expect(report.error).toBeNull();
-    expect(report.reportVersion).toBe(1);
+    expect(report.reportVersion).toBe(2);
     expect(report.summary.checksRun).toBe(WALLET_RECONCILIATION_CHECKS.length);
     expect(report.summary.checksFailed).toBe(0);
     expect(report.summary.violations).toBe(0);
     expect(report.checks.map((check) => check.code)).toEqual(
       WALLET_RECONCILIATION_CHECKS.map((check) => check.code),
+    );
+    expect(report.coverage.balanceProvenance).toEqual({
+      total: 0,
+      verified: 0,
+      unavailable: 0,
+      partial: 0,
+    });
+    // The reading key travels with every check, pass or fail, and the contract
+    // covers exactly the defined checks.
+    expect(Object.fromEntries(report.checks.map((check) => [check.code, check.findingBasis]))).toEqual(
+      FINDING_BASIS_BY_CODE,
+    );
+    expect(Object.keys(FINDING_BASIS_BY_CODE).sort()).toEqual(
+      WALLET_RECONCILIATION_CHECKS.map((check) => check.code).sort(),
     );
     expect(report.checks.every((check) => check.status === 'PASS')).toBe(true);
     expect(RECONCILIATION_EXIT_CODES[report.status]).toBe(0);
@@ -224,16 +267,77 @@ describe('read-only wallet/ledger reconciliation (PostgreSQL integration)', () =
     await prisma.casinoTransaction.create({
       data: { roundId: doubled.id, userId: playerId, type: 'WIN', amount: 180n, idempotencyKey: winKey },
     });
-    await prisma.wallet.update({ where: { id: walletId }, data: { balance: 1500n } });
+    // Two winning credits for one round are legitimate, so the payout check
+    // must sum them rather than assume a single credit.
+    const multiCredit = await seedCasinoRound(playerId, 50n, 100n);
+    const multiStakeKey = `casino:fixture:bet:${multiCredit.id}`;
+    const firstWinKey = `casino:fixture:win:${multiCredit.id}:a`;
+    const secondWinKey = `casino:fixture:win:${multiCredit.id}:b`;
+    await prisma.ledgerEntry.create({
+      data: {
+        walletId,
+        type: 'CASINO_BET',
+        amount: -50n,
+        reason: 'fixture wager',
+        relatedCasinoRoundId: multiCredit.id,
+        idempotencyKey: multiStakeKey,
+        balanceBefore: 1500n,
+        balanceAfter: 1450n,
+      },
+    });
+    await prisma.casinoTransaction.create({
+      data: { roundId: multiCredit.id, userId: playerId, type: 'BET', amount: -50n, idempotencyKey: multiStakeKey },
+    });
+    await prisma.ledgerEntry.create({
+      data: {
+        walletId,
+        type: 'CASINO_WIN',
+        amount: 60n,
+        reason: 'fixture payout a',
+        relatedCasinoRoundId: multiCredit.id,
+        idempotencyKey: firstWinKey,
+        balanceBefore: 1450n,
+        balanceAfter: 1510n,
+      },
+    });
+    await prisma.casinoTransaction.create({
+      data: { roundId: multiCredit.id, userId: playerId, type: 'WIN', amount: 60n, idempotencyKey: firstWinKey },
+    });
+    await prisma.ledgerEntry.create({
+      data: {
+        walletId,
+        type: 'CASINO_WIN',
+        amount: 40n,
+        reason: 'fixture payout b',
+        relatedCasinoRoundId: multiCredit.id,
+        idempotencyKey: secondWinKey,
+        balanceBefore: 1510n,
+        balanceAfter: 1550n,
+      },
+    });
+    await prisma.casinoTransaction.create({
+      data: { roundId: multiCredit.id, userId: playerId, type: 'WIN', amount: 40n, idempotencyKey: secondWinKey },
+    });
+    await prisma.wallet.update({ where: { id: walletId }, data: { balance: 1550n } });
 
     const report = await runWalletReconciliation(prisma);
 
     expect(report.status).toBe('HEALTHY');
     expect(report.summary.violations).toBe(0);
     expect(checkOf(report, 'casino.round-missing-stake')?.status).toBe('PASS');
+    expect(checkOf(report, 'casino.round-missing-win')?.status).toBe('PASS');
     // The legacy settle path records WON with no payout column, and its single
     // proven credit is the bet's potential payout: that must stay healthy.
     expect(checkOf(report, 'sports.settlement-linkage')?.status).toBe('PASS');
+    expect(checkOf(report, 'sports.settlement-linkage-legacy')?.status).toBe('PASS');
+    // The first-party rows carry no transition evidence at all, which is
+    // reported as coverage instead of an anomaly.
+    expect(report.coverage.balanceProvenance.partial).toBe(0);
+    expect(report.coverage.balanceProvenance.verified).toBeGreaterThanOrEqual(8);
+    expect(report.coverage.balanceProvenance.unavailable).toBeGreaterThanOrEqual(1);
+    expect(
+      report.coverage.balanceProvenance.verified + report.coverage.balanceProvenance.unavailable,
+    ).toBe(report.coverage.balanceProvenance.total);
   });
 
   it('reports INCOMPLETE, never a pass, for an invalid configuration', async () => {
@@ -242,7 +346,82 @@ describe('read-only wallet/ledger reconciliation (PostgreSQL integration)', () =
     expect(report.status).toBe('INCOMPLETE');
     expect(report.error).toEqual({ code: 'INVALID_TRANSACTION_TIMEOUT' });
     expect(report.checks).toEqual([]);
+    // A run that did not complete attests nothing, so it reports no coverage.
+    expect(report.coverage.balanceProvenance).toEqual({
+      total: 0,
+      verified: 0,
+      unavailable: 0,
+      partial: 0,
+    });
     expect(RECONCILIATION_EXIT_CODES[report.status]).toBe(2);
+  });
+
+  it('reports absent before/after evidence as UNVERIFIABLE coverage, not as an anomaly', async () => {
+    // Every first-party writer records no transition columns. That is the
+    // legacy-shaped, unverifiable case: limited assurance, not an anomaly.
+    await points.adminGrant(adminId, playerId, 100n, 'legacy float', 'coverage-legacy-grant');
+
+    const report = await runWalletReconciliation(prisma);
+
+    expect(report.status).toBe('HEALTHY');
+    expect(report.summary.checksFailed).toBe(0);
+    expect(report.coverage.balanceProvenance).toEqual({
+      total: 1,
+      verified: 0,
+      unavailable: 1,
+      partial: 0,
+    });
+    expect(checkOf(report, 'ledger.balance-provenance')?.status).toBe('PASS');
+    expect(checkOf(report, 'ledger.balance-provenance-incomplete')?.status).toBe('PASS');
+  });
+
+  it('separates a stored arithmetic contradiction from a partial provenance pair', async () => {
+    await points.adminGrant(adminId, playerId, 100n, 'base float', 'coverage-base-grant');
+    await prisma.ledgerEntry.create({
+      data: {
+        walletId,
+        type: 'ADMIN_GRANT',
+        amount: 5n,
+        reason: 'bad arithmetic',
+        actorId: adminId,
+        idempotencyKey: 'coverage-contradiction',
+        balanceBefore: 100n,
+        balanceAfter: 999n,
+      },
+    });
+    await prisma.ledgerEntry.create({
+      data: {
+        walletId,
+        type: 'ADMIN_GRANT',
+        amount: 3n,
+        reason: 'half a transition pair',
+        actorId: adminId,
+        idempotencyKey: 'coverage-partial',
+        balanceBefore: 105n,
+      },
+    });
+    await prisma.wallet.update({ where: { id: walletId }, data: { balance: 108n } });
+
+    const report = await runWalletReconciliation(prisma);
+
+    expect(report.status).toBe('ANOMALY');
+    expect(checkOf(report, 'wallet.balance-mismatch')?.status).toBe('PASS');
+    expect(checkOf(report, 'ledger.balance-provenance')?.status).toBe('FAIL');
+    expect(checkOf(report, 'ledger.balance-provenance')?.findingBasis).toBe(
+      'STORED_RECORD_CONTRADICTION',
+    );
+    expect(checkOf(report, 'ledger.balance-provenance')?.violationCount).toBe(1);
+    expect(checkOf(report, 'ledger.balance-provenance-incomplete')?.status).toBe('FAIL');
+    expect(checkOf(report, 'ledger.balance-provenance-incomplete')?.findingBasis).toBe(
+      'CURRENT_MODEL_INVARIANT',
+    );
+    expect(checkOf(report, 'ledger.balance-provenance-incomplete')?.violationCount).toBe(1);
+    expect(report.coverage.balanceProvenance).toEqual({
+      total: 3,
+      verified: 1,
+      unavailable: 1,
+      partial: 1,
+    });
   });
 
   it('detects a wallet whose balance does not equal the exact BigInt ledger sum', async () => {
@@ -349,6 +528,90 @@ describe('read-only wallet/ledger reconciliation (PostgreSQL integration)', () =
     expect(checkOf(report, 'wallet.balance-mismatch')?.status).toBe('PASS');
     expect(checkOf(report, 'casino.ledger-without-transaction')?.status).toBe('PASS');
     expect(checkOf(report, 'casino.transaction-without-ledger')?.status).toBe('PASS');
+  });
+
+  it('detects a round that records a payout with no winning credit at all', async () => {
+    const round = await seedCasinoRound(playerId);
+    await points.adminGrant(adminId, playerId, 100n, 'probe float', 'round-win-float');
+    const stakeKey = `casino:fixture:bet:${round.id}`;
+    await prisma.ledgerEntry.create({
+      data: {
+        walletId,
+        type: 'CASINO_BET',
+        amount: -50n,
+        reason: 'fixture wager',
+        relatedCasinoRoundId: round.id,
+        idempotencyKey: stakeKey,
+        balanceBefore: 100n,
+        balanceAfter: 50n,
+      },
+    });
+    await prisma.casinoTransaction.create({
+      data: { roundId: round.id, userId: playerId, type: 'BET', amount: -50n, idempotencyKey: stakeKey },
+    });
+    // The stake is paid and mirrored; the payout has no ledger movement, and
+    // the wallet still equals its ledger, so only a round-driven check sees it.
+    await prisma.wallet.update({ where: { id: walletId }, data: { balance: 50n } });
+
+    const report = await runWalletReconciliation(prisma, { config: { includeReferences: true } });
+
+    expect(report.status).toBe('ANOMALY');
+    expect(checkOf(report, 'casino.round-missing-win')?.status).toBe('FAIL');
+    expect(checkOf(report, 'casino.round-missing-win')?.violationCount).toBe(1);
+    expect(checkOf(report, 'casino.round-missing-win')?.sampleReferences).toEqual([round.id]);
+    expect(checkOf(report, 'wallet.balance-mismatch')?.status).toBe('PASS');
+    expect(checkOf(report, 'casino.round-missing-stake')?.status).toBe('PASS');
+    expect(checkOf(report, 'casino.ledger-without-transaction')?.status).toBe('PASS');
+    expect(checkOf(report, 'casino.transaction-without-ledger')?.status).toBe('PASS');
+    expect(report.summary.checksFailed).toBe(1);
+  });
+
+  it('detects a winning credit recorded on a round that records no payout', async () => {
+    const round = await seedCasinoRound(playerId, 50n, 0n);
+    await points.adminGrant(adminId, playerId, 100n, 'probe float', 'round-nopayout-float');
+    const stakeKey = `casino:fixture:bet:${round.id}`;
+    const winKey = `casino:fixture:win:${round.id}`;
+    await prisma.ledgerEntry.create({
+      data: {
+        walletId,
+        type: 'CASINO_BET',
+        amount: -50n,
+        reason: 'fixture wager',
+        relatedCasinoRoundId: round.id,
+        idempotencyKey: stakeKey,
+        balanceBefore: 100n,
+        balanceAfter: 50n,
+      },
+    });
+    await prisma.casinoTransaction.create({
+      data: { roundId: round.id, userId: playerId, type: 'BET', amount: -50n, idempotencyKey: stakeKey },
+    });
+    await prisma.ledgerEntry.create({
+      data: {
+        walletId,
+        type: 'CASINO_WIN',
+        amount: 60n,
+        reason: 'fixture payout',
+        relatedCasinoRoundId: round.id,
+        idempotencyKey: winKey,
+        balanceBefore: 50n,
+        balanceAfter: 110n,
+      },
+    });
+    await prisma.casinoTransaction.create({
+      data: { roundId: round.id, userId: playerId, type: 'WIN', amount: 60n, idempotencyKey: winKey },
+    });
+    await prisma.wallet.update({ where: { id: walletId }, data: { balance: 110n } });
+
+    const report = await runWalletReconciliation(prisma);
+
+    expect(report.status).toBe('ANOMALY');
+    expect(checkOf(report, 'casino.round-missing-win')?.status).toBe('FAIL');
+    expect(checkOf(report, 'casino.round-missing-win')?.violationCount).toBe(1);
+    expect(checkOf(report, 'wallet.balance-mismatch')?.status).toBe('PASS');
+    expect(checkOf(report, 'casino.ledger-without-transaction')?.status).toBe('PASS');
+    expect(checkOf(report, 'casino.transaction-without-ledger')?.status).toBe('PASS');
+    expect(report.summary.checksFailed).toBe(1);
   });
 
   it('detects a casino ledger movement recorded against another user round', async () => {

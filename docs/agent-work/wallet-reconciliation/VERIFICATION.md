@@ -95,3 +95,79 @@ test-database `TRUNCATE` afterwards.
 - Bounded `statement_timeout`, whole-audit transaction timeout, and sample limit.
 - stdout is exactly one compact JSON line per run, emitted once after the
   database handle closes.
+
+## Round 3 (A5 final requirements): round payout linkage
+
+Read-only model inventory before the edit: no migration ever seeds or updates
+`Wallet.balance` (only `DEFAULT 0` plus the `>= 0` check), every wallet is
+created empty, and every later mutation is written in the same transaction as
+its ledger row. Every round writer sets `CasinoRound.payout` and credits the
+same amount in one transaction (`creditWin` for the first-party games,
+`wallet.credit` + `persistRoundIn` for the imported games). Nothing in the audit
+was driven by `CasinoRound.payout`, so a round that recorded a payout while both
+the winning ledger movement and its domain mirror were absent passed as
+`HEALTHY` — the same silent-pass shape as the missing stake debit.
+
+Change: one new round-driven check,
+`casino.round-missing-win` (`CasinoRound.payout` must equal the SUM of that
+round's mirrored `CASINO_WIN` movements). Check count is now 17; no writer,
+prisma schema, migration, CLI or report-schema change.
+
+```sh
+# repository root
+npm run typecheck -w backend                                   # typecheck-exit=0
+# backend/
+node --experimental-vm-modules ../node_modules/jest/bin/jest.js \
+  --runInBand test/wallet-reconciliation.integration.spec.ts   # jest-exit=0
+```
+
+Result: `Test Suites: 1 passed, 1 total` / `Tests: 25 passed, 25 total`
+(59.8 s), one attempt, no correction cycle. The 23 previously accepted tests
+still pass; the 2 new cases are a round that records a payout with no winning
+credit at all (wallet and ledger totals still in agreement) and a winning credit
+recorded on a round that records no payout. No build or full-suite run was made
+this round: the CLI and its arguments were not touched, so the round-2 build and
+compiled-CLI evidence still stand.
+
+## Round 4 (Astra review): findingBasis and coverage contract
+
+The engine now distinguishes a model-shaped observation from a mathematical
+contradiction in the report itself, not only in prose:
+
+- `reportVersion` 2.
+- every check result carries `findingBasis`: `STORED_RECORD_CONTRADICTION` (the
+  failure is proven by stored values that both exist) or
+  `CURRENT_MODEL_INVARIANT` (the check can also fail because a required record
+  or value is absent).
+- the check set grew 17 → 20: `ledger.balance-provenance` keeps the complete
+  before/after arithmetic contradiction, `ledger.balance-provenance-incomplete`
+  takes the partial pair, `sports.settlement-linkage-legacy` takes the
+  no-recorded-payout amount rule, and one shared
+  `ledger.sports-bet-reference-missing` covers a sports movement whose bet is
+  absent. No detection was dropped; the orphan reference left the linkage checks
+  for the shared drift detector.
+- the report carries a snapshot-consistent `coverage.balanceProvenance` object
+  (`total`, `verified`, `unavailable`, `partial`) read inside the same
+  transaction. `unavailable` rows are UNVERIFIABLE transition evidence, never an
+  anomaly; a row with no evidence at all keeps the run `HEALTHY`.
+
+No writer, Prisma schema, migration, CLI flag, exit code, read-only snapshot,
+advisory lock or bound changed.
+
+```sh
+# repository root
+npm run typecheck -w backend                                   # typecheck-exit=0
+# backend/
+node --experimental-vm-modules ../node_modules/jest/bin/jest.js \
+  --runInBand test/wallet-reconciliation.integration.spec.ts   # jest-exit=0
+```
+
+Result: `Test Suites: 1 passed, 1 total` / `Tests: 27 passed, 27 total`
+(46.3 s), one attempt, no correction cycle. The 25 previously accepted tests
+still pass. New this round: a first-party row with no before/after evidence
+reports `{total: 1, verified: 0, unavailable: 1, partial: 0}` and stays
+`HEALTHY`; a snapshot with one verified contradiction, one unavailable row and
+one partial pair reports `{total: 3, verified: 1, unavailable: 1, partial: 1}`
+and flags the contradiction and the partial pair under separate codes and bases.
+The healthy fixture now also carries a round credited twice (60 + 40 against a
+payout of 100), so the payout SUM check is exercised with multiple credits.

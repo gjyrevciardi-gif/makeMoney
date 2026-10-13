@@ -14,8 +14,10 @@ against the sum of that wallet's `LedgerEntry.amount`. On top of that:
 
 - no wallet balance is negative;
 - every ledger amount's sign matches its movement type;
-- where `balanceBefore`/`balanceAfter` are recorded they are a consistent pair
-  (`balanceBefore + amount = balanceAfter`, or both absent);
+- where both `balanceBefore` and `balanceAfter` are recorded they satisfy
+  `balanceBefore + amount = balanceAfter`; a row that records exactly one of the
+  two is reported separately (`ledger.balance-provenance-incomplete`) as a model
+  breach rather than an arithmetic contradiction;
 - admin and transfer entries name the actor who made them;
 - a manager transfer is an equal, opposite pair with the same actor, two
   different wallets, and the `<key>:out` / `<key>:in` pairing;
@@ -29,17 +31,26 @@ against the sum of that wallet's `LedgerEntry.amount`. On top of that:
   existence-based on purpose: a blackjack double down adds a second stake debit
   and raises `CasinoRound.stake` to the total, so no "one debit equals the round
   stake" rule is asserted;
+- a round's `payout` is the total of that round's `CASINO_WIN` movements, each
+  with its domain mirror, so a round that records a payout whose winning credit
+  (and mirror) are missing — or a credit recorded on a round that records no
+  payout — is detected even though the wallet total stays consistent. The
+  comparison is a SUM rather than one row, because more than one credit for a
+  round is legitimate;
 - a casino ledger movement and its `CasinoTransaction` belong to the round's
   owner;
 - a sports stake debit is exactly `-Bet.stake` for its own bet, owned by the
   wallet owner; every bet carries exactly one such debit;
 - a sports settlement credit matches the status its bet implies
   (`WON`/`SPORTS_WIN`, `VOID`/`BET_VOID_REFUND`), belongs to the bet owner, and
-  equals `Bet.actualPayout` once the bet records one. A won bet that records no
-  payout is the legacy settle path, whose single proven credit is
-  `Bet.potentialPayout`; a voided bet with no recorded payout must refund the
-  stake. At most one settlement credit per bet;
-- a `WON`/`VOID` bet has exactly the one settlement credit it must have.
+  equals `Bet.actualPayout` once the bet records one; a bet that records no
+  payout is the legacy settle path, whose proven amount is `Bet.potentialPayout`
+  (won) or the stake (void), checked separately as
+  `sports.settlement-linkage-legacy`. At most one settlement credit per bet;
+- a `WON`/`VOID` bet has exactly the one settlement credit it must have;
+- a sports ledger movement resolves to the bet it references
+  (`ledger.sports-bet-reference-missing`), a drift detector for the NOT NULL and
+  foreign-key guarantees;
 
 It deliberately does **not** assert "one `CASINO_WIN` per round". A legitimate
 round can credit several times (free features, several actions), so casino wins
@@ -59,6 +70,65 @@ implemented: no writer is proven to guarantee one credit per action across every
 integrated game, so such a check could flag a legitimate multi-credit round.
 Sports duplicates are provable and are checked (`sports.stake-count`,
 `sports.settlement-count`, `sports.settlement-presence`).
+
+### How a finding must be read
+
+Every check result carries `findingBasis`, so a model-shaped observation is
+never presented as a mathematical contradiction:
+
+| `findingBasis` | Meaning |
+|---|---|
+| `STORED_RECORD_CONTRADICTION` | every way the check can fail is proven by stored values that both exist: two records disagree, or one record contradicts its own recorded arithmetic. |
+| `CURRENT_MODEL_INVARIANT` | the check holds for data written by the current model, and it can also fail because a required record or value is *absent*; the snapshot alone cannot certify that as an impossibility. |
+
+The reading key travels with passes as well as failures, so the assurance of a
+clean run is visible. The `STORED_RECORD_CONTRADICTION` checks are
+`wallet.balance-negative`, `ledger.amount-sign`, `ledger.balance-provenance`,
+`casino.round-ownership`, `casino.transaction-ownership`, `sports.stake-linkage`
+and `sports.settlement-linkage`; every other check is
+`CURRENT_MODEL_INVARIANT`.
+
+Two model assumptions decide the `CURRENT_MODEL_INVARIANT` reading. Both were
+read out of the writers rather than assumed:
+
+- **Zero opening balance.** No migration ever seeds or updates `Wallet.balance`;
+  every wallet is created empty, and every later mutation is an increment, a
+  decrement, or an exact set written in the same transaction as its ledger row.
+  `balance = SUM(amount)` is therefore an identity of *this* model. An external
+  import or a future baseline migration that assigns a balance outside the
+  ledger cannot be certified by this audit: a wallet whose balance exceeds its
+  ledger sum would then be ambiguous rather than confirmed, and both this
+  document and `wallet.balance-mismatch` must be revisited before such a finding
+  is called an impossibility.
+- **Every money movement is ledger-recorded.** The absence-based checks
+  (`casino.round-missing-stake`, `casino.round-missing-win`,
+  `sports.stake-count`, `sports.settlement-count`, `sports.settlement-presence`,
+  `ledger.transfer-pairing`, `ledger.attribution`,
+  `ledger.sports-bet-reference-missing`) rely on it, and so do the two casino
+  movement mirror checks when the mirror is simply absent.
+
+### Coverage and limited assurance
+
+The snapshot also reports what it could **not** verify, in a `coverage` object
+read inside the same transaction:
+
+```json
+"coverage": { "balanceProvenance": { "total": 42, "verified": 9, "unavailable": 33, "partial": 0 } }
+```
+
+- `verified` — both `balanceBefore` and `balanceAfter` were recorded, so the
+  arithmetic is checkable.
+- `unavailable` — neither side was recorded. This is transitional evidence that
+  does not exist: it is **UNVERIFIABLE**, which is neither zero movement nor
+  proof of balance corruption, and it is deliberately not an anomaly. Every
+  first-party writer produces this shape, so healthy production data reports it.
+- `partial` — exactly one side was recorded. The current model never writes that,
+  and it is reported by `ledger.balance-provenance-incomplete`.
+
+`HEALTHY` therefore means **no anomaly was detected in the evidence that is
+present**. It is not a statement about rows whose evidence is absent, which is
+why the coverage object travels with every report and why an `INCOMPLETE` run
+reports empty coverage and attests nothing.
 
 ## Running it
 
@@ -143,14 +213,15 @@ One JSON object per run:
 
 | Field | Notes |
 |---|---|
-| `reportVersion` | integer, currently `1` |
+| `reportVersion` | integer, currently `2` (v2 added `findingBasis` and `coverage`) |
 | `tool` | `wallet-reconciliation` |
 | `status` | `HEALTHY`, `ANOMALY`, `INCOMPLETE`, `SKIPPED_ALREADY_RUNNING` |
 | `readOnly` / `isolationLevel` | always `true` and `REPEATABLE READ` |
 | `startedAt`, `finishedAt`, `durationMs` | UTC ISO timestamps and duration |
 | `configuration` | the resolved, bounded timeouts and sample limit |
 | `summary` | `checksDefined`, `checksRun`, `checksFailed`, `violations` |
-| `checks[]` | `code`, `title`, `status`, `violationCount`, `durationMs`, `sampleReferences`, `sampleTruncated` |
+| `coverage` | `balanceProvenance` counts: `total`, `verified`, `unavailable`, `partial` |
+| `checks[]` | `code`, `title`, `findingBasis`, `status`, `violationCount`, `durationMs`, `sampleReferences`, `sampleTruncated` |
 | `error` | `{ code }` machine-readable, or `null` |
 
 When the status is `INCOMPLETE` the `checks` array is empty and `summary.checksRun`

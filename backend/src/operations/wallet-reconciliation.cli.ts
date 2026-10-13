@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { PrismaClient } from '@prisma/client';
 import {
+  EMPTY_LEDGER_TRANSITION_COVERAGE,
   RECONCILIATION_EXIT_CODES,
   WALLET_RECONCILIATION_CHECKS,
   WALLET_RECONCILIATION_REPORT_VERSION,
@@ -63,6 +64,7 @@ function incompleteOutcome(
       checksFailed: 0,
       violations: 0,
     },
+    coverage: { balanceProvenance: { ...EMPTY_LEDGER_TRANSITION_COVERAGE } },
     checks: [],
     error: { code },
   };

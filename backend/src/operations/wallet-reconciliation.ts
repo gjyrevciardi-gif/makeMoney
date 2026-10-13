@@ -24,6 +24,10 @@ import { Prisma, PrismaClient } from '@prisma/client';
  *    blackjack double down adds a SECOND debit while raising `CasinoRound.stake`
  *    to the total, so the round-driven check asserts a paid stake debit EXISTS
  *    and never that one entry equals the (possibly doubled) round stake.
+ *  - A round's `payout` is the total of the winning movements credited to it in
+ *    the same transaction, so the round-driven payout check compares `payout`
+ *    with the SUM of that round's `CASINO_WIN` movements (each mirrored), never
+ *    with a single credit.
  *  - Imported-game ledger rows also carry `balanceBefore`/`balanceAfter`; where
  *    they are present they must satisfy `balanceBefore + amount = balanceAfter`.
  *  - A sports stake debit is exactly `-Bet.stake` for its own bet; a settlement
@@ -38,9 +42,16 @@ import { Prisma, PrismaClient } from '@prisma/client';
  * Deliberately NOT asserted: "one CASINO_WIN per round". A legitimate round can
  * credit several times (free features, several actions), so wins are compared
  * per action/idempotency key and per domain movement instead.
+ *
+ * The report is versioned and answers two separate questions: per check,
+ * whether a failure is proven by the stored records themselves
+ * (`STORED_RECORD_CONTRADICTION`) or depends on the current model's coverage
+ * (`CURRENT_MODEL_INVARIANT`); and, report-wide, how much before/after
+ * transition evidence was even available (`coverage`). See the types below for
+ * the exact contract.
  */
 
-export const WALLET_RECONCILIATION_REPORT_VERSION = 1 as const;
+export const WALLET_RECONCILIATION_REPORT_VERSION = 2 as const;
 export const WALLET_RECONCILIATION_TOOL = 'wallet-reconciliation' as const;
 
 /**
@@ -75,6 +86,25 @@ export const RECONCILIATION_EXIT_CODES = {
 export type ReconciliationStatus = keyof typeof RECONCILIATION_EXIT_CODES;
 export type ReconciliationCheckStatus = 'PASS' | 'FAIL';
 
+/**
+ * How a finding must be read, so a model-shaped observation is never presented
+ * as a mathematical contradiction.
+ *
+ * `STORED_RECORD_CONTRADICTION` — every way the check can fail is proven by
+ * stored values that both exist: two records disagree, or one record
+ * contradicts its own recorded arithmetic. No coverage assumption changes that.
+ *
+ * `CURRENT_MODEL_INVARIANT` — the check holds for data written by the current
+ * model, and it can also fail because a required record or value is ABSENT. That
+ * absence is a breach of the current model, but this snapshot alone cannot
+ * certify it as an arithmetic impossibility: data written outside the current
+ * model (a pre-coverage import, or an opening baseline the model does not
+ * support) would look the same.
+ */
+export type ReconciliationFindingBasis =
+  | 'STORED_RECORD_CONTRADICTION'
+  | 'CURRENT_MODEL_INVARIANT';
+
 export type AuditConfig = {
   transactionTimeoutMs: number;
   statementTimeoutMs: number;
@@ -92,6 +122,8 @@ export type AuditConfigInput = {
 export type ReconciliationCheckResult = {
   code: string;
   title: string;
+  /** Reading key for a FAIL; present for passes too, so the contract is visible. */
+  findingBasis: ReconciliationFindingBasis;
   status: ReconciliationCheckStatus;
   violationCount: number;
   durationMs: number;
@@ -102,6 +134,23 @@ export type ReconciliationCheckResult = {
    */
   sampleReferences: string[];
   sampleTruncated: boolean;
+};
+
+/**
+ * What the snapshot could actually verify, stated separately from what it
+ * found.
+ *
+ * `unavailable` rows have no recorded before/after transition at all: that is
+ * UNVERIFIABLE evidence — neither zero movement nor proof of balance
+ * corruption — and it is deliberately not an anomaly. `partial` rows carry
+ * exactly one side, which the current model never writes, and are reported by
+ * `ledger.balance-provenance-incomplete`.
+ */
+export type LedgerTransitionCoverage = {
+  total: number;
+  verified: number;
+  unavailable: number;
+  partial: number;
 };
 
 export type WalletReconciliationReport = {
@@ -119,6 +168,14 @@ export type WalletReconciliationReport = {
     checksRun: number;
     checksFailed: number;
     violations: number;
+  };
+  /**
+   * Snapshot-consistent coverage. `HEALTHY` means no anomaly was detected in
+   * the evidence that is present; it is not a statement about rows whose
+   * evidence is absent, which is why this object travels with the report.
+   */
+  coverage: {
+    balanceProvenance: LedgerTransitionCoverage;
   };
   checks: ReconciliationCheckResult[];
   /**
@@ -151,6 +208,8 @@ export type AuditHooks = {
 export type CheckDefinition = {
   code: string;
   title: string;
+  /** How a failure of this check must be read (see ReconciliationFindingBasis). */
+  findingBasis: ReconciliationFindingBasis;
   /**
    * Column alias produced by `sql` that identifies the offending record with an
    * opaque domain/ledger reference, or null for count-only checks (wallet
@@ -172,6 +231,7 @@ export const WALLET_RECONCILIATION_CHECKS: readonly CheckDefinition[] = [
   {
     code: 'wallet.balance-mismatch',
     title: 'wallet balance equals the exact BigInt sum of its ledger entries',
+    findingBasis: 'CURRENT_MODEL_INVARIANT',
     referenceColumn: null,
     sql: `
       SELECT w."id"
@@ -187,12 +247,14 @@ export const WALLET_RECONCILIATION_CHECKS: readonly CheckDefinition[] = [
   {
     code: 'wallet.balance-negative',
     title: 'no wallet balance is negative',
+    findingBasis: 'STORED_RECORD_CONTRADICTION',
     referenceColumn: null,
     sql: `SELECT "id" FROM "Wallet" WHERE "balance" < 0`,
   },
   {
     code: 'ledger.amount-sign',
     title: 'every ledger amount sign matches its movement type',
+    findingBasis: 'STORED_RECORD_CONTRADICTION',
     referenceColumn: 'ref',
     sql: `
       SELECT "id" AS ref
@@ -205,20 +267,32 @@ export const WALLET_RECONCILIATION_CHECKS: readonly CheckDefinition[] = [
   },
   {
     code: 'ledger.balance-provenance',
-    title: 'recorded balanceBefore/balanceAfter are a consistent pair',
+    title: 'a complete recorded balanceBefore/balanceAfter pair satisfies its own arithmetic',
+    findingBasis: 'STORED_RECORD_CONTRADICTION',
+    referenceColumn: 'ref',
+    sql: `
+      SELECT "id" AS ref
+      FROM "LedgerEntry"
+      WHERE "balanceBefore" IS NOT NULL
+        AND "balanceAfter" IS NOT NULL
+        AND "balanceBefore" + "amount" <> "balanceAfter"
+    `,
+  },
+  {
+    code: 'ledger.balance-provenance-incomplete',
+    title: 'a recorded transition carries both of its balance sides or neither',
+    findingBasis: 'CURRENT_MODEL_INVARIANT',
     referenceColumn: 'ref',
     sql: `
       SELECT "id" AS ref
       FROM "LedgerEntry"
       WHERE ("balanceBefore" IS NULL) <> ("balanceAfter" IS NULL)
-         OR ("balanceBefore" IS NOT NULL
-             AND "balanceAfter" IS NOT NULL
-             AND "balanceBefore" + "amount" <> "balanceAfter")
     `,
   },
   {
     code: 'ledger.attribution',
     title: 'admin and transfer entries name the actor who made them',
+    findingBasis: 'CURRENT_MODEL_INVARIANT',
     referenceColumn: 'ref',
     sql: `
       SELECT "id" AS ref
@@ -230,6 +304,7 @@ export const WALLET_RECONCILIATION_CHECKS: readonly CheckDefinition[] = [
   {
     code: 'ledger.transfer-pairing',
     title: 'every manager transfer has its equal, opposite, same-actor partner in another wallet',
+    findingBasis: 'CURRENT_MODEL_INVARIANT',
     referenceColumn: 'ref',
     sql: `
       SELECT l."id" AS ref
@@ -259,6 +334,7 @@ export const WALLET_RECONCILIATION_CHECKS: readonly CheckDefinition[] = [
   {
     code: 'casino.ledger-without-transaction',
     title: 'every casino ledger movement has its matching CasinoTransaction',
+    findingBasis: 'CURRENT_MODEL_INVARIANT',
     referenceColumn: 'ref',
     sql: `
       SELECT l."id" AS ref
@@ -278,6 +354,7 @@ export const WALLET_RECONCILIATION_CHECKS: readonly CheckDefinition[] = [
   {
     code: 'casino.transaction-without-ledger',
     title: 'every CasinoTransaction has its matching ledger movement',
+    findingBasis: 'CURRENT_MODEL_INVARIANT',
     referenceColumn: 'ref',
     sql: `
       SELECT t."id" AS ref
@@ -301,6 +378,7 @@ export const WALLET_RECONCILIATION_CHECKS: readonly CheckDefinition[] = [
     // "one debit equals the round stake" rule would be wrong.
     code: 'casino.round-missing-stake',
     title: 'a round with a stake carries its paid stake debit and domain mirror',
+    findingBasis: 'CURRENT_MODEL_INVARIANT',
     referenceColumn: 'ref',
     sql: `
       SELECT r."id" AS ref
@@ -319,8 +397,38 @@ export const WALLET_RECONCILIATION_CHECKS: readonly CheckDefinition[] = [
     `,
   },
   {
+    // The mirror image of the stake check, and the same silent-pass shape: a
+    // round that records a payout with no winning credit at all leaves the
+    // wallet and ledger totals in agreement. Summed rather than bounded to one
+    // row, because more than one credit for a round is legitimate; every
+    // writer stores `payout` as exactly the amount (or the total of the
+    // amounts) it credits in the same transaction, and every credit has its
+    // own domain mirror.
+    code: 'casino.round-missing-win',
+    title: 'a round payout is carried by its winning ledger movements and domain mirrors',
+    findingBasis: 'CURRENT_MODEL_INVARIANT',
+    referenceColumn: 'ref',
+    sql: `
+      SELECT r."id" AS ref
+      FROM "CasinoRound" r
+      LEFT JOIN (
+        SELECT l."relatedCasinoRoundId" AS round_id, SUM(l."amount") AS total
+        FROM "LedgerEntry" l
+        JOIN "CasinoTransaction" t
+          ON t."idempotencyKey" = l."idempotencyKey"
+         AND t."roundId" = l."relatedCasinoRoundId"
+         AND t."amount" = l."amount"
+         AND t."type" = 'WIN'
+        WHERE l."type" = 'CASINO_WIN'
+        GROUP BY l."relatedCasinoRoundId"
+      ) w ON w.round_id = r."id"
+      WHERE COALESCE(w.total, 0) <> r."payout"
+    `,
+  },
+  {
     code: 'casino.round-ownership',
     title: 'a casino ledger movement belongs to its round owner',
+    findingBasis: 'STORED_RECORD_CONTRADICTION',
     referenceColumn: 'ref',
     sql: `
       SELECT l."id" AS ref
@@ -333,6 +441,7 @@ export const WALLET_RECONCILIATION_CHECKS: readonly CheckDefinition[] = [
   {
     code: 'casino.transaction-ownership',
     title: 'a CasinoTransaction belongs to its round owner',
+    findingBasis: 'STORED_RECORD_CONTRADICTION',
     referenceColumn: 'ref',
     sql: `
       SELECT t."id" AS ref
@@ -342,21 +451,38 @@ export const WALLET_RECONCILIATION_CHECKS: readonly CheckDefinition[] = [
     `,
   },
   {
+    // A missing reference is a drift detector: the NOT NULL check plus the
+    // foreign key make it unreachable while the schema holds, and the current
+    // model never writes a sports movement without its bet.
+    code: 'ledger.sports-bet-reference-missing',
+    title: 'a sports ledger movement resolves to the bet it references',
+    findingBasis: 'CURRENT_MODEL_INVARIANT',
+    referenceColumn: 'ref',
+    sql: `
+      SELECT l."id" AS ref
+      FROM "LedgerEntry" l
+      WHERE l."type" IN ('SPORTS_BET', 'SPORTS_WIN', 'BET_VOID_REFUND')
+        AND NOT EXISTS (SELECT 1 FROM "Bet" b WHERE b."id" = l."relatedBetId")
+    `,
+  },
+  {
     code: 'sports.stake-linkage',
     title: 'a sports stake debit is exactly its own bet stake, owned by the wallet owner',
+    findingBasis: 'STORED_RECORD_CONTRADICTION',
     referenceColumn: 'ref',
     sql: `
       SELECT l."id" AS ref
       FROM "LedgerEntry" l
       JOIN "Wallet" w ON w."id" = l."walletId"
-      LEFT JOIN "Bet" b ON b."id" = l."relatedBetId"
+      JOIN "Bet" b ON b."id" = l."relatedBetId"
       WHERE l."type" = 'SPORTS_BET'
-        AND (b."id" IS NULL OR b."userId" <> w."userId" OR l."amount" <> -b."stake")
+        AND (b."userId" <> w."userId" OR l."amount" <> -b."stake")
     `,
   },
   {
     code: 'sports.stake-count',
     title: 'every bet carries exactly one stake debit of its own stake',
+    findingBasis: 'CURRENT_MODEL_INVARIANT',
     referenceColumn: 'ref',
     sql: `
       SELECT b."id" AS ref
@@ -373,25 +499,43 @@ export const WALLET_RECONCILIATION_CHECKS: readonly CheckDefinition[] = [
   {
     code: 'sports.settlement-linkage',
     title: 'a sports settlement credit matches its bet status, owner and recorded payout',
+    findingBasis: 'STORED_RECORD_CONTRADICTION',
     referenceColumn: 'ref',
     sql: `
       SELECT l."id" AS ref
       FROM "LedgerEntry" l
       JOIN "Wallet" w ON w."id" = l."walletId"
-      LEFT JOIN "Bet" b ON b."id" = l."relatedBetId"
+      JOIN "Bet" b ON b."id" = l."relatedBetId"
       WHERE l."type" IN ('SPORTS_WIN', 'BET_VOID_REFUND')
-        AND (b."id" IS NULL
-          OR b."userId" <> w."userId"
+        AND (b."userId" <> w."userId"
           OR (l."type" = 'SPORTS_WIN' AND b."status" <> 'WON')
           OR (l."type" = 'BET_VOID_REFUND' AND b."status" <> 'VOID')
-          OR (b."actualPayout" IS NOT NULL AND l."amount" <> b."actualPayout")
-          OR (b."actualPayout" IS NULL AND b."status" = 'WON' AND l."amount" <> b."potentialPayout")
-          OR (b."actualPayout" IS NULL AND b."status" = 'VOID' AND l."amount" <> b."stake"))
+          OR (b."actualPayout" IS NOT NULL AND l."amount" <> b."actualPayout"))
+    `,
+  },
+  {
+    // The legacy settle path records WON/VOID with no payout column, and the
+    // only amount its writer proves is the potential payout (won) or the stake
+    // (void). That is a statement about which writers exist and how they cover
+    // the bet, not an arithmetic contradiction between two stored values.
+    code: 'sports.settlement-linkage-legacy',
+    title: 'a settlement credit on a bet without a recorded payout matches the amount its writer proves',
+    findingBasis: 'CURRENT_MODEL_INVARIANT',
+    referenceColumn: 'ref',
+    sql: `
+      SELECT l."id" AS ref
+      FROM "LedgerEntry" l
+      JOIN "Bet" b ON b."id" = l."relatedBetId"
+      WHERE l."type" IN ('SPORTS_WIN', 'BET_VOID_REFUND')
+        AND b."actualPayout" IS NULL
+        AND ((b."status" = 'WON' AND l."amount" <> b."potentialPayout")
+          OR (b."status" = 'VOID' AND l."amount" <> b."stake"))
     `,
   },
   {
     code: 'sports.settlement-count',
     title: 'a bet is settled by at most one settlement credit',
+    findingBasis: 'CURRENT_MODEL_INVARIANT',
     referenceColumn: 'ref',
     sql: `
       SELECT b."id" AS ref
@@ -405,6 +549,7 @@ export const WALLET_RECONCILIATION_CHECKS: readonly CheckDefinition[] = [
   {
     code: 'sports.settlement-presence',
     title: 'a won or voided bet has exactly the one settlement credit it must have',
+    findingBasis: 'CURRENT_MODEL_INVARIANT',
     referenceColumn: 'ref',
     sql: `
       SELECT b."id" AS ref
@@ -557,6 +702,42 @@ async function runCheck(
 const INVALID_CONFIGURATION = 'INVALID_CONFIGURATION';
 
 /**
+ * Nothing is attested unless the run completed, so every unattested outcome
+ * reports empty coverage rather than a partial count.
+ */
+export const EMPTY_LEDGER_TRANSITION_COVERAGE: LedgerTransitionCoverage = {
+  total: 0,
+  verified: 0,
+  unavailable: 0,
+  partial: 0,
+};
+
+/**
+ * Reads the snapshot-consistent coverage of the before/after transition
+ * evidence in one aggregate statement, inside the audit transaction. A row with
+ * neither side recorded is UNVERIFIABLE evidence: it is counted here and is
+ * deliberately not a failure.
+ */
+async function readLedgerTransitionCoverage(tx: AuditClient): Promise<LedgerTransitionCoverage> {
+  const rows = await tx.$queryRawUnsafe<
+    Array<{ total: bigint; verified: bigint; unavailable: bigint; partial: bigint }>
+  >(
+    `SELECT count(*) AS total,
+            count(*) FILTER (WHERE "balanceBefore" IS NOT NULL AND "balanceAfter" IS NOT NULL) AS verified,
+            count(*) FILTER (WHERE "balanceBefore" IS NULL AND "balanceAfter" IS NULL) AS unavailable,
+            count(*) FILTER (WHERE ("balanceBefore" IS NULL) <> ("balanceAfter" IS NULL)) AS partial
+     FROM "LedgerEntry"`,
+  );
+  const row = rows[0];
+  return {
+    total: Number(row?.total ?? 0),
+    verified: Number(row?.verified ?? 0),
+    unavailable: Number(row?.unavailable ?? 0),
+    partial: Number(row?.partial ?? 0),
+  };
+}
+
+/**
  * Maps an error to a machine-readable code without ever surfacing driver text,
  * SQL or connection details.
  */
@@ -583,6 +764,7 @@ function buildReport(input: {
   configuration: AuditConfig;
   checks: ReconciliationCheckResult[];
   checksRun: number;
+  coverage?: LedgerTransitionCoverage;
   error: { code: string } | null;
 }): WalletReconciliationReport {
   const finishedAt = new Date();
@@ -603,6 +785,7 @@ function buildReport(input: {
       checksFailed,
       violations: input.checks.reduce((total, check) => total + check.violationCount, 0),
     },
+    coverage: { balanceProvenance: input.coverage ?? EMPTY_LEDGER_TRANSITION_COVERAGE },
     checks: input.checks,
     error: input.error,
   };
@@ -644,6 +827,9 @@ export async function runWalletReconciliation(
   const completed: ReconciliationCheckResult[] = [];
   try {
     const outcome = await withReadOnlyAuditTransaction(host, config, async (tx) => {
+      // Coverage first, in the same fixed snapshot as the checks, so what the
+      // report attests and what it could verify can never disagree.
+      const coverage = await readLedgerTransitionCoverage(tx);
       for (let index = 0; index < WALLET_RECONCILIATION_CHECKS.length; index += 1) {
         const definition = WALLET_RECONCILIATION_CHECKS[index];
         const stepStarted = Date.now();
@@ -652,6 +838,7 @@ export async function runWalletReconciliation(
         completed.push({
           code: definition.code,
           title: definition.title,
+          findingBasis: definition.findingBasis,
           status: total > 0 ? 'FAIL' : 'PASS',
           violationCount: total,
           durationMs: Date.now() - stepStarted,
@@ -660,7 +847,7 @@ export async function runWalletReconciliation(
         });
         await options.hooks?.afterStep?.({ index, code: definition.code, tx });
       }
-      return completed;
+      return { coverage, checks: completed };
     });
 
     if (!outcome.acquired) {
@@ -675,11 +862,12 @@ export async function runWalletReconciliation(
     }
 
     return buildReport({
-      status: outcome.value.some((check) => check.status === 'FAIL') ? 'ANOMALY' : 'HEALTHY',
+      status: outcome.value.checks.some((check) => check.status === 'FAIL') ? 'ANOMALY' : 'HEALTHY',
       startedAt,
       configuration: config,
-      checks: outcome.value,
-      checksRun: outcome.value.length,
+      checks: outcome.value.checks,
+      checksRun: outcome.value.checks.length,
+      coverage: outcome.value.coverage,
       error: null,
     });
   } catch (error) {
