@@ -17,6 +17,7 @@ import { dirname, join } from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { invertStageToClient, mapClientToStage } from './lib/classic-hit-guard.mjs';
+import { classicReelsMatch } from './classic-persisted-board.mjs';
 
 const require = createRequire(import.meta.url);
 if (process.env.NODE_ENV === 'production') {
@@ -38,6 +39,11 @@ const CLASSIC = `http://127.0.0.1:${GATEWAY_PORT}`;
 const FE_PORT = Number(process.env.BOOK_E2E_FRONTEND_PORT ?? 3017);
 const FRONTEND = `http://localhost:${FE_PORT}`;
 const PASSWORD = process.env.BOOK_E2E_PASSWORD ?? '';
+const PHASE = process.env.BOOK_E2E_PHASE ?? 'full';
+const VIEWPORT_SPEC = process.env.BOOK_E2E_VIEWPORT ?? '1440x900';
+const [viewportWidth, viewportHeight] = VIEWPORT_SPEC.split('x').map((part) => Number(part));
+const MOBILE_VIEWPORT = viewportWidth <= 500;
+const FROZEN_PROFILE_HASH = 'a2f6fef07d3afa792bafda0af824fecb0042d8295e83dc9672b437cc18480d48';
 const FIXTURE_EMAIL = process.env.BOOK_E2E_FIXTURE_EMAIL ?? 'classic-e2e-fixture@example.test';
 const BROKE_EMAIL = 'classic-e2e-broke@example.test';
 const RNG_FILE = join(EVIDENCE, 'rng-calls.json');
@@ -197,12 +203,30 @@ async function main() {
       return;
     }
 
+    if (!Number.isInteger(viewportWidth) || !Number.isInteger(viewportHeight)) {
+      check('viewport', false, VIEWPORT_SPEC);
+      return;
+    }
     browser = await chromium.launch({ executablePath: CHROME, headless: true });
     report.browser = await browser.version();
-    const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    report.viewport = { width: viewportWidth, height: viewportHeight, mobile: MOBILE_VIEWPORT };
+    const context = await browser.newContext({
+      viewport: { width: viewportWidth, height: viewportHeight },
+      hasTouch: MOBILE_VIEWPORT,
+      isMobile: MOBILE_VIEWPORT,
+    });
     const page = await context.newPage();
     page.on('dialog', (dialog) => { dialog.dismiss().catch(() => undefined); });
     await page.goto(`${FRONTEND}/login`, { waitUntil: 'domcontentloaded' });
+    const badLogin = await page.evaluate(async (api) => {
+      const response = await fetch(`${api}/auth/login`, {
+        method: 'POST', credentials: 'include',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email: 'classic-e2e-fixture@example.test', password: 'wrong-password-not-the-fixture' }),
+      });
+      return response.status;
+    }, API);
+    check('invalid-credentials-rejected', badLogin === 401 || badLogin === 403, String(badLogin));
     const loginStatus = await page.evaluate(async ({ api, address, password }) => {
       const response = await fetch(`${api}/auth/login`, {
         method: 'POST', credentials: 'include',
@@ -220,6 +244,17 @@ async function main() {
       const button = document.querySelector('button.casino-play');
       return button instanceof HTMLButtonElement && !button.disabled && button.textContent.includes('Launch game');
     }, null, { timeout: 30_000 });
+    const launchToken = await page.locator('input[name="token"]').inputValue();
+    check('launch-ticket-present', launchToken.length >= 16, `len=${launchToken.length}`);
+    const launchStatuses = [];
+    const assetFailures = [];
+    context.on('response', (response) => {
+      let parsed;
+      try { parsed = new URL(response.url()); } catch { return; }
+      if (parsed.origin !== CLASSIC) return;
+      if (parsed.pathname === '/launch') launchStatuses.push(response.status());
+      else if (response.status() >= 400) assetFailures.push(`${response.status()} ${parsed.pathname}`);
+    });
     const launchAt = Date.now();
     const [game] = await Promise.all([
       context.waitForEvent('page'),
@@ -313,6 +348,7 @@ async function main() {
         recoveryPhase: window.pilotRecovery?.phase ?? null,
         recoveryFree: window.pilotRecovery?.free ?? null,
         recoveryBalance: window.pilotRecovery?.balance ?? null,
+        reelsSymbols: window.slotSpinResult?.reelsSymbols ?? null,
         freeGameTexts: texts,
         creditTexts: creditText.slice(0, 8),
         book,
@@ -378,6 +414,8 @@ async function main() {
       freeTotal: round?.privateState?.freeTotal ?? null,
       pendingWin: round?.privateState?.pendingWin ?? null,
       expSymbol: round?.privateState?.result?.serverResponse?.expSymbol ?? null,
+      profileId: round?.privateState?.profileId ?? null,
+      profileHash: round?.privateState?.profileHash ?? null,
     });
 
     const newestRound = async (previousId) => {
@@ -533,6 +571,37 @@ async function main() {
     };
 
     await waitForCabinet();
+    check('entry-assets', assetFailures.length === 0, assetFailures.slice(0, 5).join(' | ') || 'ok');
+    check('launch-ticket-accepted', launchStatuses.includes(303), launchStatuses.join(',') || 'none');
+    await page.evaluate(({ origin, token }) => {
+      const frame = document.createElement('iframe');
+      frame.name = 'classic-ticket-replay';
+      frame.hidden = true;
+      document.body.appendChild(frame);
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = `${origin}/launch`;
+      form.target = 'classic-ticket-replay';
+      const input = document.createElement('input');
+      input.name = 'token';
+      input.value = token;
+      form.appendChild(input);
+      document.body.appendChild(form);
+      form.submit();
+    }, { origin: CLASSIC, token: launchToken });
+    const replayDeadline = Date.now() + 10_000;
+    while (Date.now() < replayDeadline && launchStatuses.length < 2) await sleep(200);
+    check('launch-ticket-replay-rejected', launchStatuses[0] === 303 && launchStatuses.slice(1).includes(401)
+      && !launchStatuses.slice(1).includes(303), launchStatuses.join(',') || 'none');
+    const stranger = await browser.newContext();
+    const strangerResponse = await stranger.request.fetch(`${CLASSIC}/game/BookOfRaCL/server?sessionId=none`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', origin: CLASSIC },
+      data: JSON.stringify({ slotEvent: 'getSettings' }),
+      failOnStatusCode: false,
+    });
+    check('anonymous-gameplay-rejected', strangerResponse.status() === 401, String(strangerResponse.status()));
+    await stranger.close();
     if (open?.privateState?.phase === 'FREE_SPINS') {
       const callsBeforeResume = readCalls();
       const resumeSymbol = open.privateState?.result?.serverResponse?.expSymbol ?? null;
@@ -559,9 +628,38 @@ async function main() {
     }
     check('default-stake-nine', Number(armed.bet) === 9 && Number(armed.lines) === 9 && armed.slotState === 'IDLE',
       `bet=${armed.bet} lines=${armed.lines} state=${armed.slotState}`);
+    const fit = await game.evaluate(() => {
+      const view = window.app?.view ?? document.querySelector('canvas');
+      const rect = view.getBoundingClientRect();
+      const target = window.gameUI?.GetObject?.()?.uiButtonSpin?._view;
+      const bounds = target?.getLocalBounds?.() ?? { x: 0, y: 0, width: target?.width ?? 0, height: target?.height ?? 0 };
+      const centre = new window.PIXI.Point(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+      const global = target?.toGlobal ? target.toGlobal(centre) : null;
+      return {
+        canvas: { left: rect.left, top: rect.top, width: rect.width, height: rect.height },
+        inner: { width: window.innerWidth, height: window.innerHeight },
+        stage: global ? { x: global.x, y: global.y } : null,
+        mapOpts: {
+          canvasWidth: view.width,
+          canvasHeight: view.height,
+          rect: { left: rect.left, top: rect.top, width: rect.width, height: rect.height },
+          resolution: window.app?.renderer?.resolution ?? 1,
+        },
+        credit: window.slotStateData?.credit ?? null,
+        bet: window.slotStateData?.bet ?? null,
+      };
+    });
+    const spinPoint = fit.stage ? invertStageToClient(fit.stage.x, fit.stage.y, fit.mapOpts) : null;
+    const canvasInside = fit.canvas.left >= -1 && fit.canvas.top >= -1
+      && fit.canvas.left + fit.canvas.width <= fit.inner.width + 1
+      && fit.canvas.top + fit.canvas.height <= fit.inner.height + 1;
+    const spinInside = Boolean(spinPoint) && spinPoint.x >= 0 && spinPoint.y >= 0
+      && spinPoint.x <= fit.inner.width && spinPoint.y <= fit.inner.height;
+    check('cabinet-fits-viewport', canvasInside && spinInside && Number.isFinite(Number(fit.credit)) && Number(fit.bet) === 9,
+      `canvas=${JSON.stringify(fit.canvas)} inner=${JSON.stringify(fit.inner)} spin=${JSON.stringify(spinPoint)} credit=${fit.credit} bet=${fit.bet}`);
     if (Number(armed.bet) !== 9 || armed.slotState !== 'IDLE') return;
 
-    if (process.env.BOOK_E2E_PHASE !== 'errors') {
+    if (PHASE !== 'errors') {
     // --- settled line win: the credit regression ---------------------------------
     const winWalletBefore = await walletOf(user.id);
     const winPrevious = (await prisma.casinoRound.findFirst({
@@ -599,6 +697,12 @@ async function main() {
     check('line-win-replay-no-second-credit', winReplayStatus === 200 && winWalletReplay === winWalletAfter
       && winLedgerReplay.length === winLedger.length && readCalls() === report.rounds.lineWin.rngCallsAfter,
       `status=${winReplayStatus} wallet=${winWalletReplay} ledger=${winLedgerReplay.length}`);
+    const winShown = await readCabinet();
+    check('line-win-board-matches-persisted', classicReelsMatch({ reelsSymbols: winShown.reelsSymbols }, winCollected),
+      winShown.reelsSymbols ? 'shown' : 'missing');
+    check('profile-hash-persisted', winCollected?.privateState?.profileId === 'book-of-ra-classic.rtp50.v1'
+      && winCollected?.privateState?.profileHash === FROZEN_PROFILE_HASH,
+      `${winCollected?.privateState?.profileId ?? 'none'} ${winCollected?.privateState?.profileHash ?? 'none'}`);
     await game.screenshot({ path: join(EVIDENCE, 'classic-line-win-credits.png') });
 
     // --- deliberate double-click on the next paid spin ---------------------------
@@ -632,7 +736,11 @@ async function main() {
       `bets=${lossBets} status=${lossSettled?.status} ledger=${JSON.stringify(lossLedger)}`);
     check('double-click-wallet', lossWalletAfter === lossWalletBefore - 9n && readCalls() > callsBeforeLoss,
       `${lossWalletBefore}->${lossWalletAfter} calls=${callsBeforeLoss}->${readCalls()}`);
+    const lossShown = await readCabinet();
+    check('loss-board-matches-persisted', classicReelsMatch({ reelsSymbols: lossShown.reelsSymbols }, lossSettled),
+      lossShown.reelsSymbols ? 'shown' : 'missing');
 
+    if (PHASE !== 'mobile') {
     // --- scripted retrigger feature, refresh, one collect ------------------------
     const featureWalletBefore = await walletOf(user.id);
     const featurePrevious = lossSettled?.id ?? lossPrevious;
@@ -717,7 +825,9 @@ async function main() {
       `bet=${featureBetReplay} collect=${featureCollectReplay} wallet=${featureWalletReplay}`);
     await game.screenshot({ path: join(EVIDENCE, 'classic-feature-credits.png') });
     }
+    }
 
+    if (PHASE !== 'mobile') {
     // --- HTTP 500 presentation: versioned gameplay only, then a clean reload ----
     const faultWallet = await walletOf(user.id);
     const faultRounds = await prisma.casinoRound.count({ where: { userId: user.id } });
@@ -788,14 +898,17 @@ async function main() {
       `label=${launchLabel} disabled=${disabled} copy=${expiryCopy}`);
     const expiryWallet = await walletOf(user.id);
     check('launch-expired-no-mutation', expiryWallet === outageWallet, `${outageWallet}->${expiryWallet}`);
+    }
 
     // --- return to the lobby ------------------------------------------------------
-    const lobbyLink = page.locator('a[href="/casino"]').first();
+    const lobbyBefore = await walletOf(user.id);
+    await page.bringToFront();
+    const lobbyLink = page.locator('a[href="/casino"]').filter({ visible: true }).first();
     await lobbyLink.click();
     await page.waitForURL((url) => url.pathname === '/casino', { timeout: 20_000 });
     const lobbyWallet = await walletOf(user.id);
     check('return-to-lobby', page.url().includes('/casino') && !page.url().includes('book-of-ra-classic')
-      && lobbyWallet === expiryWallet, page.url());
+      && lobbyWallet === lobbyBefore, page.url());
 
     // --- insufficient PTS on a zero-balance fixture ------------------------------
     const broke = await prisma.user.findUnique({ where: { email: BROKE_EMAIL } });

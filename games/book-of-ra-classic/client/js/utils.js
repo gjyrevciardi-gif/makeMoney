@@ -426,7 +426,9 @@ if(scaleMode=="showAll"){
 		
 	mpl2 =  window.innerWidth/app.view.style.width.split("px")[0];
 		
-	if(mpl2>=0.7401){
+	// The old 0.7401 stop left the stage wider than the screen, so both edges
+	// were clipped on a phone. Show-all has to keep the whole stage inside.
+	if(mpl2>=1){
 	break;	
 	}	
 		
