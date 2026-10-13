@@ -54,6 +54,8 @@ const CLASSIC = `http://127.0.0.1:${GATEWAY_PORT}`; // game hostname (distinct f
 const FE_PORT = Number(process.env.BOOK_E2E_FRONTEND_PORT ?? 3017);
 const FRONTEND = `http://localhost:${FE_PORT}`;
 const PASSWORD = process.env.BOOK_E2E_PASSWORD ?? '';
+const VIEWPORT_SPEC = process.env.BOOK_E2E_VIEWPORT ?? '1440x900';
+const [VIEWPORT_WIDTH, VIEWPORT_HEIGHT] = VIEWPORT_SPEC.split('x').map((value) => Number(value));
 const PREFIX = `bcp${Date.now().toString(36)}`;
 
 const results = [];
@@ -183,7 +185,8 @@ async function main() {
 
     browser = await chromium.launch({ executablePath: CHROME, headless: true });
     report.browser = await browser.version();
-    const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    report.viewport = { width: VIEWPORT_WIDTH, height: VIEWPORT_HEIGHT };
+    const context = await browser.newContext({ viewport: { width: VIEWPORT_WIDTH, height: VIEWPORT_HEIGHT } });
     const pageErrors = [];
     const page = await context.newPage();
     page.on('pageerror', (error) => pageErrors.push(`launcher:${error.message}`));
@@ -209,6 +212,20 @@ async function main() {
     }, null, { timeout: 30_000 });
     const launcherBalance = await page.locator('.casino-stats').innerText().catch(() => '');
     await page.screenshot({ path: join(EVIDENCE, 'launcher-page.png') });
+    report.ui.launcherLayout = await page.evaluate(() => ({
+      innerWidth: window.innerWidth,
+      innerHeight: window.innerHeight,
+      scrollWidth: document.documentElement.scrollWidth,
+      clientWidth: document.documentElement.clientWidth,
+      scrollHeight: document.documentElement.scrollHeight,
+      clientHeight: document.documentElement.clientHeight,
+      playVisible: (() => {
+        const button = document.querySelector('button.casino-play');
+        if (!(button instanceof HTMLButtonElement)) return false;
+        const rect = button.getBoundingClientRect();
+        return rect.width > 0 && rect.height > 0 && rect.top >= 0 && rect.bottom <= window.innerHeight;
+      })(),
+    })).catch((error) => ({ error: String(error) }));
     check('launcher-capability-issued', /balance/i.test(launcherBalance), launcherBalance.replace(/\s+/g, ' ').slice(0, 120));
 
     const [game] = await Promise.all([
@@ -349,6 +366,14 @@ async function main() {
     const targetable = spinButton.error === undefined && spinButton.visible === true && spinButton.worldVisible === true
       && spinButton.interactive === true && spinButton.containsPoint === true && spinButton.elementAtPoint === 'canvas';
     check('spin-control-targetable', targetable, JSON.stringify(spinButton));
+    report.ui.gameLayout = await game.evaluate(() => ({
+      innerWidth: window.innerWidth,
+      innerHeight: window.innerHeight,
+      scrollWidth: document.documentElement.scrollWidth,
+      clientWidth: document.documentElement.clientWidth,
+      scrollHeight: document.documentElement.scrollHeight,
+      clientHeight: document.documentElement.clientHeight,
+    })).catch((error) => ({ error: String(error) }));
     if (!targetable) { report.abort = 'spin control not targetable with a native pointer'; return; }
 
     const settingsDeadline = Date.now() + 30_000;
@@ -586,7 +611,8 @@ async function main() {
       // triggers are not: this loop stops at 8 extra paid clicks and never
       // changes the production RNG.
       winRound = round.payout > 0n ? round : null;
-      for (let extra = 0; extra < 8 && !winRound; extra += 1) {
+      const extraSpins = Number(process.env.BOOK_E2E_EXTRA_SPINS ?? 8);
+      for (let extra = 0; extra < extraSpins && !winRound; extra += 1) {
         // The cabinet ignores a spin click while the reels are still moving.
         // Wait for that presentation before the next real pointer click.
         await sleep(8000);
