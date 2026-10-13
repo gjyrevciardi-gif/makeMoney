@@ -312,16 +312,26 @@ describe('book of ra classic DEFAULT -> ACTIVATE -> DEFAULT -> ACTIVATE (Postgre
    */
   const playPaidRound = async (userId: string, tokenHash: string, requestId: string, rngSeed: string) => {
     const registry = new CasinoGameRegistry();
+    const capabilities = new GameCapabilityService(prisma, registry, configs);
     const platform: GamePlatform = {
-      capabilities: new GameCapabilityService(prisma, registry, configs),
+      capabilities,
       wallet: new GameWalletService(),
-      journal: new GameJournalService(prisma),
+      journal: new GameJournalService(prisma, capabilities),
       rounds: new GameRoundService(prisma),
     };
     const adapter = new ClassicAdapter(prisma, platform, configs, math, { rng: intRng(rngSeed) });
     await points.adminGrant(adminId, userId, 10_000n, 'Classic DEFAULT->ACTIVATE round funding', `grant-${userId}-${requestId}`);
+    const account = await prisma.user.findUniqueOrThrow({ where: { id: userId }, select: { authVersion: true } });
     const session = await prisma.gameSession.create({
-      data: { userId, gameId: CLASSIC_ID, tokenHash, expiresAt: new Date(Date.now() + 3_600_000) },
+      data: {
+        userId,
+        gameId: CLASSIC_ID,
+        tokenHash,
+        expiresAt: new Date(Date.now() + 3_600_000),
+        // Bound to the fixture account's session version (A2: an unbound
+        // session fails closed instead of playing).
+        authVersion: account.authVersion,
+      },
     });
     const context = { gameId: CLASSIC_ID, userId, sessionId: session.id } as never;
     const settings = await adapter.read(context, 'getSettings', {}) as unknown as {

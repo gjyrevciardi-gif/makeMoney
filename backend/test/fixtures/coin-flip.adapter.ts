@@ -7,7 +7,10 @@ import {
   GamePlatform,
   GameRequest,
   ReadClient,
+  SessionTrust,
   TransactionClient,
+  isSessionRevocation,
+  sessionTrust,
 } from '../../src/casino/platform/game-adapter.types';
 
 /**
@@ -88,11 +91,15 @@ export class CoinFlipAdapter implements GameAdapter {
     if (settled) return settled;
 
     const choice = this.parseChoice(request.body);
-    await this.journal.serialized(this.gameId, userId, async (tx) => {
+    await this.journal.serialized(this.gameId, userId, sessionTrust(context.sessionId), async (tx) => {
       const key = this.journal.requestKey(userId, request.requestId);
       const existing = await this.journal.findPreparedIn(tx, key, userId);
       if (existing) {
         if (existing.canonical !== canonical) this.journal.conflictSemantics();
+        // A cancelled identity is refused before the draw below.
+        if (existing.cancelledAt) {
+          throw this.journal.conflict('OUTCOME_CANCELLED', 'This action was cancelled; start a new round.');
+        }
         return;
       }
       // The outcome is drawn once and committed before any money moves.
@@ -119,7 +126,7 @@ export class CoinFlipAdapter implements GameAdapter {
         payload: round,
       });
     });
-    return this.settlePrepared(userId, request.requestId, canonical);
+    return this.settlePrepared(userId, request.requestId, canonical, sessionTrust(context.sessionId));
   }
 
   async reconcilePrepared(context: GameActionContext) {
@@ -127,13 +134,26 @@ export class CoinFlipAdapter implements GameAdapter {
     for (const row of rows) {
       const requestId = this.journal.unscopedRequestId(context.userId, row.requestKey);
       const prepared = await this.journal.findPrepared(context.userId, row.requestKey);
-      await this.settlePrepared(context.userId, requestId, prepared?.canonical ?? '');
+      try {
+        await this.settlePrepared(
+          context.userId,
+          requestId,
+          prepared?.canonical ?? '',
+          sessionTrust(row.sessionId),
+        );
+      } catch (error) {
+        // A revoked session can never settle its prepared outcome. The row is
+        // retained and marked terminally cancelled, exactly like the production
+        // adapters, so the key can never be redrawn.
+        if (!isSessionRevocation(error)) throw error;
+        await this.journal.cancelPrepared(this.gameId, context.userId, row.requestKey);
+      }
     }
   }
 
   /** The same shape every adapter settles with: stored outcome, never a redraw. */
-  private async settlePrepared(userId: string, requestId: string, canonical: string) {
-    return this.journal.serialized(this.gameId, userId, async (tx) => {
+  private async settlePrepared(userId: string, requestId: string, canonical: string, trust: SessionTrust) {
+    return this.journal.serialized(this.gameId, userId, trust, async (tx) => {
       const key = this.journal.requestKey(userId, requestId);
       const replay = await this.journal.findReplayIn(tx, this.gameId, userId, requestId, canonical);
       if (replay) {
@@ -142,6 +162,12 @@ export class CoinFlipAdapter implements GameAdapter {
       }
       const prepared = await this.journal.findPreparedIn(tx, key, userId);
       if (!prepared) throw this.journal.conflict('OUTCOME_NOT_PREPARED', 'The prepared outcome is missing.');
+      if (prepared.cancelledAt) {
+        throw this.journal.conflict('OUTCOME_CANCELLED', 'This action was cancelled; start a new round.');
+      }
+      if (prepared.sessionId === null || prepared.sessionId !== trust.sessionId) {
+        throw this.journal.conflict('STALE_PREPARED_ACTION', 'The prepared outcome belongs to another session.');
+      }
       const round = prepared.payload as CoinFlipRound;
       const created = await this.rounds.createRound(tx, {
         id: round.roundId,

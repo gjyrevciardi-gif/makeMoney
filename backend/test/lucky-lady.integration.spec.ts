@@ -94,7 +94,7 @@ describe('Lucky Lady platform integration (PostgreSQL)', () => {
   const platform: GamePlatform = {
     capabilities,
     wallet: new GameWalletService(),
-    journal: new GameJournalService(prisma),
+    journal: new GameJournalService(prisma, capabilities),
     rounds: new GameRoundService(prisma),
   };
   const contextFor = (actor: string, sessionId: string): GameActionContext => ({
@@ -125,13 +125,17 @@ describe('Lucky Lady platform integration (PostgreSQL)', () => {
         accepted: boolean;
         reason?: string;
       }>,
-    issueLaunch: (actor: string) =>
-      capabilities.issueLaunch(actor, {
+    issueLaunch: async (actor: string) => {
+      // The proof the access guard would forward: the account version the token
+      // was verified under. Issuance re-checks it under the account row lock.
+      const account = await prisma.user.findUniqueOrThrow({ where: { id: actor }, select: { authVersion: true } });
+      return capabilities.issueLaunch(actor, {
         gameId: LUCKY_LADY_GAME_ID,
         scope: LUCKY_LADY_CAPABILITY.scope,
         ttlMs: LUCKY_LADY_CAPABILITY.launchTtlMs,
         gamePath: LUCKY_LADY_CAPABILITY.gamePath,
-      }),
+      }, { authVersion: account.authVersion });
+    },
     exchangeLaunch: (token: string) =>
       capabilities.exchangeLaunch(token, {
         gameId: LUCKY_LADY_GAME_ID,
@@ -212,12 +216,16 @@ describe('Lucky Lady platform integration (PostgreSQL)', () => {
     const existing = sessions.get(actor);
     if (existing) return existing;
     const token = `session-${actor.slice(0, 8)}-${Math.random().toString(36).slice(2, 12)}`;
+    const account = await prisma.user.findUniqueOrThrow({ where: { id: actor }, select: { authVersion: true } });
     const row = await prisma.gameSession.create({
       data: {
         userId: actor,
         gameId: LUCKY_LADY_GAME_ID,
         tokenHash: sha256(token),
         expiresAt: new Date(Date.now() + 3_600_000),
+        // A session is bound to the account version it was minted under; an
+        // unbound fixture session would (correctly) fail closed.
+        authVersion: account.authVersion,
       },
     });
     sessions.set(actor, row.id);

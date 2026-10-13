@@ -4,6 +4,7 @@ import { Prisma, Role } from '@prisma/client';
 import * as argon2 from 'argon2';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { PrismaService } from '../prisma.service';
+import { revokeGameCredentials } from './game-session-revocation';
 
 type DbClient = Prisma.TransactionClient | PrismaService;
 export type TokenPair = { accessToken: string; refreshToken: string; familyId: string };
@@ -194,6 +195,10 @@ export class AuthService {
       await this.lockUser(tx, record.userId);
       await tx.user.update({ where: { id: record.userId }, data: { authVersion: { increment: 1 } } });
       await tx.refreshToken.updateMany({ where: { userId: record.userId, revokedAt: null }, data: { revokedAt: new Date() } });
+      // Gameplay is bound to the same version: the sign-out that just retired
+      // every access token also retires every bound game session and every
+      // pending launch capability that user holds, in this same commit.
+      await revokeGameCredentials(tx, record.userId);
       await tx.auditLog.create({ data: { actorId: record.userId, targetType: 'USER', targetId: record.userId, action: 'LOGOUT', result: 'SUCCESS', metadata: { scope: 'ALL_DEVICES' } } });
     });
   }

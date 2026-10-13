@@ -2,6 +2,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import * as argon2 from 'argon2';
 import cookieParser from 'cookie-parser';
+import { randomUUID } from 'node:crypto';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { AuthService } from '../src/auth/auth.service';
@@ -315,7 +316,18 @@ describe('lucky lady payout panel (PostgreSQL + Redis)', () => {
     const adapter = app.get(LuckyLadyAdapter);
     const player = await prisma.user.findUniqueOrThrow({ where: { email: userEmail } });
     const actor = await adminId();
-    const context = { gameId: LUCKY_LADY_GAME_ID, userId: player.id, sessionId: '11111111-2222-4333-8444-555555555555' };
+    // A real bound session: gameplay is authorized inside its settlement
+    // transaction, so an unbound fixture session fails closed (milestone A2).
+    const session = await prisma.gameSession.create({
+      data: {
+        userId: player.id,
+        gameId: LUCKY_LADY_GAME_ID,
+        tokenHash: `payout-panel-${randomUUID()}`,
+        expiresAt: new Date(Date.now() + 3_600_000),
+        authVersion: player.authVersion,
+      },
+    });
+    const context = { gameId: LUCKY_LADY_GAME_ID, userId: player.id, sessionId: session.id };
 
     const generated = await payout.generate(actor, { targetRtpPercent: 70, maxWinMultiplier: 50, style: 'RETENTION' });
     expect(generated.status).toBe('VALIDATED');

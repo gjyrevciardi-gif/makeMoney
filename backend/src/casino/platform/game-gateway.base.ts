@@ -59,12 +59,19 @@ export abstract class GameGatewayBase {
   /** Called by the per-game controller for its authenticated `launch` route. */
   protected async issueLaunch(request: AuthenticatedRequest) {
     await this.limits.consume('casino-game-launch', request.actor.id, RATE_LIMITS.gameLaunch);
-    return this.capabilities.issueLaunch(request.actor.id, {
-      gameId: this.adapter.gameId,
-      scope: this.options.scope,
-      ttlMs: this.options.launchTtlMs,
-      gamePath: this.options.gamePath,
-    });
+    return this.capabilities.issueLaunch(
+      request.actor.id,
+      {
+        gameId: this.adapter.gameId,
+        scope: this.options.scope,
+        ttlMs: this.options.launchTtlMs,
+        gamePath: this.options.gamePath,
+      },
+      // The version the guard just verified against the account row. Issuance
+      // re-checks it under the account lock, so a logout that commits in between
+      // cannot be raced into a fresh launch capability.
+      { authVersion: request.actor.authVersion },
+    );
   }
 
   /** Called by the game origin; authenticated by the opaque launch capability. */

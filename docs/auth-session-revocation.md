@@ -48,6 +48,11 @@ client with no usable refresh token has to sign in again. No `AuthSession`
 model is introduced and refresh rotation with family reuse detection is
 unchanged.
 
+Game credentials are bound to the same counter: launch capabilities and bound
+game sessions carry the `authVersion` they were minted under, and logout,
+password changes and disable retire them in the same transaction that moves it.
+See `docs/SECURITY-GAME-SESSION-REVOCATION-A2.md`.
+
 ## Concurrency
 
 Login, refresh rotation, logout and both password-change paths synchronize on

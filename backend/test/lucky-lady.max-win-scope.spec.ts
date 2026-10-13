@@ -343,12 +343,18 @@ describe('RESOLVED_SPIN pin, feature resolution, recovery and replay (in-memory 
       requestKey: (userId: string, requestId: string) => `${userId}:${requestId}`,
       findReplay: async (_g: string, _u: string, requestId: string) => state.responses.get(requestId) ?? null,
       findReplayIn: async (_t: unknown, _g: string, _u: string, requestId: string) => state.responses.get(requestId) ?? null,
-      serialized: async <T>(_g: string, _u: string, work: (client: unknown) => Promise<T>) => work(tx),
+      serialized: async <T>(
+        _gameId: string,
+        _userId: string,
+        _trust: { sessionId: string },
+        work: (client: unknown) => Promise<T>,
+      ) => work(tx),
       prepareOutcome: async (_t: unknown, outcome: { requestKey: string }) => { state.prepared.set(outcome.requestKey, outcome); },
       findPreparedIn: async (_t: unknown, key: string) => state.prepared.get(key) ?? null,
       findPrepared: async (_u: string, key: string) => state.prepared.get(key) ?? null,
       deletePrepared: async (_t: unknown, key: string) => { state.prepared.delete(key); },
       discardPrepared: async () => undefined,
+      cancelPrepared: async () => undefined,
       listPrepared: async () => [],
       bookAction: async (_t: unknown, params: { requestId: string; response: unknown }) => {
         state.responses.set(params.requestId, params.response);
