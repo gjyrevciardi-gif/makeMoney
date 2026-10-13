@@ -13,6 +13,11 @@
  *
  * BOOK_E2E_API_PORT and BOOK_E2E_GATEWAY_PORT default to 3001 and 8791.
  * Point them at a private stack so this run does not share another agent's ports.
+ *
+ * BOOK_E2E_WIN_CAPTURE=1 waits until each paid round is terminal, screenshots
+ * the first counted-up win before any later spin, then replays that spin's own
+ * x-pilot-request-id. It does not change the production RNG. A bounded miss is
+ * recorded as not observed; it is not a product failure.
  */
 import { spawn } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
@@ -28,7 +33,16 @@ const require = createRequire(import.meta.url);
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..');
 const RUN_ID = new Date().toISOString().replace(/[:.]/g, '-');
-const EVIDENCE = join(ROOT, 'docs', 'agent-work', 'book-completion', 'evidence', `classic-paid-spin-e2e-${RUN_ID}`);
+const WIN_CAPTURE = process.env.BOOK_E2E_WIN_CAPTURE === '1';
+const WIN_CAPTURE_SPINS = Number(process.env.BOOK_E2E_WIN_CAPTURE_SPINS ?? 12);
+const EVIDENCE = join(
+  ROOT,
+  'docs',
+  'agent-work',
+  'book-completion',
+  'evidence',
+  `${WIN_CAPTURE ? 'classic-overnight' : 'classic-paid-spin-e2e'}-${RUN_ID}`,
+);
 const PLAYWRIGHT = process.env.BOOK_E2E_PLAYWRIGHT
   ?? 'C:/Users/Admin/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.js';
 const CHROME = process.env.BOOK_E2E_CHROME ?? 'C:/Program Files/Google/Chrome/Application/chrome.exe';
@@ -168,6 +182,7 @@ async function main() {
     };
 
     browser = await chromium.launch({ executablePath: CHROME, headless: true });
+    report.browser = await browser.version();
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
     const pageErrors = [];
     const page = await context.newPage();
@@ -344,8 +359,118 @@ async function main() {
     // Single real pointer interaction with the client's own spin control:
     // move, press and release are native browser input events at the derived
     // viewport point. No game function is called and no request is fabricated.
+    const readCabinet = () => game.evaluate(() => ({
+      slotState: typeof slotState === 'string' ? slotState : null,
+      totalWin: window.slotStateData?.totalWin ?? null,
+      oldWin: window.slotStateData?.oldWin ?? null,
+      credit: window.slotStateData?.credit ?? null,
+    })).catch(() => ({ slotState: null, totalWin: null }));
+
+    const clickNamed = async (name) => {
+      const located = await game.evaluate((buttonName) => {
+        const target = window.gameUI?.GetObject?.()?.[buttonName]?._view;
+        if (!target || target.visible === false || target.worldVisible === false) return null;
+        const bounds = typeof target.getLocalBounds === 'function'
+          ? target.getLocalBounds()
+          : { x: 0, y: 0, width: target.width, height: target.height };
+        const centre = new window.PIXI.Point(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+        const global = typeof target.toGlobal === 'function' ? target.toGlobal(centre) : { x: target.position.x, y: target.position.y };
+        const view = window.app?.view ?? document.querySelector('canvas');
+        const rect = view.getBoundingClientRect();
+        return {
+          stage: { x: global.x, y: global.y },
+          mapOpts: {
+            canvasWidth: view.width,
+            canvasHeight: view.height,
+            rect: { left: rect.left, top: rect.top, width: rect.width, height: rect.height },
+            resolution: window.app?.renderer?.resolution ?? 1,
+          },
+        };
+      }, name);
+      if (!located) return false;
+      const point = invertStageToClient(located.stage.x, located.stage.y, located.mapOpts);
+      await game.mouse.move(point.x, point.y, { steps: 4 });
+      await game.mouse.down();
+      await game.waitForTimeout(80);
+      await game.mouse.up();
+      return true;
+    };
+
+    // A line win stays PENDING_WIN until the player clicks the spin control,
+    // which the recovery client turns into recoveryCollect. Waiting alone never
+    // credits it. Skip ends the count-up; the following spin click collects.
+    const presentAndCollect = async (roundId, shotName) => {
+      const deadline = Date.now() + 20_000;
+      let shot = false;
+      let skipped = false;
+      let collected = false;
+      while (Date.now() < deadline) {
+        const current = await prisma.casinoRound.findUnique({ where: { id: roundId } });
+        if (current && (current.status === 'CASHED_OUT' || current.status === 'LOST')) return current;
+        const cabinet = await readCabinet();
+        const reelsSettled = ['WINNING', 'AFTERWIN', 'GAMBLE'].includes(cabinet.slotState);
+        if (reelsSettled && shotName && !shot) {
+          await game.screenshot({ path: join(EVIDENCE, shotName) });
+          shot = true;
+        }
+        if (!skipped && cabinet.slotState === 'WINNING') {
+          skipped = await clickNamed('uiButtonSkip');
+          await sleep(500);
+          continue;
+        }
+        if (!collected && (cabinet.slotState === 'AFTERWIN' || cabinet.slotState === 'GAMBLE')) {
+          collected = await clickNamed('uiButtonSpin');
+          await sleep(400);
+          continue;
+        }
+        await sleep(300);
+      }
+      return prisma.casinoRound.findUnique({ where: { id: roundId } });
+    };
+
+    if (WIN_CAPTURE) {
+      const open = await prisma.casinoRound.findFirst({
+        where: { userId: user.id, status: 'OPEN', gameVersion: { startsWith: 'book-of-ra-classic' } },
+        orderBy: { createdAt: 'desc' },
+      });
+      const openPhase = open?.privateState?.phase ?? null;
+      if (open && (openPhase === 'PENDING_WIN' || openPhase === 'GAMBLE')) {
+        const recovered = await presentAndCollect(open.id, 'classic-recovered-pending.png');
+        const recoveredLedger = await prisma.ledgerEntry.findMany({
+          where: { relatedCasinoRoundId: open.id }, orderBy: { createdAt: 'asc' },
+        });
+        report.persisted.recoveredPending = {
+          id: open.id,
+          phase: openPhase,
+          status: recovered?.status ?? null,
+          payout: recovered ? String(recovered.payout) : null,
+          ledger: recoveredLedger.map((entry) => ({ type: entry.type, amount: String(entry.amount) })),
+          requestIdAvailable: false,
+        };
+        check('recovered-pending-collected',
+          recovered?.status === 'CASHED_OUT' && recovered.payout > 0n
+            && recoveredLedger.filter((entry) => entry.type === 'CASINO_WIN').length === 1,
+          JSON.stringify(report.persisted.recoveredPending));
+      }
+    }
+
     const before = await prisma.wallet.findUnique({ where: { userId: user.id } });
     const roundsBefore = await prisma.casinoRound.count({ where: { userId: user.id } });
+    const previousRoundId = (await prisma.casinoRound.findFirst({
+      where: { userId: user.id, gameVersion: { startsWith: 'book-of-ra-classic' } },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true },
+    }))?.id ?? null;
+    if (WIN_CAPTURE) {
+      const idleDeadline = Date.now() + 15_000;
+      let idleState = null;
+      while (Date.now() < idleDeadline) {
+        idleState = await readCabinet();
+        if (idleState.slotState === 'IDLE') break;
+        await sleep(200);
+      }
+      report.ui.idleBeforeSpin = idleState?.slotState ?? null;
+    }
     await game.bringToFront();
     await game.mouse.move(spinButton.x, spinButton.y, { steps: 8 });
     await game.waitForTimeout(150);
@@ -393,7 +518,8 @@ async function main() {
         where: { userId: user.id, gameVersion: { startsWith: 'book-of-ra-classic' } },
         orderBy: { createdAt: 'desc' },
       });
-      if (round) break;
+      if (round && (!WIN_CAPTURE || round.id !== previousRoundId)) break;
+      round = null;
       await sleep(500);
     }
     const betline = Number(bets[0]?.body?.slotBet ?? 0);
@@ -420,68 +546,215 @@ async function main() {
     report.persisted.wallet = { before: String(before.balance), after: String(after.balance), expected: String(expected) };
     check('wallet-settled-exactly-once', after.balance === expected, JSON.stringify(report.persisted.wallet));
 
-    const originalBet = betReplays[0];
-    if (!originalBet?.requestId) {
-      check('bet-replay-idempotent', false, 'captured bet had no x-pilot-request-id');
-    } else {
-      const replay = await game.evaluate(async ({ url, postData, requestId, version, round }) => {
-        const headers = { 'content-type': 'application/json', 'x-pilot-request-id': requestId };
-        if (version) headers['x-pilot-version'] = version;
-        if (round) headers['x-pilot-round'] = round;
-        const response = await fetch(url, { method: 'POST', credentials: 'include', headers, body: postData });
-        let body = null;
-        try { body = await response.json(); } catch { body = null; }
-        return { status: response.status, balance: body?.serverResponse?.balance ?? body?.balance ?? null };
-      }, originalBet);
-      const ledgerAfterReplay = await prisma.ledgerEntry.count({ where: { relatedCasinoRoundId: round.id } });
-      const walletAfterReplay = await prisma.wallet.findUnique({ where: { userId: user.id } });
-      report.persisted.replay = {
-        status: replay.status,
-        ledgerEntries: ledgerAfterReplay,
-        wallet: String(walletAfterReplay.balance),
+    const replayStoredBet = async (bet) => game.evaluate(async ({ url, postData, requestId, version, roundHeader }) => {
+      const headers = { 'content-type': 'application/json', 'x-pilot-request-id': requestId };
+      if (version) headers['x-pilot-version'] = version;
+      if (roundHeader) headers['x-pilot-round'] = roundHeader;
+      const response = await fetch(url, { method: 'POST', credentials: 'include', headers, body: postData });
+      let body = null;
+      try { body = await response.json(); } catch { body = null; }
+      const server = body?.serverResponse ?? null;
+      return {
+        status: response.status,
+        totalWin: server?.totalWin ?? null,
+        balance: server?.Balance ?? server?.balance ?? null,
+        reels: server?.reelsSymbols ?? server?.reels ?? null,
       };
-      check('bet-replay-idempotent',
-        replay.status === 200 && ledgerAfterReplay === ledger.length && walletAfterReplay.balance === after.balance,
-        JSON.stringify(report.persisted.replay));
-    }
+    }, { ...bet, roundHeader: bet.round });
 
-    // A line win is common enough to look for in a short bound. Free-spin
-    // triggers are not: this loop stops at 8 extra paid clicks and never
-    // changes the production RNG.
-    let winRound = round.payout > 0n ? round : null;
+    let winRound = null;
     const missedClicks = [];
-    for (let extra = 0; extra < 8 && !winRound; extra += 1) {
-      // The cabinet ignores a spin click while the reels are still moving.
-      // Wait for that presentation before the next real pointer click.
-      await sleep(8000);
-      const betsBefore = traffic.filter((entry) => entry.phase === 'request' && entry.slotEvent === 'bet').length;
-      await game.mouse.move(spinButton.x, spinButton.y, { steps: 4 });
-      await game.mouse.down();
-      await game.waitForTimeout(80);
-      await game.mouse.up();
-      const extraDeadline = Date.now() + 12_000;
-      while (Date.now() < extraDeadline) {
+    if (!WIN_CAPTURE) {
+      const originalBet = betReplays[0];
+      if (!originalBet?.requestId) {
+        check('bet-replay-idempotent', false, 'captured bet had no x-pilot-request-id');
+      } else {
+        const replay = await replayStoredBet(originalBet);
+        const ledgerAfterReplay = await prisma.ledgerEntry.count({ where: { relatedCasinoRoundId: round.id } });
+        const walletAfterReplay = await prisma.wallet.findUnique({ where: { userId: user.id } });
+        report.persisted.replay = {
+          status: replay.status,
+          ledgerEntries: ledgerAfterReplay,
+          wallet: String(walletAfterReplay.balance),
+        };
+        check('bet-replay-idempotent',
+          replay.status === 200 && ledgerAfterReplay === ledger.length && walletAfterReplay.balance === after.balance,
+          JSON.stringify(report.persisted.replay));
+      }
+
+      // A line win is common enough to look for in a short bound. Free-spin
+      // triggers are not: this loop stops at 8 extra paid clicks and never
+      // changes the production RNG.
+      winRound = round.payout > 0n ? round : null;
+      for (let extra = 0; extra < 8 && !winRound; extra += 1) {
+        // The cabinet ignores a spin click while the reels are still moving.
+        // Wait for that presentation before the next real pointer click.
+        await sleep(8000);
+        const betsBefore = traffic.filter((entry) => entry.phase === 'request' && entry.slotEvent === 'bet').length;
+        await game.mouse.move(spinButton.x, spinButton.y, { steps: 4 });
+        await game.mouse.down();
+        await game.waitForTimeout(80);
+        await game.mouse.up();
+        const extraDeadline = Date.now() + 12_000;
+        while (Date.now() < extraDeadline) {
+          const betCount = traffic.filter((entry) => entry.phase === 'request' && entry.slotEvent === 'bet').length;
+          if (betCount > betsBefore) break;
+          await sleep(250);
+        }
         const betCount = traffic.filter((entry) => entry.phase === 'request' && entry.slotEvent === 'bet').length;
-        if (betCount > betsBefore) break;
-        await sleep(250);
+        if (betCount === betsBefore) {
+          missedClicks.push(extra);
+          continue;
+        }
+        await sleep(1500);
+        const latest = await prisma.casinoRound.findFirst({
+          where: { userId: user.id, gameVersion: { startsWith: 'book-of-ra-classic' } },
+          orderBy: { createdAt: 'desc' },
+        });
+        if (latest && latest.id !== round.id && latest.payout > 0n) winRound = latest;
       }
-      const betCount = traffic.filter((entry) => entry.phase === 'request' && entry.slotEvent === 'bet').length;
-      if (betCount === betsBefore) {
-        missedClicks.push(extra);
-        continue;
+      if (!winRound) {
+        // A line win can stay OPEN with payout 0 until the cabinet finishes the
+        // count-up. Re-read the click's own round after that presentation.
+        const refreshed = await prisma.casinoRound.findUnique({ where: { id: round.id } });
+        if (refreshed && refreshed.payout > 0n) winRound = refreshed;
       }
-      await sleep(1500);
-      const latest = await prisma.casinoRound.findFirst({
-        where: { userId: user.id, gameVersion: { startsWith: 'book-of-ra-classic' } },
-        orderBy: { createdAt: 'desc' },
-      });
-      if (latest && latest.id !== round.id && latest.payout > 0n) winRound = latest;
-    }
-    if (!winRound) {
-      // A line win can stay OPEN with payout 0 until the cabinet finishes the
-      // count-up. Re-read the click's own round after that presentation.
-      const refreshed = await prisma.casinoRound.findUnique({ where: { id: round.id } });
-      if (refreshed && refreshed.payout > 0n) winRound = refreshed;
+    } else {
+      report.mode = 'book-of-ra-classic-win-capture';
+      const maxSpins = Number.isFinite(WIN_CAPTURE_SPINS) && WIN_CAPTURE_SPINS > 0 ? Math.floor(WIN_CAPTURE_SPINS) : 12;
+      const attempts = [];
+      let lastRoundId = round.id;
+      const clickSpin = async () => {
+        const betsBefore = traffic.filter((entry) => entry.phase === 'request' && entry.slotEvent === 'bet').length;
+        await game.mouse.move(spinButton.x, spinButton.y, { steps: 4 });
+        await game.mouse.down();
+        await game.waitForTimeout(80);
+        await game.mouse.up();
+        const extraDeadline = Date.now() + 12_000;
+        while (Date.now() < extraDeadline) {
+          const betCount = traffic.filter((entry) => entry.phase === 'request' && entry.slotEvent === 'bet').length;
+          if (betCount > betsBefore) return true;
+          await sleep(250);
+        }
+        return false;
+      };
+      for (let attempt = 0; attempt < maxSpins && !winRound; attempt += 1) {
+        let targetId = lastRoundId;
+        let storedBet = betReplays[0];
+        if (attempt > 0) {
+          const idleDeadline = Date.now() + 8_000;
+          while (Date.now() < idleDeadline) {
+            const cabinet = await readCabinet();
+            if (cabinet.slotState === 'IDLE') break;
+            await sleep(200);
+          }
+          const replayIndex = betReplays.length;
+          const sent = await clickSpin();
+          if (!sent) {
+            missedClicks.push(attempt);
+            attempts.push({ attempt, missed: true });
+            continue;
+          }
+          const appeared = Date.now() + 12_000;
+          let latest = null;
+          while (Date.now() < appeared) {
+            latest = await prisma.casinoRound.findFirst({
+              where: { userId: user.id, gameVersion: { startsWith: 'book-of-ra-classic' } },
+              orderBy: { createdAt: 'desc' },
+            });
+            if (latest && latest.id !== lastRoundId) break;
+            await sleep(300);
+          }
+          if (!latest || latest.id === lastRoundId) {
+            attempts.push({ attempt, missedRound: true });
+            continue;
+          }
+          targetId = latest.id;
+          lastRoundId = targetId;
+          storedBet = betReplays[replayIndex] ?? betReplays[betReplays.length - 1];
+        }
+        const presented = await presentAndCollect(targetId, 'classic-winning-board.png');
+        const settled = {
+          round: presented,
+          firstStatus: presented?.status ?? null,
+          polls: 1,
+        };
+        const terminal = settled.round;
+        attempts.push({
+          attempt,
+          id: terminal?.id ?? targetId,
+          firstStatus: settled.firstStatus,
+          status: terminal?.status ?? null,
+          payout: terminal ? String(terminal.payout) : null,
+          polls: settled.polls,
+          phase: terminal?.privateState?.phase ?? null,
+          authoritativeReread: true,
+        });
+        if (!terminal || (terminal.status !== 'CASHED_OUT' && terminal.status !== 'LOST')) break;
+        if (terminal.payout <= 0n) continue;
+        const spinResponses = traffic.filter((entry) => entry.phase === 'response' && entry.body?.serverResponse?.reelsSymbols);
+        const spinBody = spinResponses[spinResponses.length - 1];
+        const shown = spinBody?.body?.serverResponse ?? null;
+        const countUpDeadline = Date.now() + 12_000;
+        let cabinetAfter = await readCabinet();
+        while (Date.now() < countUpDeadline && cabinetAfter.slotState !== 'IDLE') {
+          cabinetAfter = await readCabinet();
+          await sleep(200);
+        }
+        await game.screenshot({ path: join(EVIDENCE, 'classic-after-collect.png') });
+        const renderedNow = [{
+          key: 'slotStateData',
+          text: `state=${cabinetAfter.slotState} totalWin=${cabinetAfter.totalWin} oldWin=${cabinetAfter.oldWin} credit=${cabinetAfter.credit}`,
+        }];
+        const ledgerBeforeReplay = await prisma.ledgerEntry.findMany({
+          where: { relatedCasinoRoundId: terminal.id }, orderBy: { createdAt: 'asc' },
+        });
+        const walletBeforeReplay = await prisma.wallet.findUnique({ where: { userId: user.id } });
+        const roundsBeforeReplay = await prisma.casinoRound.count({ where: { userId: user.id } });
+        const replay = storedBet?.requestId ? await replayStoredBet(storedBet) : { status: 0, totalWin: null, reels: null };
+        const ledgerAfterReplay = await prisma.ledgerEntry.findMany({
+          where: { relatedCasinoRoundId: terminal.id }, orderBy: { createdAt: 'asc' },
+        });
+        const walletAfterReplay = await prisma.wallet.findUnique({ where: { userId: user.id } });
+        const roundsAfterReplay = await prisma.casinoRound.count({ where: { userId: user.id } });
+        const reread = await prisma.casinoRound.findUnique({ where: { id: terminal.id } });
+        const sameLedger = JSON.stringify(ledgerBeforeReplay.map((entry) => [entry.id, entry.type, String(entry.amount)]))
+          === JSON.stringify(ledgerAfterReplay.map((entry) => [entry.id, entry.type, String(entry.amount)]));
+        report.persisted.winReplay = {
+          id: terminal.id,
+          requestId: storedBet?.requestId ?? null,
+          stake: String(terminal.stake),
+          payout: String(terminal.payout),
+          browserTotalWin: shown?.totalWin ?? null,
+          replayStatus: replay.status,
+          replayTotalWin: replay.totalWin,
+          firstStatus: settled.firstStatus,
+          polls: settled.polls,
+          authoritativeReread: true,
+          rereadStatus: reread?.status ?? null,
+          rereadPayout: reread ? String(reread.payout) : null,
+          walletBeforeReplay: String(walletBeforeReplay.balance),
+          walletAfterReplay: String(walletAfterReplay.balance),
+          roundsBeforeReplay,
+          roundsAfterReplay,
+          ledger: ledgerAfterReplay.map((entry) => ({ type: entry.type, amount: String(entry.amount) })),
+          displayedTexts: renderedNow,
+        };
+        const payoutText = String(terminal.payout);
+        check('winning-board-matches-persisted', classicReelsMatch(shown, terminal), `ui=${JSON.stringify(shown?.reelsSymbols ?? null)}`);
+        check('browser-total-win-matches-payout', Number(shown?.totalWin) === Number(terminal.payout), `totalWin=${shown?.totalWin} payout=${terminal.payout}`);
+        check('last-win-visible', Number(cabinetAfter.oldWin) === Number(terminal.payout) && cabinetAfter.slotState === 'IDLE', JSON.stringify(renderedNow));
+        check('win-replay-http-200', replay.status === 200, `status=${replay.status}`);
+        check('win-replay-same-outcome', replay.status === 200 && classicReelsMatch({ reelsSymbols: replay.reels }, reread) && Number(replay.totalWin) === Number(terminal.payout), `replayTotalWin=${replay.totalWin}`);
+        check('win-replay-no-new-round', roundsAfterReplay === roundsBeforeReplay, `${roundsBeforeReplay} -> ${roundsAfterReplay}`);
+        check('win-replay-no-second-debit', sameLedger && ledgerAfterReplay.filter((entry) => entry.type === 'CASINO_BET').length === 1, JSON.stringify(report.persisted.winReplay.ledger));
+        check('win-replay-no-second-credit', sameLedger && ledgerAfterReplay.filter((entry) => entry.type === 'CASINO_WIN').length === 1 && ledgerAfterReplay.filter((entry) => entry.type === 'CASINO_WIN')[0].amount === terminal.payout, `payout=${terminal.payout}`);
+        check('win-replay-wallet-unchanged', walletAfterReplay.balance === walletBeforeReplay.balance, `${walletBeforeReplay.balance} -> ${walletAfterReplay.balance}`);
+        check('post-animation-reread', reread?.status === 'CASHED_OUT' && reread.payout === terminal.payout, `first=${settled.firstStatus} reread=${reread?.status}`);
+        winRound = reread;
+      }
+      report.ui.winCapture = { observed: Boolean(winRound), attempts, missedClicks, bound: maxSpins };
+      if (!winRound) report.ui.winSearch = { found: false, betsSent: betReplays.length, missedClicks, notObserved: true };
     }
     if (winRound) {
       const winLedger = await prisma.ledgerEntry.findMany({ where: { relatedCasinoRoundId: winRound.id }, orderBy: { createdAt: 'asc' } });
@@ -585,6 +858,8 @@ async function main() {
       `- native bet request(s): ${JSON.stringify(betRequests)}`,
       `- native bet response status: ${spinResponse?.status ?? 'none'}`,
       `- persisted: ${JSON.stringify(report.persisted ?? {})}`,
+      `- win capture: ${JSON.stringify(report.ui.winCapture ?? null)}`,
+      `- browser: ${report.browser ?? 'n/a'}`,
       `- checks: ${report.passed} passed / ${report.failed} failed`,
       `- abort: ${JSON.stringify(report.abort ?? null)}`, '',
     ].join('\n'));
