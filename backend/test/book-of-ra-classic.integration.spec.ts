@@ -103,7 +103,7 @@ describe('Book of Ra Classic platform integration (PostgreSQL)', () => {
   const platform: GamePlatform = {
     capabilities,
     wallet: new GameWalletService(),
-    journal: new GameJournalService(prisma),
+    journal: new GameJournalService(prisma, capabilities),
     rounds: new GameRoundService(prisma),
   };
   const contextFor = (actor: string, sessionId: string): GameActionContext => ({
@@ -221,12 +221,16 @@ describe('Book of Ra Classic platform integration (PostgreSQL)', () => {
     const existing = sessions.get(actor);
     if (existing) return existing;
     const token = `session-${actor.slice(0, 8)}-${Math.random().toString(36).slice(2, 12)}`;
+    const account = await prisma.user.findUniqueOrThrow({ where: { id: actor }, select: { authVersion: true } });
     const row = await prisma.gameSession.create({
       data: {
         userId: actor,
         gameId: CLASSIC_ID,
         tokenHash: sha256(token),
         expiresAt: new Date(Date.now() + 3_600_000),
+        // A session is bound to the account version it was minted under; an
+        // unbound fixture session would (correctly) fail closed.
+        authVersion: account.authVersion,
       },
     });
     sessions.set(actor, row.id);
@@ -722,12 +726,17 @@ describe('Book of Ra Classic platform integration (PostgreSQL)', () => {
   });
 
   it('issues a launch capability to every GAME_PLAY role, binds it to one game and consumes it once', async () => {
+    // The proof the access guard would forward: the account version the token
+    // was verified under. Issuance re-checks it under the account row lock.
+    const authProof = async (actor: string) => ({
+      authVersion: (await prisma.user.findUniqueOrThrow({ where: { id: actor }, select: { authVersion: true } })).authVersion,
+    });
     const issue = async (actor: string) => capabilities.issueLaunch(actor, {
       gameId: CLASSIC_ID,
       scope: CLASSIC_CAPABILITY.scope,
       ttlMs: CLASSIC_CAPABILITY.launchTtlMs,
       gamePath: CLASSIC_CAPABILITY.gamePath,
-    });
+    }, await authProof(actor));
     for (const actor of [userId, adminId, superId]) {
       const grant = await issue(actor);
       expect(grant.gamePath).toBe('/games/BookOfRaCL/');
@@ -756,7 +765,7 @@ describe('Book of Ra Classic platform integration (PostgreSQL)', () => {
       gameId: CLASSIC_ID,
       scope: 'game:book-of-ra:play',
       ttlMs: CLASSIC_CAPABILITY.launchTtlMs,
-    });
+    }, await authProof(userId));
     await expect(capabilities.exchangeLaunch(foreign.token, {
       gameId: CLASSIC_ID,
       scope: CLASSIC_CAPABILITY.scope,

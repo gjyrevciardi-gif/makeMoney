@@ -49,6 +49,7 @@ import {
   GAME_MATH_LIFECYCLE_OWNERS,
 } from './platform/math-control/math-control.types';
 import {
+  GAME_ACTION_GUARD,
   GAME_AVAILABILITY,
   GAME_PLATFORM,
   GAME_PLAYABILITY,
@@ -93,6 +94,10 @@ import {
     { provide: GAME_PLAYABILITY, useExisting: CasinoConfigService },
     GameCapabilityService,
     GameWalletService,
+    // The authoritative in-transaction action guard comes from the capability
+    // service: the same code that mints a session is the one that re-checks it
+    // under the account lock inside a settlement.
+    { provide: GAME_ACTION_GUARD, useExisting: GameCapabilityService },
     GameJournalService,
     GameRoundService,
     {

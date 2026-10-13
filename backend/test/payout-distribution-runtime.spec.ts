@@ -308,7 +308,12 @@ const buildHarness = (
     casinoRound: { create: async () => ({ id: 'round' }), update: async () => undefined },
     casinoRoundAction: { create: async () => undefined },
   };
-  const serialized = <T,>(_gameId: string, _userId: string, work: (client: unknown) => Promise<T>): Promise<T> => {
+  const serialized = <T,>(
+    _gameId: string,
+    _userId: string,
+    _trust: { sessionId: string },
+    work: (client: unknown) => Promise<T>,
+  ): Promise<T> => {
     const run = chain.then(() => work(tx));
     chain = run.then(() => undefined, () => undefined);
     return run;
@@ -342,6 +347,9 @@ const buildHarness = (
       state.prepared = state.prepared.filter((row) => row.requestKey !== key);
     },
     discardPrepared: async (_gameId: string, _userId: string, key: string) => {
+      state.prepared = state.prepared.filter((row) => row.requestKey !== key);
+    },
+    cancelPrepared: async (_gameId: string, _userId: string, key: string) => {
       state.prepared = state.prepared.filter((row) => row.requestKey !== key);
     },
     assertNoForeignPrepared: async (_tx: unknown, _gameId: string, userId: string, key: string) => {

@@ -37,26 +37,33 @@ describe('game integration layer - second adapter readiness (PostgreSQL)', () =>
   const platform: GamePlatform = {
     capabilities,
     wallet: new GameWalletService(),
-    journal: new GameJournalService(prisma),
+    journal: new GameJournalService(prisma, capabilities),
     rounds: new GameRoundService(prisma),
   };
   const adapter = new CoinFlipAdapter(prisma, platform);
 
   const scope = `game:${COIN_FLIP_GAME_ID}:play`;
-  const issueLaunch = (actor: string) =>
-    capabilities.issueLaunch(actor, { gameId: COIN_FLIP_GAME_ID, scope, ttlMs: 60_000, gamePath: '/games/coin-flip/' });
+  const authProof = async (actor: string) => ({
+    authVersion: (await prisma.user.findUniqueOrThrow({ where: { id: actor }, select: { authVersion: true } })).authVersion,
+  });
+  const issueLaunch = async (actor: string) =>
+    capabilities.issueLaunch(
+      actor,
+      { gameId: COIN_FLIP_GAME_ID, scope, ttlMs: 60_000, gamePath: '/games/coin-flip/' },
+      await authProof(actor),
+    );
   const exchange = (token: string) =>
     capabilities.exchangeLaunch(token, { gameId: COIN_FLIP_GAME_ID, scope, sessionTtlMs: 3_600_000 });
-  // The prepared-outcome journal stores the originating session as a UUID, so
-  // the fixture's session identity is a UUID too.
-  const FIXTURE_SESSION_ID = '99999999-8888-4777-8666-555555555555';
-  const context = (actor: string, sessionId = FIXTURE_SESSION_ID): GameActionContext => ({
+  // Gameplay is authorized by a real bound session, so the fixture drives the
+  // same trust the production gateway derives from `assertSession`.
+  const sessionFor = (actor: string) => (actor === rivalId ? rivalSessionId : sessionId);
+  const context = (actor: string, session: string = sessionFor(actor)): GameActionContext => ({
     gameId: COIN_FLIP_GAME_ID,
     userId: actor,
-    sessionId,
+    sessionId: session,
   });
-  const flip = (actor: string, choice: string, requestId: string, sessionId = FIXTURE_SESSION_ID) =>
-    adapter.execute(context(actor, sessionId), {
+  const flip = (actor: string, choice: string, requestId: string, session: string = sessionFor(actor)) =>
+    adapter.execute(context(actor, session), {
       event: 'flip',
       body: { slotEvent: 'flip', choice },
       headers: {},
@@ -69,6 +76,8 @@ describe('game integration layer - second adapter readiness (PostgreSQL)', () =>
   let userId: string;
   let rivalId: string;
   let adminId: string;
+  let sessionId: string;
+  let rivalSessionId: string;
 
   beforeAll(() => prisma.$connect());
   afterAll(() => prisma.$disconnect());
@@ -86,6 +95,26 @@ describe('game integration layer - second adapter readiness (PostgreSQL)', () =>
     rivalId = rival.id;
     adminId = admin.id;
     await prisma.user.updateMany({ where: { role: 'USER' }, data: { createdById: admin.id } });
+    // Real bound sessions: an unbound session is refused (milestone A2), so the
+    // fixture must hold the same credential the gateway would have verified.
+    sessionId = (await prisma.gameSession.create({
+      data: {
+        userId,
+        gameId: COIN_FLIP_GAME_ID,
+        tokenHash: sha256(`fixture-${randomUUID()}`),
+        expiresAt: new Date(Date.now() + 3_600_000),
+        authVersion: player.authVersion,
+      },
+    })).id;
+    rivalSessionId = (await prisma.gameSession.create({
+      data: {
+        userId: rivalId,
+        gameId: COIN_FLIP_GAME_ID,
+        tokenHash: sha256(`fixture-${randomUUID()}`),
+        expiresAt: new Date(Date.now() + 3_600_000),
+        authVersion: rival.authVersion,
+      },
+    })).id;
   });
 
   const fund = (amount = 1_000n, target = userId) =>
@@ -184,14 +213,14 @@ describe('game integration layer - second adapter readiness (PostgreSQL)', () =>
     const canonical = adapter.canonicalizeAction(context(userId), 'flip', body);
     const before = await balance();
 
-    await platform.journal.serialized(COIN_FLIP_GAME_ID, userId, async (tx) => {
+    await platform.journal.serialized(COIN_FLIP_GAME_ID, userId, { sessionId }, async (tx) => {
       await platform.journal.prepareOutcome(tx, {
         gameId: COIN_FLIP_GAME_ID,
         userId,
         requestKey: platform.journal.requestKey(userId, requestId),
         kind: 'flip',
         canonical,
-        sessionId: FIXTURE_SESSION_ID,
+        sessionId,
         actionId: requestId,
         originRoundId: 'none',
         originVersion: 1,
@@ -227,7 +256,7 @@ describe('game integration layer - second adapter readiness (PostgreSQL)', () =>
     expect(mine.id).toBe(round.id);
 
     const actionId = platform.journal.requestKey(userId, 'template-owner-1');
-    const foreign = await platform.journal.acknowledge(COIN_FLIP_GAME_ID, rivalId, actionId);
+    const foreign = await platform.journal.acknowledge(COIN_FLIP_GAME_ID, rivalId, actionId, { sessionId: rivalSessionId });
     expect(foreign.accepted).toBe(false);
 
     const rivalState = await adapter.read(context(rivalId), 'getState', {}) as {

@@ -5,6 +5,7 @@ import {
   Injectable,
   NotFoundException,
   Optional,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { CasinoGameType } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
@@ -18,7 +19,10 @@ import {
   GamePlatform,
   GameRequest,
   ReadClient,
+  SessionTrust,
   TransactionClient,
+  isSessionRevocation,
+  sessionTrust,
 } from '../../platform/game-adapter.types';
 import { MathControlService } from '../../platform/math-control/math-control.service';
 import { LuckyLadyPayoutService } from './payout/lucky-lady-payout.service';
@@ -243,7 +247,7 @@ export class LuckyLadyAdapter implements GameAdapter {
 
   async read(context: GameActionContext, event: string, body: Record<string, unknown>) {
     // Presentation receipts settle nothing, so they never reconcile first.
-    if (event === 'ack') return this.acknowledge(context.userId, body);
+    if (event === 'ack') return this.acknowledge(context, body);
     if (event === 'getSettings') return this.settings(context.userId);
     if (event === 'update') return this.update(context.userId);
     throw new BadRequestException({ code: 'UNSUPPORTED_EVENT', message: 'Unsupported game event.' });
@@ -372,10 +376,15 @@ export class LuckyLadyAdapter implements GameAdapter {
    * Presentation receipt, in the recovered client's own protocol shape. The
    * gate itself is shared: it settles nothing and moves no money.
    */
-  private async acknowledge(userId: string, body: Record<string, unknown>) {
+  private async acknowledge(context: GameActionContext, body: Record<string, unknown>) {
     const actionId = typeof body?.actionId === 'string' ? body.actionId : '';
     if (!actionId) return { responseEvent: 'ack', actionId: null, accepted: false, reason: 'missing action id' };
-    const result = await this.journal.acknowledge(this.gameId, userId, actionId);
+    const result = await this.journal.acknowledge(
+      this.gameId,
+      context.userId,
+      actionId,
+      sessionTrust(context.sessionId),
+    );
     return { responseEvent: 'ack', ...result };
   }
 
@@ -403,6 +412,9 @@ export class LuckyLadyAdapter implements GameAdapter {
     const prepared = await this.journal.serialized<{ replay?: unknown; conflict?: unknown; row?: { requestKey: string } }>(
       this.gameId,
       userId,
+      // The session the gateway verified, re-checked inside this transaction
+      // under the account lock before the prepared outcome is written.
+      sessionTrust(context.sessionId),
       async (tx) => {
         const replay = await this.journal.findReplayIn(tx, this.gameId, userId, requestId, canonical);
         if (replay) return { replay };
@@ -451,6 +463,14 @@ export class LuckyLadyAdapter implements GameAdapter {
         const existing = await this.journal.findPreparedIn(tx, key, userId);
         if (existing) {
           if (existing.canonical !== canonical) this.journal.conflictSemantics();
+          // A cancelled identity is refused before the draw below: the outcome
+          // already drawn for this key stays the only one it will ever have.
+          if (existing.cancelledAt) {
+            throw this.journal.conflict(
+              'OUTCOME_CANCELLED',
+              'This action was cancelled when the session that started it ended; start a new round.',
+            );
+          }
           return { row: { requestKey: key } };
         }
         // Resolve once before any draw. An explicit DEFAULT snapshot is final;
@@ -603,7 +623,7 @@ export class LuckyLadyAdapter implements GameAdapter {
     );
     if (prepared.replay) return prepared.replay;
     if (prepared.conflict) return prepared.conflict;
-    return this.settlePreparedOrReject(userId, 'bet', requestId, canonical);
+      return this.settlePreparedOrReject(userId, 'bet', requestId, canonical, sessionTrust(context.sessionId));
   }
 
   // ---------------------------------------------------------------------------
@@ -618,7 +638,7 @@ export class LuckyLadyAdapter implements GameAdapter {
     canonical: string,
   ) {
     const userId = context.userId;
-    return this.journal.serialized(this.gameId, userId, async (tx) => {
+    return this.journal.serialized(this.gameId, userId, sessionTrust(context.sessionId), async (tx) => {
       const replay = await this.journal.findReplayIn(tx, this.gameId, userId, requestId, canonical);
       if (replay) return replay;
       const current = await this.rounds.currentRoundIn(tx, this.gameId, userId);
@@ -699,6 +719,7 @@ export class LuckyLadyAdapter implements GameAdapter {
     const prepared = await this.journal.serialized<{ replay?: unknown; row?: { requestKey: string } }>(
       this.gameId,
       userId,
+      sessionTrust(context.sessionId),
       async (tx) => {
         const replay = await this.journal.findReplayIn(tx, this.gameId, userId, requestId, canonical);
         if (replay) return { replay };
@@ -726,6 +747,13 @@ export class LuckyLadyAdapter implements GameAdapter {
         const existing = await this.journal.findPreparedIn(tx, key, userId);
         if (existing) {
           if (existing.canonical !== canonical) this.journal.conflictSemantics();
+          // ... and a cancelled identity is refused before the draw below.
+          if (existing.cancelledAt) {
+            throw this.journal.conflict(
+              'OUTCOME_CANCELLED',
+              'This action was cancelled when the session that started it ended; start a new round.',
+            );
+          }
           return { row: { requestKey: key } };
         }
         const draw = drawGamble({ rng: this.rngFactory(), choice });
@@ -750,7 +778,7 @@ export class LuckyLadyAdapter implements GameAdapter {
       },
     );
     if (prepared.replay) return prepared.replay;
-    return this.settlePreparedOrReject(userId, 'gamble', requestId, canonical);
+      return this.settlePreparedOrReject(userId, 'gamble', requestId, canonical, sessionTrust(context.sessionId));
   }
 
   /**
@@ -760,8 +788,14 @@ export class LuckyLadyAdapter implements GameAdapter {
    * consumed, never redrawn, and the wager is debited with the same transaction
    * that records the round, the ledger entries and the cached response.
    */
-  private async settlePrepared(userId: string, kind: 'bet' | 'gamble', requestId: string, canonical: string) {
-    return this.journal.serialized(this.gameId, userId, async (tx) => {
+  private async settlePrepared(
+    userId: string,
+    kind: 'bet' | 'gamble',
+    requestId: string,
+    canonical: string,
+    trust: SessionTrust,
+  ) {
+    return this.journal.serialized(this.gameId, userId, trust, async (tx) => {
       const key = this.journal.requestKey(userId, requestId);
       const replay = await this.journal.findReplayIn(tx, this.gameId, userId, requestId, canonical);
       if (replay) {
@@ -771,6 +805,19 @@ export class LuckyLadyAdapter implements GameAdapter {
       const prepared = await this.journal.findPreparedIn(tx, key, userId);
       if (!prepared) throw this.journal.conflict('OUTCOME_NOT_PREPARED', 'The prepared outcome is missing.');
       if (prepared.canonical !== canonical) this.journal.conflictSemantics();
+      // A terminally cancelled identity never settles, never redraws and never
+      // moves money: the stored outcome stays exactly as it was drawn.
+      if (prepared.cancelledAt) {
+        throw this.journal.conflict(
+          'OUTCOME_CANCELLED',
+          'This action was cancelled when the session that started it ended; start a new round.',
+        );
+      }
+      // The stored outcome is settled under the session that drew it; settling
+      // it under any other session would misattribute the money movement.
+      if (prepared.sessionId === null || prepared.sessionId !== trust.sessionId) {
+        throw new UnauthorizedException({ code: 'GAME_SESSION_INVALID', message: 'Game session required.' });
+      }
 
       // A prepared action is only ever applied to the exact round state it was
       // drawn against. Anything else means a newer authoritative state exists
@@ -929,7 +976,7 @@ export class LuckyLadyAdapter implements GameAdapter {
     canonical: string,
   ) {
     const userId = context.userId;
-    return this.journal.serialized(this.gameId, userId, async (tx) => {
+    return this.journal.serialized(this.gameId, userId, sessionTrust(context.sessionId), async (tx) => {
       const replay = await this.journal.findReplayIn(tx, this.gameId, userId, requestId, canonical);
       if (replay) return replay;
       const current = await this.rounds.currentRoundIn(tx, this.gameId, userId);
@@ -1013,8 +1060,16 @@ export class LuckyLadyAdapter implements GameAdapter {
           row.kind === 'gamble' ? 'gamble' : 'bet',
           requestId,
           await this.canonicalOfPrepared(userId, row.requestKey),
+          sessionTrust(row.sessionId),
         );
       } catch (error) {
+        if (isSessionRevocation(error)) {
+          // The origin was retired before it settled: retain the identity and
+          // mark it terminally cancelled, so this key can never be redrawn and
+          // never blocks an unrelated action.
+          await this.journal.cancelPrepared(this.gameId, userId, row.requestKey);
+          continue;
+        }
         if (this.isStalePrepared(error)) {
           // A superseded outcome can never be applied. It is dropped in its own
           // transaction so it cannot poison that request identity forever.
@@ -1036,11 +1091,19 @@ export class LuckyLadyAdapter implements GameAdapter {
   }
 
   /** Settlement entry point for a caller that owns the request identity. */
-  private async settlePreparedOrReject(userId: string, kind: 'bet' | 'gamble', requestId: string, canonical: string) {
+  private async settlePreparedOrReject(
+    userId: string,
+    kind: 'bet' | 'gamble',
+    requestId: string,
+    canonical: string,
+    trust: SessionTrust,
+  ) {
     try {
-      return await this.settlePrepared(userId, kind, requestId, canonical);
+      return await this.settlePrepared(userId, kind, requestId, canonical, trust);
     } catch (error) {
-      if (this.isStalePrepared(error)) {
+      if (isSessionRevocation(error)) {
+        await this.journal.cancelPrepared(this.gameId, userId, this.journal.requestKey(userId, requestId));
+      } else if (this.isStalePrepared(error)) {
         await this.journal.discardPrepared(this.gameId, userId, this.journal.requestKey(userId, requestId));
       }
       throw error;

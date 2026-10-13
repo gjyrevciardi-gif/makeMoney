@@ -11,6 +11,7 @@ import { randomInt } from 'node:crypto';
 import { PrismaService } from '../prisma.service';
 import { AuthorizationService } from './authorization.service';
 import { canManageUser, capabilityForRoleGrant, hasCapability } from './capabilities';
+import { revokeGameCredentials } from './game-session-revocation';
 import { recordSecurityEvent } from '../security/security-events';
 
 export const MIN_PASSWORD_LENGTH = 8;
@@ -159,9 +160,11 @@ export class UserAccountsService {
       const actor = await this.actorIn(tx, actorId);
       const target = await this.managedTargetIn(tx, actor, targetId);
       // Bump the session version with the hash change: every access token the
-      // target holds stops working, and every refresh token is revoked below.
+      // target holds stops working, every refresh token is revoked below, and
+      // every bound game session and pending launch capability dies with it.
       await tx.user.update({ where: { id: target.id }, data: { passwordHash, authVersion: { increment: 1 } } });
       await tx.refreshToken.updateMany({ where: { userId: target.id, revokedAt: null }, data: { revokedAt: new Date() } });
+      await revokeGameCredentials(tx, target.id);
       await tx.auditLog.create({
         data: { actorId: actor.id, targetType: 'USER', targetId: target.id, action: 'PASSWORD_SET_BY_ADMIN', result: 'SUCCESS' },
       });
@@ -195,6 +198,9 @@ export class UserAccountsService {
       });
       if (updated.count !== 1) throw new BadRequestException({ code: 'CURRENT_PASSWORD_INVALID', message: 'The current password is not correct.' });
       await tx.refreshToken.updateMany({ where: { userId, revokedAt: null }, data: { revokedAt: new Date() } });
+      // The version bump retires this user's game sessions and pending launch
+      // capabilities at the same commit as the caller's own access token.
+      await revokeGameCredentials(tx, userId);
       await tx.auditLog.create({ data: { actorId: userId, targetType: 'USER', targetId: userId, action: 'PASSWORD_CHANGED', result: 'SUCCESS' } });
       await recordSecurityEvent(tx, { type: 'PASSWORD_CHANGED', subjectUserId: userId, actorId: userId, amount: 0n });
     });

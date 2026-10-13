@@ -1,12 +1,15 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Inject, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma.service';
 import {
+  GAME_ACTION_GUARD,
+  GameActionGuardPort,
   GameReceipt,
   NewPreparedOutcome,
   PreparedOutcome,
   PreparedOutcomeSummary,
   ReadClient,
+  SessionTrust,
   TransactionClient,
 } from './game-adapter.types';
 
@@ -30,11 +33,15 @@ const LOCK_NAMESPACE_PREFIX = 'casino:';
  *    never cause a reroll, a second debit or a lost round.
  *
  * Every mutation of one player's game is additionally serialized by a
- * transaction-scoped advisory lock, keyed by game and player.
+ * transaction-scoped advisory lock, keyed by game and player, and guarded by
+ * the authoritative in-transaction session check before any money can move.
  */
 @Injectable()
 export class GameJournalService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(GAME_ACTION_GUARD) private readonly guard: GameActionGuardPort,
+  ) {}
 
   requestKey(userId: string, requestId: string) {
     return `${userId}:${requestId}`;
@@ -64,15 +71,22 @@ export class GameJournalService {
     );
   }
 
-  /** One transaction-scoped advisory lock serializes a player's whole game. */
+  /**
+   * One transaction-scoped advisory lock serializes a player's whole game, then
+   * the authoritative guard authorizes the session inside the same transaction
+   * that will move the money. There is no unguarded variant: a gameplay action
+   * cannot reach a wallet movement without a bound, version-current session.
+   */
   async serialized<T>(
     gameId: string,
     userId: string,
+    trust: SessionTrust,
     work: (tx: TransactionClient) => Promise<T>,
   ): Promise<T> {
     return this.prisma.$transaction(
       async (tx) => {
         await this.lock(tx, gameId, userId);
+        await this.guard.assertActionAllowed(tx, { gameId, userId, trust });
         return work(tx);
       },
       { maxWait: 10_000, timeout: 20_000 },
@@ -83,6 +97,16 @@ export class GameJournalService {
     return this.findReplayIn(this.prisma as unknown as ReadClient, gameId, userId, requestId, canonical);
   }
 
+  /**
+   * The single authoritative replay read for every action path.
+   *
+   * A committed action returns its stored response, so replay stays exactly as
+   * it was. An identity whose prepared outcome was terminally cancelled is
+   * refused here instead - before any draw, wallet movement, round or action
+   * row - and with the same canonical-consistency rule as a committed action,
+   * so a cancelled key can never be reused as a new action on the paid-round,
+   * gamble, free-spin or collect path.
+   */
   async findReplayIn(
     db: ReadClient,
     gameId: string,
@@ -90,11 +114,27 @@ export class GameJournalService {
     requestId: string,
     canonical: string,
   ): Promise<Record<string, unknown> | null> {
-    const row = await db.casinoRoundAction.findUnique({ where: { idempotencyKey: this.requestKey(userId, requestId) } });
-    if (!row) return null;
-    if (row.gameId !== gameId) return null;
-    if (row.canonical !== canonical) this.conflictSemantics();
-    return row.payload as unknown as Record<string, unknown>;
+    const key = this.requestKey(userId, requestId);
+    const row = await db.casinoRoundAction.findUnique({ where: { idempotencyKey: key } });
+    if (row) {
+      if (row.gameId !== gameId) return null;
+      if (row.canonical !== canonical) this.conflictSemantics();
+      return row.payload as unknown as Record<string, unknown>;
+    }
+    // No committed action: a terminal cancellation is the only other durable
+    // state this identity can have, and it is scoped to its own owner and game.
+    const cancelled = await db.gamePreparedOutcome.findUnique({
+      where: { requestKey: key },
+      select: { userId: true, gameId: true, canonical: true, cancelledAt: true },
+    });
+    if (!cancelled || cancelled.userId !== userId || cancelled.gameId !== gameId || !cancelled.cancelledAt) {
+      return null;
+    }
+    if (cancelled.canonical !== canonical) this.conflictSemantics();
+    throw this.conflict(
+      'OUTCOME_CANCELLED',
+      'This action was cancelled when the session that started it ended; start a new round.',
+    );
   }
 
   /**
@@ -178,8 +218,8 @@ export class GameJournalService {
    * releases the presentation gate. An unknown id is refused, and a stale id
    * can never release a newer pending result.
    */
-  async acknowledge(gameId: string, userId: string, actionId: string) {
-    return this.serialized(gameId, userId, async (tx) => {
+  async acknowledge(gameId: string, userId: string, actionId: string, trust: SessionTrust) {
+    return this.serialized(gameId, userId, trust, async (tx) => {
       const key = this.requestKey(userId, actionId);
       const row = await tx.casinoRoundAction.findUnique({ where: { idempotencyKey: key } });
       if (!row || row.gameId !== gameId) {
@@ -238,16 +278,20 @@ export class GameJournalService {
       originVersion: row.originVersion,
       originPhase: row.originPhase,
       payload: row.payload,
+      cancelledAt: row.cancelledAt,
+      cancelledReason: row.cancelledReason,
     };
   }
 
   /**
    * A prepared outcome blocks any other mutation until its own request settles
-   * it, which is what keeps two different actions from interleaving.
+   * it, which is what keeps two different actions from interleaving. A
+   * terminally cancelled outcome is excluded: it can never settle, so it must
+   * not block unrelated actions for the rest of the account's life.
    */
   async assertNoForeignPrepared(tx: TransactionClient, gameId: string, userId: string, requestKey: string) {
     const row = await tx.gamePreparedOutcome.findFirst({
-      where: { userId, gameId },
+      where: { userId, gameId, cancelledAt: null },
       select: { requestKey: true },
     });
     if (row && row.requestKey !== requestKey) {
@@ -255,11 +299,16 @@ export class GameJournalService {
     }
   }
 
+  /**
+   * Pending outcomes for reconciliation: terminally cancelled rows are excluded,
+   * so a retired credential is never retried forever and never blocks a later,
+   * independent action.
+   */
   async listPrepared(userId: string, gameId: string): Promise<PreparedOutcomeSummary[]> {
     return this.prisma.gamePreparedOutcome.findMany({
-      where: { userId, gameId },
+      where: { userId, gameId, cancelledAt: null },
       orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
-      select: { requestKey: true, kind: true },
+      select: { requestKey: true, kind: true, sessionId: true },
     });
   }
 
@@ -268,12 +317,61 @@ export class GameJournalService {
   }
 
   /**
-   * Removes a superseded prepared outcome in its own transaction: the failed
+   * Removes a *superseded* prepared outcome in its own transaction: the failed
    * settlement transaction rolled back, so the delete has to commit separately.
+   * Supersession is the existing accepted semantic - a newer round state makes
+   * the stored outcome unusable and the identity free again.
+   *
+   * This is not how a revocation is handled. A outcome retired by a logout,
+   * password change or disable is terminally cancelled instead (see
+   * `cancelPrepared`), never deleted, so its key can never be redrawn.
+   *
+   * This mutation carries no authorization decision: the row it deletes never
+   * settled, so there is no round, no ledger entry and no money behind it.
    */
   async discardPrepared(gameId: string, userId: string, requestKey: string) {
-    await this.serialized(gameId, userId, async (tx) => {
-      await this.deletePrepared(tx, requestKey);
-    });
+    await this.prisma.$transaction(
+      async (tx) => {
+        await this.lock(tx, gameId, userId);
+        await this.deletePrepared(tx, requestKey);
+      },
+      { maxWait: 10_000, timeout: 20_000 },
+    );
+  }
+
+  /**
+   * Marks a pending outcome terminally cancelled, in its own transaction.
+   *
+   * The row is never deleted: its request identity, canonical semantics and the
+   * outcome that was already drawn stay durable, so the key can never be
+   * prepared (and therefore never redrawn) again, while unrelated actions are
+   * free to proceed.
+   *
+   * The mark is only written when the stored origin is genuinely unusable, and
+   * that verdict is taken inside this transaction, under the same per-player
+   * game lock and the same account row lock as a settlement, by the same guard
+   * that authorizes settlement. A row that belongs to another owner or game, an
+   * already-cancelled row and a row whose origin is still valid are all left
+   * untouched, so a caller can never erase or mutate another key.
+   */
+  async cancelPrepared(gameId: string, userId: string, requestKey: string) {
+    await this.prisma.$transaction(
+      async (tx) => {
+        await this.lock(tx, gameId, userId);
+        const row = await tx.gamePreparedOutcome.findUnique({ where: { requestKey } });
+        if (!row || row.userId !== userId || row.gameId !== gameId || row.cancelledAt) return;
+        const verdict = await this.guard.originStateIn(tx, {
+          gameId,
+          userId,
+          sessionId: row.sessionId,
+        });
+        if (verdict.usable) return;
+        await tx.gamePreparedOutcome.updateMany({
+          where: { requestKey, cancelledAt: null },
+          data: { cancelledAt: new Date(), cancelledReason: verdict.reason },
+        });
+      },
+      { maxWait: 10_000, timeout: 20_000 },
+    );
   }
 }

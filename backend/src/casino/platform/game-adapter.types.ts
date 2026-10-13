@@ -1,3 +1,4 @@
+import { HttpException, UnauthorizedException } from '@nestjs/common';
 import { CasinoGameType, Prisma } from '@prisma/client';
 
 /** Injection token for the shared services every adapter composes. */
@@ -6,6 +7,109 @@ export const GAME_PLATFORM = 'GAME_PLATFORM';
 export const GAME_AVAILABILITY = 'GAME_AVAILABILITY';
 /** Injection token for the operator's playability state. */
 export const GAME_PLAYABILITY = 'GAME_PLAYABILITY';
+/** Injection token for the authoritative in-transaction action guard. */
+export const GAME_ACTION_GUARD = 'GAME_ACTION_GUARD';
+
+/**
+ * The bound game session a gameplay action was accepted under.
+ *
+ * Every authoritative game action is authorized by the opaque session the
+ * gateway verified, re-read from the database inside the very transaction that
+ * moves the money. There is deliberately no anonymous or "trust me" variant, so
+ * no caller can reach a settlement without a bound session, and the value is
+ * always derived server-side from `assertSession` or from a stored prepared
+ * outcome - never from a request body or header.
+ */
+export type SessionTrust = { readonly sessionId: string };
+
+/**
+ * Proof from the verified platform access token that justifies issuing a
+ * capability. It is carried from `AccessGuard` to issuance and re-checked under
+ * the account row lock, so a logout or password change that commits first
+ * cannot be raced into a fresh launch.
+ */
+export type LaunchProof = { readonly authVersion: number };
+
+/**
+ * The authoritative action guard.
+ *
+ * The journal calls it inside the gameplay transaction, after taking the
+ * platform's per-player game lock and before any wallet row is locked, so the
+ * decision and the money movement commit (or roll back) together.
+ */
+export type GameActionGuardPort = {
+  assertActionAllowed(
+    tx: TransactionClient,
+    action: { gameId: string; userId: string; trust: SessionTrust },
+  ): Promise<void>;
+  /**
+   * The same authoritative check, reported instead of thrown.
+   *
+   * Used to decide whether a prepared outcome whose origin session was retired
+   * is terminally unusable. It takes the account row lock exactly as
+   * `assertActionAllowed` does, so the verdict is read under the same lock
+   * ordering and is never a lighter-weight bypass.
+   */
+  originStateIn(
+    tx: TransactionClient,
+    origin: { gameId: string; userId: string; sessionId: string | null },
+  ): Promise<OriginVerdict>;
+};
+
+/** Why an origin session may (not) settle a prepared outcome. */
+export type OriginVerdict = {
+  usable: boolean;
+  /** `USABLE`, or the machine-readable refusal cause. */
+  reason:
+    | 'USABLE'
+    | 'ACCOUNT_MISSING'
+    | 'ACCOUNT_DISABLED'
+    | 'GAME_PLAY_REQUIRED'
+    | 'SESSION_UNBOUND'
+    | 'SESSION_INVALID'
+    | 'SESSION_REVOKED'
+    | 'SESSION_EXPIRED';
+};
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * A stored (or gateway-derived) session id as an explicit trust value.
+ *
+ * A missing, malformed or legacy session id is refused here rather than turned
+ * into a database lookup, so a credential that predates session binding fails
+ * closed.
+ */
+export function sessionTrust(sessionId: string | null | undefined): SessionTrust {
+  if (typeof sessionId !== 'string' || !UUID.test(sessionId)) {
+    throw new UnauthorizedException({ code: 'GAME_SESSION_INVALID', message: 'Game session required.' });
+  }
+  return { sessionId };
+}
+
+/** Codes that mean the acting session or account is no longer authorized. */
+const SESSION_REJECTION_CODES = new Set([
+  'GAME_SESSION_INVALID',
+  'GAME_SESSION_EXPIRED',
+  'GAME_PLAY_REQUIRED',
+  'SESSION_PROOF_STALE',
+]);
+
+/**
+ * True when a settlement was refused because the session behind it is gone.
+ *
+ * Such a refusal can never move money (the transaction rolled back), so a
+ * prepared outcome that hits one is terminally cancelled - retained, never
+ * deleted or redrawn - instead of being retried forever.
+ */
+export function isSessionRevocation(error: unknown): boolean {
+  if (!(error instanceof HttpException)) return false;
+  const response = error.getResponse();
+  const code = typeof response === 'object' && response !== null
+    ? (response as { code?: unknown }).code
+    : undefined;
+  return typeof code === 'string' && SESSION_REJECTION_CODES.has(code);
+}
 
 /**
  * The reusable casino game-integration surface.
@@ -114,7 +218,7 @@ export type GamePlatform = {
  */
 export type GameCapabilityPort = {
   requirePlayer(userId: string, gameId: string): Promise<unknown>;
-  issueLaunch(actorId: string, options: LaunchOptions): Promise<LaunchGrant>;
+  issueLaunch(actorId: string, options: LaunchOptions, proof: LaunchProof): Promise<LaunchGrant>;
   exchangeLaunch(token: string, options: ExchangeOptions): Promise<GameSessionGrant>;
   assertSession(token: string, gameId: string): Promise<SessionIdentity>;
 };
@@ -170,7 +274,17 @@ export type GameJournalPort = {
   deliveringView(requestId: string, event: string): GameReceipt;
   conflict(code: string, message: string): Error;
   conflictSemantics(): never;
-  serialized<T>(gameId: string, userId: string, work: (tx: TransactionClient) => Promise<T>): Promise<T>;
+  /**
+   * One transaction-scoped advisory lock, then the authoritative action guard,
+   * then the caller's work. `trust` is the bound session the action was
+   * accepted under; there is no unguarded variant.
+   */
+  serialized<T>(
+    gameId: string,
+    userId: string,
+    trust: SessionTrust,
+    work: (tx: TransactionClient) => Promise<T>,
+  ): Promise<T>;
   findReplay(gameId: string, userId: string, requestId: string, canonical: string): Promise<unknown | null>;
   findReplayIn(
     db: ReadClient,
@@ -197,6 +311,7 @@ export type GameJournalPort = {
     gameId: string,
     userId: string,
     actionId: string,
+    trust: SessionTrust,
   ): Promise<{ actionId: string; accepted: boolean; reason?: string }>;
   prepareOutcome(tx: TransactionClient, outcome: NewPreparedOutcome): Promise<void>;
   findPrepared(userId: string, requestKey: string): Promise<PreparedOutcome | null>;
@@ -213,7 +328,22 @@ export type GameJournalPort = {
   ): Promise<void>;
   listPrepared(userId: string, gameId: string): Promise<PreparedOutcomeSummary[]>;
   deletePrepared(tx: TransactionClient, requestKey: string): Promise<void>;
+  /**
+   * Drops a superseded outcome in its own transaction: the failed settlement
+   * rolled back, so the delete has to commit separately.
+   */
   discardPrepared(gameId: string, userId: string, requestKey: string): Promise<void>;
+  /**
+   * Marks a pending outcome terminally cancelled in its own transaction.
+   *
+   * The row is retained, so the request identity, canonical semantics and the
+   * already-drawn outcome stay durable: the key can never be prepared again and
+   * therefore can never be redrawn, while the row no longer blocks unrelated
+   * actions and is never retried by reconciliation. The mark is only written
+   * when the stored origin session is genuinely unusable, re-checked under the
+   * account row lock inside this transaction.
+   */
+  cancelPrepared(gameId: string, userId: string, requestKey: string): Promise<void>;
 };
 
 export type GameRoundPort = {
@@ -273,11 +403,16 @@ export type PreparedOutcome = {
   originVersion: number | null;
   originPhase: string | null;
   payload: unknown;
+  /** Terminal cancellation time, or `null` while the outcome is still pending. */
+  cancelledAt: Date | null;
+  cancelledReason: string | null;
 };
 
 export type PreparedOutcomeSummary = {
   requestKey: string;
   kind: string;
+  /** Session that produced the outcome; the trust it must be settled under. */
+  sessionId: string | null;
 };
 
 export type NewRound = {

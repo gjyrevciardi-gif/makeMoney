@@ -5,6 +5,7 @@ import {
   Injectable,
   NotFoundException,
   Optional,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { CasinoGameType } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
@@ -17,7 +18,10 @@ import {
   GamePlatform,
   GameRequest,
   ReadClient,
+  SessionTrust,
   TransactionClient,
+  isSessionRevocation,
+  sessionTrust,
 } from '../../platform/game-adapter.types';
 import { MathControlService } from '../../platform/math-control/math-control.service';
 import { CLASSIC_V1 } from './classic.definition';
@@ -192,7 +196,7 @@ export class ClassicAdapter implements GameAdapter {
 
   async read(context: GameActionContext, event: string, body: Record<string, unknown>) {
     // Presentation receipts settle nothing, so they never reconcile first.
-    if (event === 'ack') return this.acknowledge(context.userId, body);
+    if (event === 'ack') return this.acknowledge(context, body);
     await this.reconcilePreparedFor(context.userId);
     if (event === 'getSettings') return this.settings(context.userId);
     if (event === 'update') return this.update(context.userId);
@@ -267,10 +271,15 @@ export class ClassicAdapter implements GameAdapter {
    * Presentation receipt, in the recovered client's own protocol shape. The
    * gate itself is shared: it settles nothing and moves no money.
    */
-  private async acknowledge(userId: string, body: Record<string, unknown>) {
+  private async acknowledge(context: GameActionContext, body: Record<string, unknown>) {
     const actionId = typeof body?.actionId === 'string' ? body.actionId : '';
     if (!actionId) return { responseEvent: 'ack', actionId: null, accepted: false, reason: 'missing action id' };
-    const result = await this.journal.acknowledge(this.gameId, userId, actionId);
+    const result = await this.journal.acknowledge(
+      this.gameId,
+      context.userId,
+      actionId,
+      sessionTrust(context.sessionId),
+    );
     return { responseEvent: 'ack', ...result };
   }
 
@@ -345,8 +354,11 @@ export class ClassicAdapter implements GameAdapter {
     const profile: ClassicProfile = pinned?.payload ?? defaultClassicProfile().payload;
     const bet = this.parseLineStake(body);
     const lines = this.parseLines(body);
+    // The session the gateway verified, re-checked inside this transaction
+    // under the account lock before the prepared outcome is written.
+    const trust = sessionTrust(context.sessionId);
 
-    const prepared = await this.journal.serialized(this.gameId, userId, async (tx) => {
+    const prepared = await this.journal.serialized(this.gameId, userId, trust, async (tx) => {
       const replay = await this.journal.findReplayIn(tx, this.gameId, userId, requestId, canonical);
       if (replay) return { response: replay };
       const round = await this.rounds.currentRoundIn(tx, this.gameId, userId);
@@ -360,6 +372,15 @@ export class ClassicAdapter implements GameAdapter {
       const own = await this.journal.findPreparedIn(tx, key, userId);
       if (own) {
         if (own.kind !== 'bet' || own.canonical !== canonical) this.journal.conflictSemantics();
+        // A cancelled identity is refused before anything is drawn: the outcome
+        // that was already drawn for this key stays the only one it will ever
+        // have.
+        if (own.cancelledAt) {
+          throw this.journal.conflict(
+            'OUTCOME_CANCELLED',
+            'This action was cancelled when the session that started it ended; start a new round.',
+          );
+        }
         return { prepared: true as const };
       }
       const current = round ? this.stateOf(round) : null;
@@ -426,7 +447,7 @@ export class ClassicAdapter implements GameAdapter {
     // The outcome is durable now. A failure here leaves it for the next
     // reconciliation instead of drawing again.
     await this.options.afterPrepare?.();
-    return this.settlePreparedOrReject(userId, 'bet', requestId, canonical);
+    return this.settlePreparedOrReject(userId, 'bet', requestId, canonical, trust);
   }
 
   /**
@@ -445,7 +466,7 @@ export class ClassicAdapter implements GameAdapter {
     const userId = context.userId;
     const bet = this.parseLineStake(body);
     const lines = this.parseLines(body);
-    return this.journal.serialized(this.gameId, userId, async (tx) => {
+    return this.journal.serialized(this.gameId, userId, sessionTrust(context.sessionId), async (tx) => {
       const replay = await this.journal.findReplayIn(tx, this.gameId, userId, requestId, canonical);
       if (replay) return replay;
       const round = await this.rounds.currentRoundIn(tx, this.gameId, userId);
@@ -498,7 +519,7 @@ export class ClassicAdapter implements GameAdapter {
   ) {
     const userId = context.userId;
     const choice = this.parseChoice(body);
-    const prepared = await this.journal.serialized(this.gameId, userId, async (tx) => {
+    const prepared = await this.journal.serialized(this.gameId, userId, sessionTrust(context.sessionId), async (tx) => {
       const replay = await this.journal.findReplayIn(tx, this.gameId, userId, requestId, canonical);
       if (replay) return { response: replay };
       const round = await this.rounds.currentRoundIn(tx, this.gameId, userId);
@@ -506,6 +527,19 @@ export class ClassicAdapter implements GameAdapter {
       await this.journal.assertReceiptIn(tx, this.gameId, userId);
       const key = this.journal.requestKey(userId, requestId);
       await this.journal.assertNoForeignPrepared(tx, this.gameId, userId, key);
+      // Same identity with different semantics is a conflict, and a terminally
+      // cancelled identity is refused here - before the draw below - so a
+      // cancelled key can never be redrawn.
+      const existing = await this.journal.findPreparedIn(tx, key, userId);
+      if (existing) {
+        if (existing.kind !== 'slotGamble' || existing.canonical !== canonical) this.journal.conflictSemantics();
+        if (existing.cancelledAt) {
+          throw this.journal.conflict(
+            'OUTCOME_CANCELLED',
+            'This action was cancelled when the session that started it ended; start a new round.',
+          );
+        }
+      }
       if (!round) throw this.journal.conflict('NOTHING_TO_GAMBLE', 'There is nothing to gamble.');
       const state = this.stateOf(round);
       if (!['PENDING_WIN', 'GAMBLE'].includes(state.phase) || state.pendingWin <= 0) {
@@ -540,23 +574,26 @@ export class ClassicAdapter implements GameAdapter {
     if ('response' in prepared) return prepared.response;
 
     await this.options.afterPrepare?.();
-    return this.settlePreparedOrReject(userId, 'slotGamble', requestId, canonical);
+    return this.settlePreparedOrReject(userId, 'slotGamble', requestId, canonical, sessionTrust(context.sessionId));
   }
 
   /**
    * Settles a durably prepared paid round or gamble, exactly once.
    *
    * A prepared outcome only ever applies to the exact round state it was drawn
-   * against; anything else is stale and is refused rather than applied to a
-   * newer state.
+   * against and to the bound session it was stored under; anything else is
+   * refused rather than applied to a newer state or under another session. The
+   * session is re-authorized inside this transaction, under the account lock,
+   * before the wallet row is touched.
    */
   private async settlePrepared(
     userId: string,
     kind: 'bet' | 'slotGamble',
     requestId: string,
     canonical: string,
+    trust: SessionTrust,
   ) {
-    return this.journal.serialized(this.gameId, userId, async (tx) => {
+    return this.journal.serialized(this.gameId, userId, trust, async (tx) => {
       const key = this.journal.requestKey(userId, requestId);
       const replay = await this.journal.findReplayIn(tx, this.gameId, userId, requestId, canonical);
       if (replay) {
@@ -566,6 +603,20 @@ export class ClassicAdapter implements GameAdapter {
       const prepared = await this.journal.findPreparedIn(tx, key, userId);
       if (!prepared) throw this.journal.conflict('OUTCOME_NOT_PREPARED', 'The prepared outcome is missing.');
       if (prepared.canonical !== canonical) this.journal.conflictSemantics();
+      // A terminally cancelled identity never settles, never redraws and never
+      // moves money: the stored outcome stays exactly as it was drawn.
+      if (prepared.cancelledAt) {
+        throw this.journal.conflict(
+          'OUTCOME_CANCELLED',
+          'This action was cancelled when the session that started it ended; start a new round.',
+        );
+      }
+      // The stored outcome belongs to the session that drew it; settling it
+      // under any other session would attribute the movement to the wrong
+      // credential.
+      if (prepared.sessionId === null || prepared.sessionId !== trust.sessionId) {
+        throw new UnauthorizedException({ code: 'GAME_SESSION_INVALID', message: 'Game session required.' });
+      }
 
       const current = await this.rounds.currentRoundIn(tx, this.gameId, userId);
       const currentState = current ? this.stateOf(current) : null;
@@ -714,7 +765,7 @@ export class ClassicAdapter implements GameAdapter {
     canonical: string,
   ) {
     const userId = context.userId;
-    return this.journal.serialized(this.gameId, userId, async (tx) => {
+    return this.journal.serialized(this.gameId, userId, sessionTrust(context.sessionId), async (tx) => {
       const replay = await this.journal.findReplayIn(tx, this.gameId, userId, requestId, canonical);
       if (replay) return replay;
       const current = await this.rounds.currentRoundIn(tx, this.gameId, userId);
@@ -785,8 +836,22 @@ export class ClassicAdapter implements GameAdapter {
       const requestId = this.journal.unscopedRequestId(userId, row.requestKey);
       const kind = row.kind === 'slotGamble' ? 'slotGamble' : 'bet';
       try {
-        await this.settlePrepared(userId, kind, requestId, await this.canonicalOfPrepared(userId, row.requestKey));
+        await this.settlePrepared(
+          userId,
+          kind,
+          requestId,
+          await this.canonicalOfPrepared(userId, row.requestKey),
+          sessionTrust(row.sessionId),
+        );
       } catch (error) {
+        if (isSessionRevocation(error)) {
+          // The origin was retired before it settled. The row is retained and
+          // marked terminally cancelled in its own transaction: the key keeps
+          // the outcome it already drew (it can never be redrawn), and it stops
+          // blocking unrelated actions.
+          await this.journal.cancelPrepared(this.gameId, userId, row.requestKey);
+          continue;
+        }
         if (this.isStalePrepared(error)) {
           // A superseded outcome can never be applied. It is dropped in its own
           // transaction so it cannot poison that request identity forever.
@@ -813,11 +878,14 @@ export class ClassicAdapter implements GameAdapter {
     kind: 'bet' | 'slotGamble',
     requestId: string,
     canonical: string,
+    trust: SessionTrust,
   ) {
     try {
-      return await this.settlePrepared(userId, kind, requestId, canonical);
+      return await this.settlePrepared(userId, kind, requestId, canonical, trust);
     } catch (error) {
-      if (this.isStalePrepared(error)) {
+      if (isSessionRevocation(error)) {
+        await this.journal.cancelPrepared(this.gameId, userId, this.journal.requestKey(userId, requestId));
+      } else if (this.isStalePrepared(error)) {
         await this.journal.discardPrepared(this.gameId, userId, this.journal.requestKey(userId, requestId));
       }
       throw error;

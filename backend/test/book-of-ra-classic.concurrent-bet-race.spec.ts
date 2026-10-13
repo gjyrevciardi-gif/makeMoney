@@ -60,7 +60,7 @@ describe('Book of Ra Classic concurrent same-key bet race (patched reuse branch)
   const configs = new CasinoConfigService(prisma, registry);
   const points = new PointsService(prisma);
   const capabilities = new GameCapabilityService(prisma, registry, configs);
-  const realJournal = new GameJournalService(prisma);
+  const realJournal = new GameJournalService(prisma, capabilities);
   const wallet = new GameWalletService();
   const rounds = new GameRoundService(prisma);
 
@@ -156,6 +156,9 @@ describe('Book of Ra Classic concurrent same-key bet race (patched reuse branch)
         gameId: CLASSIC_ID,
         tokenHash: sha256(`race-${randomUUID()}`),
         expiresAt: new Date(Date.now() + 3_600_000),
+        // Bound to the fixture account's session version (A2: an unbound
+        // session fails closed instead of playing).
+        authVersion: player.authVersion,
       },
     })).id;
   });
@@ -195,11 +198,12 @@ describe('Book of Ra Classic concurrent same-key bet race (patched reuse branch)
       serialized: async <T>(
         gameId: string,
         owner: string,
+        trust: { sessionId: string },
         work: (tx: TransactionClient) => Promise<T>,
       ): Promise<T> => {
         const store = requestAls.getStore();
         if (!store || store.serializedCalls !== 0) {
-          return realJournal.serialized(gameId, owner, work);
+          return realJournal.serialized(gameId, owner, trust, work);
         }
         store.serializedCalls += 1;
         const trace: BetTrace = {
@@ -215,7 +219,7 @@ describe('Book of Ra Classic concurrent same-key bet race (patched reuse branch)
         atBarrier += 1;
         if (atBarrier === 2) bothWaiting();
         await barrierGate;
-        return realJournal.serialized(gameId, owner, async (tx) => {
+        return realJournal.serialized(gameId, owner, trust, async (tx) => {
           // This callback cannot be entered before the advisory lock is held, so
           // the global draw counter here isolates exactly this transaction's draws.
           trace.drawsBefore = rngCalls;
@@ -356,10 +360,11 @@ describe('Book of Ra Classic concurrent same-key bet race (patched reuse branch)
         serialized: async <T>(
           gameId: string,
           owner: string,
+          trust: { sessionId: string },
           work: (tx: TransactionClient) => Promise<T>,
         ): Promise<T> => {
           replaySerialized += 1;
-          return realJournal.serialized(gameId, owner, work);
+          return realJournal.serialized(gameId, owner, trust, work);
         },
         prepareOutcome: async (tx: TransactionClient, outcome: NewPreparedOutcome) => {
           replayInserts += 1;

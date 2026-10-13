@@ -14,6 +14,7 @@ import {
   isProtectedHighRole,
   type Capability,
 } from './capabilities';
+import { revokeGameCredentials } from './game-session-revocation';
 
 export type ActorIdentity = { id: string; role: Role };
 export type ManagedUser = { id: string; email: string | null; username: string | null; role: Role; disabled: boolean };
@@ -123,6 +124,10 @@ export class AuthorizationService {
    *
    * An ADMIN may only disable USER targets; disabling the last active
    * SUPER_ADMIN is refused; a caller may not disable themselves.
+   *
+   * Disabling also bumps `authVersion` and revokes the target's live game
+   * sessions in the same transaction, so re-enabling the account cannot
+   * resurrect a credential that was minted before the disable.
    */
   async setDisabled(actorId: string, targetUserId: string, disabled: boolean): Promise<ManagedUser> {
     await this.authorize(actorId, 'USER_MANAGE', disabled ? 'USER_DISABLE' : 'USER_ENABLE');
@@ -147,13 +152,17 @@ export class AuthorizationService {
         }
         const updated = await tx.user.update({
           where: { id: target.id },
-          data: { disabled },
+          // A disable is a revocation, not just a flag: moving the account
+          // version retires every access token, launch capability and game
+          // session bound to the enabled account at once.
+          data: disabled ? { disabled, authVersion: { increment: 1 } } : { disabled },
           select: { id: true, email: true, username: true, role: true, disabled: true },
         });
         if (disabled) {
           // Same transaction as the status change: a disabled account can no
           // longer rotate any refresh token, and cannot be revived by one.
           await tx.refreshToken.updateMany({ where: { userId: target.id, revokedAt: null }, data: { revokedAt: new Date() } });
+          await revokeGameCredentials(tx, target.id);
         }
         await tx.auditLog.create({
           data: {

@@ -258,11 +258,21 @@ describe('game math control (PostgreSQL + Redis)', () => {
   it('serves the accepted profile by default and the activated profile for new rounds', async () => {
     const adapter = app.get(LuckyLadyAdapter);
     const player = await prisma.user.findUniqueOrThrow({ where: { email: userEmail } });
+    // A real bound session: gameplay is authorized inside its settlement
+    // transaction, so an unbound fixture session fails closed (milestone A2).
+    const session = await prisma.gameSession.create({
+      data: {
+        userId: player.id,
+        gameId: LUCKY_LADY_GAME_ID,
+        tokenHash: `math-control-${player.id}`,
+        expiresAt: new Date(Date.now() + 3_600_000),
+        authVersion: player.authVersion,
+      },
+    });
     const context = {
       gameId: LUCKY_LADY_GAME_ID,
       userId: player.id,
-      // The prepared-outcome journal stores the originating session as a UUID.
-      sessionId: '11111111-2222-4333-8444-555555555555',
+      sessionId: session.id,
     };
     const settingsOf = async () => {
       const response = await adapter.read(context, 'getSettings', {}) as unknown as {

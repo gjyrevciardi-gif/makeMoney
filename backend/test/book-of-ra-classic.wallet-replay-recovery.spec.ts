@@ -69,7 +69,7 @@ describe('Book of Ra Classic wallet, replay and recovery (real shared storage)',
   const platform: GamePlatform = {
     capabilities,
     wallet: new GameWalletService(),
-    journal: new GameJournalService(prisma),
+    journal: new GameJournalService(prisma, capabilities),
     rounds: new GameRoundService(prisma),
   };
 
@@ -170,6 +170,9 @@ describe('Book of Ra Classic wallet, replay and recovery (real shared storage)',
         gameId: CLASSIC_ID,
         tokenHash: sha256(`fixture-${randomUUID()}`),
         expiresAt: new Date(Date.now() + 3_600_000),
+        // Bound to the fixture account's session version (A2: an unbound
+        // session fails closed instead of playing).
+        authVersion: player.authVersion,
       },
     })).id;
     expect(await balance()).toBe(funded);
@@ -381,7 +384,7 @@ describe('Book of Ra Classic wallet, replay and recovery (real shared storage)',
     expect(recovered.recovery.pendingWin).toBeGreaterThan(0);
     // The durable prepared outcome for this identity is consumed, not left
     // pending: the journal's own read returns nothing for that key.
-    expect(await new GameJournalService(prisma).findPrepared(userId, preparedKey)).toBeNull();
+    expect(await new GameJournalService(prisma, capabilities).findPrepared(userId, preparedKey)).toBeNull();
     expect(await preparedFor()).toBe(0);
     // No new draw happened: the failing adapter's stream had already produced the
     // round, and the reconciliation reused it.

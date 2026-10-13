@@ -471,6 +471,9 @@ model GameLaunchCapability {
   expiresAt  DateTime
   consumedAt DateTime?
   sessionId  String?   @db.Uuid
+  /// `User.authVersion` this capability was minted under. NULL means the row
+  /// predates version binding and is refused at exchange (fail-closed).
+  authVersion Int?
   createdAt  DateTime  @default(now())
   user       User      @relation("GameLaunchCapabilityOwner", fields: [userId], references: [id], onDelete: Cascade)
 
@@ -490,6 +493,9 @@ model GameSession {
   tokenHash  String    @unique
   expiresAt  DateTime
   revokedAt  DateTime?
+  /// `User.authVersion` this session was bound to. NULL means the row predates
+  /// version binding and is refused (fail-closed).
+  authVersion Int?
   lastSeenAt DateTime  @default(now())
   createdAt  DateTime  @default(now())
   user       User      @relation("GameSessionOwner", fields: [userId], references: [id], onDelete: Cascade)
@@ -525,6 +531,14 @@ model GamePreparedOutcome {
   originRoundId String?
   originVersion Int?
   originPhase   String?
+  /// Terminal cancellation. `NULL` means the outcome is still pending and may
+  /// still settle; a timestamp means its origin session was retired before it
+  /// settled, so it can never be applied. The row is retained - never deleted -
+  /// so the request identity, canonical semantics and drawn outcome stay
+  /// durable and a later same-key request is refused instead of redrawn.
+  cancelledAt   DateTime?
+  /// Machine-readable cause, e.g. `SESSION_REVOKED`.
+  cancelledReason String?
   createdAt  DateTime @default(now())
   user       User     @relation("GamePreparedOutcomeOwner", fields: [userId], references: [id], onDelete: Cascade)
 

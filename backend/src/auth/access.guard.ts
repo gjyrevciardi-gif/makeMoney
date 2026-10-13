@@ -9,7 +9,13 @@ import { JwtService } from '@nestjs/jwt';
 import { Role } from '@prisma/client';
 import type { Request } from 'express';
 import { PrismaService } from '../prisma.service';
-export type AuthenticatedRequest = Request & { actor: { id: string; role: Role } };
+/**
+ * `authVersion` is the exact version the presented token was verified against.
+ * Callers that mint another credential (game launch capabilities) must forward
+ * it, so the mint can be re-checked under the account lock instead of trusting
+ * a check that already happened.
+ */
+export type AuthenticatedRequest = Request & { actor: { id: string; role: Role; authVersion: number } };
 @Injectable()
 export class AccessGuard implements CanActivate {
   constructor(private readonly jwt: JwtService, private readonly prisma: PrismaService) {}
@@ -41,7 +47,7 @@ export class AccessGuard implements CanActivate {
         throw new ForbiddenException('ACCOUNT_DISABLED');
       }
       if (version !== user.authVersion) throw new Error('stale session version');
-      request.actor = { id: user.id, role: user.role };
+      request.actor = { id: user.id, role: user.role, authVersion: user.authVersion };
       return true;
     } catch (error) {
       if (error instanceof ForbiddenException) throw error;
