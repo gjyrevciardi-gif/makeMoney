@@ -98,7 +98,7 @@ jobs:
         run: npm run test -w frontend --if-present
 
       - name: Classic board and hit-guard tests
-        run: node --test scripts/e2e/tests/classic-persisted-board.test.mjs scripts/e2e/tests/classic-hit-guard.test.mjs
+        run: node --test scripts/e2e/tests/classic-persisted-board.test.mjs scripts/e2e/tests/classic-hit-guard.test.mjs scripts/e2e/tests/classic-scripted-rng.test.mjs
 
       - name: Backend typecheck
         run: npm run typecheck -w backend
