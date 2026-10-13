@@ -1,9 +1,38 @@
 # A2 acceptance checkpoint
 
-Status: READY FOR REVIEW (rescue complete); implementation uncommitted, not
-self-accepted. One executor. The two remaining failures were test-harness
-defects with no production change required: both are fixed and the whole
-focused set is green again.
+Status: A2 is committed at `43243d1`; PR25 targets
+`security/remove-password-vault`. PR25 CI failed on one suite, diagnosed below
+and fixed locally as a test-only change on top of that commit. Awaiting root
+review/commit.
+
+## PR25 CI blocker (2026-10-13) - test harness, not production
+
+- Both verify jobs failed identically (run 38348149065 / job 115134229838 and
+  run 38348122929 / job 115134145928): `Test Suites: 1 failed, 60 passed;
+  Tests: 4 failed, 864 passed`, all four in
+  `backend/test/p1-snapshot-concurrency.integration.spec.ts`.
+- Cause: that suite drives the real `LuckyLadyAdapter.execute` for every player
+  with the placeholder session id `11111111-2222-4333-8444-555555555555` and no
+  stored `GameSession` row, so A2's authoritative in-transaction guard refused
+  each paid round. CI's own metrics printed `completed: 0, failed: 12,
+  poolOrTransactionStartErrors: 0, otherErrors: 12, errorSamples: ["Game session
+  required."]` (and 3 for the pool-1 scenario). The guard was doing exactly what
+  A2 specifies; the harness had to bind a real session.
+- Fix (test-only, no production/migration/gateway/contract change): the scenario
+  now creates one bound `GameSession` row per player (`gameId`, unique
+  `tokenHash`, future expiry, `authVersion` = that account's version) and passes
+  its id to the adapter.
+- Verification: one bounded `--runInBand` run over `p1-snapshot-concurrency`,
+  `security-game-session-revocation`, `auth-session-revocation`,
+  `lucky-lady.max-win-scope` and `payout-distribution-runtime` -
+  **5 suites, 59/59 tests passed** (`logs/a2-ci-fix-validation.log`); the
+  regenerated metrics show `completed == concurrentRounds` (12 / 40 / 12 / 3),
+  `failed: 0`, `poolOrTransactionStartErrors: 0`, `otherErrors: 0`,
+  `errorSamples: []`, `duplicateDebits: 0`, `mixedSnapshots: 0`,
+  `balanceLedgerMismatches: 0`, `failedRoundsWithSideEffects: 0`,
+  `replayNewLedgerRows: 0`; `npm run typecheck -w backend` exit 0. The
+  test-generated evidence JSON was restored to HEAD so the change stays
+  test-only.
 
 ## Rescue result (2026-10-13)
 

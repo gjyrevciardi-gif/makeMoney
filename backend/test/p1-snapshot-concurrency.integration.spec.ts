@@ -132,16 +132,31 @@ describe('P1: snapshot transaction under concurrent NEW paid rounds (isolated Po
       const points = app.get(PointsService);
 
       const users: string[] = [];
+      const sessionByUser = new Map<string, string>();
       for (let index = 0; index < count; index += 1) {
         const user = await admin.user.create({
           data: { email: uniqueTestEmail(`p1-conc-${label}-${index}`), passwordHash: 'x', createdById: adminId, wallet: { create: {} } },
         });
         await points.adminGrant(adminId, user.id, 100_000n, 'p1 concurrency funding', `p1-fund-${label}-${index}`);
+        // Every authoritative paid action re-authorizes its bound session inside
+        // the settlement transaction, so this scenario needs a real session row
+        // per player (bound to the account version it was minted under) instead
+        // of a placeholder id.
+        const session = await admin.gameSession.create({
+          data: {
+            userId: user.id,
+            gameId: LUCKY_LADY_GAME_ID,
+            tokenHash: `p1-conc:${label}:${index}`,
+            expiresAt: new Date(Date.now() + 3_600_000),
+            authVersion: user.authVersion,
+          },
+        });
+        sessionByUser.set(user.id, session.id);
         users.push(user.id);
       }
 
       const request = (userId: string) => ({
-        context: { gameId: LUCKY_LADY_GAME_ID, userId, sessionId: '11111111-2222-4333-8444-555555555555' },
+        context: { gameId: LUCKY_LADY_GAME_ID, userId, sessionId: sessionByUser.get(userId) as string },
         input: {
           event: 'bet',
           body: { slotEvent: 'bet', slotBet: 1, slotLines: 10 },

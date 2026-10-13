@@ -211,3 +211,13 @@ were fixed as described in `docs/A2-REVIEW-BLOCKERS.md` and re-run
 `--runInBand`) - **3 suites, 39/39 passed** - and `npm run typecheck -w backend`
 (exit 0). Raw logs: `logs/a2-rescue-pair.log`, `logs/a2-rescue-full.log`,
 `logs/a2-completion-validation-1.log` (all gitignored).
+
+PR25 CI then failed on `backend/test/p1-snapshot-concurrency.integration.spec.ts`
+because that suite drove the real adapter with a placeholder session id and no
+stored session, which this milestone's in-transaction guard correctly refuses
+("Game session required."). It was fixed in the harness only - one bound
+`GameSession` row per player - and re-run together with this spec and
+`auth-session-revocation`: **5 suites, 59/59 tests passed**, with the suite's own
+metrics showing `otherErrors: 0`, every round completed, no duplicate debit, no
+mixed snapshot, no ledger mismatch and no new ledger row on replay
+(`logs/a2-ci-fix-validation.log`). See `docs/A2-REVIEW-BLOCKERS.md`.
