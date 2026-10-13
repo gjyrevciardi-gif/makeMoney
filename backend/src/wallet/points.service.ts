@@ -2,6 +2,7 @@ import { BadRequestException, ConflictException, ForbiddenException, Injectable,
 import { Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { canManageUser, hasCapability, REACH_SELECT } from '../auth/capabilities';
+import { isConcurrentPlacementAbort } from '../bets/bet-idempotency';
 import { recordSecurityEvent, recordWinIfLarge } from '../security/security-events';
 
 const MAX_MUTATION = 1_000_000_000n;
@@ -191,18 +192,63 @@ export class PointsService {
 
   async placeSportsBet(userId: string, stake: bigint, potentialPayout: bigint, idempotencyKey: string) {
     if (stake <= 0n || potentialPayout < stake) throw new BadRequestException('INVALID_BET');
-    return this.prisma.$transaction(async (tx) => {
-      const existing = await tx.bet.findUnique({ where: { idempotencyKey } });
-      if (existing) return existing;
-      const wallet = await tx.wallet.findUnique({ where: { userId } });
-      if (!wallet) throw new NotFoundException('WALLET_NOT_FOUND');
-      const debited = await tx.wallet.updateMany({ where: { id: wallet.id, balance: { gte: stake } }, data: { balance: { decrement: stake } } });
-      if (debited.count !== 1) throw new ConflictException('INSUFFICIENT_VIRTUAL_BALANCE');
-      const bet = await tx.bet.create({ data: { userId, stake, potentialPayout, idempotencyKey } });
-      await tx.ledgerEntry.create({ data: { walletId: wallet.id, type: 'SPORTS_BET', amount: -stake, reason: 'Sports bet stake', relatedBetId: bet.id, idempotencyKey: `sports-bet:${idempotencyKey}` } });
-      await tx.auditLog.create({ data: { actorId: userId, targetId: bet.id, action: 'BET_PLACED', result: 'SUCCESS' } });
-      return bet;
-    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        const existing = await tx.bet.findUnique({ where: { idempotencyKey } });
+        if (existing) return this.replaySportsBet(tx, existing, userId, stake, potentialPayout);
+        const wallet = await tx.wallet.findUnique({ where: { userId } });
+        if (!wallet) throw new NotFoundException('WALLET_NOT_FOUND');
+        const debited = await tx.wallet.updateMany({ where: { id: wallet.id, balance: { gte: stake } }, data: { balance: { decrement: stake } } });
+        if (debited.count !== 1) throw new ConflictException('INSUFFICIENT_VIRTUAL_BALANCE');
+        const bet = await tx.bet.create({ data: { userId, stake, potentialPayout, idempotencyKey } });
+        await tx.ledgerEntry.create({ data: { walletId: wallet.id, type: 'SPORTS_BET', amount: -stake, reason: 'Sports bet stake', relatedBetId: bet.id, idempotencyKey: `sports-bet:${idempotencyKey}` } });
+        await tx.auditLog.create({ data: { actorId: userId, targetId: bet.id, action: 'BET_PLACED', result: 'SUCCESS' } });
+        return bet;
+      }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+    } catch (error) {
+      // A serializable abort, a lost balance race or a unique violation can all
+      // mean an identical concurrent placement committed first. The recovery
+      // re-reads the key and runs the same owner/stake/payout (and origin)
+      // validation before answering; otherwise the original failure stands.
+      if (!isConcurrentPlacementAbort(error)) throw error;
+      const stored = await this.prisma.bet.findUnique({ where: { idempotencyKey } });
+      if (!stored) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') throw this.sportsBetConflict();
+        throw error;
+      }
+      return this.replaySportsBet(this.prisma, stored, userId, stake, potentialPayout);
+    }
+  }
+
+  /** The single generic conflict used by every sports-bet idempotency path. */
+  private sportsBetConflict() {
+    return new ConflictException({ code: 'IDEMPOTENCY_KEY_CONFLICT', message: 'This idempotency key was used for a different mutation.' });
+  }
+
+  /**
+   * Replay rule for the legacy `placeSportsBet` helper.
+   *
+   * The helper's entire input is (owner, stake, payout), so an exact match on
+   * those three is a complete proof *for a row this helper wrote*. A row written
+   * by the full placement path carries persisted legs and/or a canonical
+   * fingerprint, and answering one of those through this narrower helper would
+   * validate a full-selection request with a check that never saw its
+   * selections, so it is refused. Everything else is the same generic conflict
+   * as the full path.
+   */
+  private async replaySportsBet<
+    T extends { id: string; userId: string; stake: bigint; potentialPayout: bigint; idempotencyCanonicalHash: string | null },
+  >(
+    db: Pick<Prisma.TransactionClient, 'betLeg'>,
+    stored: T,
+    userId: string,
+    stake: bigint,
+    potentialPayout: bigint,
+  ): Promise<T> {
+    if (stored.userId !== userId || stored.stake !== stake || stored.potentialPayout !== potentialPayout) throw this.sportsBetConflict();
+    if (stored.idempotencyCanonicalHash !== null) throw this.sportsBetConflict();
+    if ((await db.betLeg.count({ where: { betId: stored.id } })) > 0) throw this.sportsBetConflict();
+    return stored;
   }
 
   async settleSportsWin(betId: string, idempotencyKey: string) {

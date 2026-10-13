@@ -1,0 +1,15 @@
+-- Additive: canonical placement fingerprint for sports bet idempotency.
+--
+-- Previously a duplicate idempotency key was answered with whatever Bet
+-- happened to exist, without proving the retry came from the same owner or
+-- described the same placement request. The column stores a deterministic
+-- SHA-256 fingerprint of the normalized placement request (type, stake, and
+-- each selection's event/sport/market/selection keys plus whether and which
+-- displayedOdds the client supplied) so a replay is validated before any wallet
+-- mutation.
+--
+-- Nullable with no default and no backfill: rows written before this migration
+-- keep NULL and are treated as unprovable legacy rows that can never be
+-- blanket-replayed. Adding the column is additive; no existing row is rewritten
+-- and no new debit can result from a legacy replay.
+ALTER TABLE "Bet" ADD COLUMN "idempotencyCanonicalHash" TEXT;

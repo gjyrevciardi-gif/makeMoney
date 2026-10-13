@@ -295,6 +295,7 @@ model Bet {
   potentialPayout BigInt
   status          BetStatus     @default(OPEN)
   idempotencyKey  String        @unique
+  idempotencyCanonicalHash String?
   createdAt       DateTime      @default(now())
   settledAt       DateTime?
   user            User          @relation(fields: [userId], references: [id])
