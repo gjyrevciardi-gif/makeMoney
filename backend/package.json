@@ -14,7 +14,7 @@
     "rbac:reset-mfa": "node scripts/reset-mfa.mjs"
   },
   "dependencies": {
-    "@nestjs/common": "^11.1.6",
+    "@nestjs/common": "^12.1.2",
     "@nestjs/core": "^11.1.6",
     "@nestjs/jwt": "^11.0.1",
     "@nestjs/platform-express": "^11.1.6",
